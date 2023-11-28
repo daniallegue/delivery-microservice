@@ -1,0 +1,1329 @@
+openapi: 3.0.3
+info:
+  title: Delivery Microservice
+  description: APIs for delivering orders
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8080'
+tags:
+  - name: Delivery
+  - name: Courier
+  - name: Vendor
+  - name: Delivery Times
+  - name: Analytics
+  - name: Exception Handling
+
+paths:
+  /delivery/courier/{courier_id}/available-orders:
+    get:
+      summary: Get all available orders
+      tags:
+        - Courier
+      parameters:
+        - name: courier_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 1
+          description: Unique identifier of the courier
+        - name: authorizationId
+          in: header
+          required: true
+          schema:
+            type: integer
+          description: Identification of the user who is making the request
+      responses:
+        '200':
+          description: A list of available order IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                  description: Unique identifier of an order
+              examples:
+                availableOrders:
+                  summary: Example of available order IDs
+                  value: [ 101, 102, 103 ]
+        '400':
+          description: Bad request if the courier ID is not valid
+        '404':
+          description: Courier not found or no available orders are present
+        '500':
+          description: Internal server error
+
+  /delivery/courier/{courier_id}/orders:
+      get:
+        summary: Get orders assigned to a courier
+        tags:
+          - Courier
+        description: Retrieve a set of order IDs that are currently assigned to a courier.
+        parameters:
+          - name: courier_id
+            in: path
+            required: true
+            schema:
+              type: integer
+              format: int64
+            description: Unique identifier of the courier
+          - name: authorizationId
+            in: header
+            required: true
+            schema:
+              type: integer
+            description: Identification of the user who is making the request
+        responses:
+          '200':
+            description: A list of assigned order IDs
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                    description: Unique identifier of an order
+                examples:
+                  assignedOrders:
+                    summary: Example of assigned order IDs
+                    value: [ 201, 202, 203 ]
+          '400':
+            description: Bad request if the courier ID is not valid
+          '404':
+            description: Not found if the courier has no orders assigned
+          '500':
+            description: Internal server error
+
+  /delivery/courier/{courier_id}/assign/{order_id}:
+    put:
+        summary: Assign a specific order to a courier
+        tags:
+          - Courier
+        description: Assign an order to a courier by specifying the order ID in the path.
+        parameters:
+          - name: courier_id
+            in: path
+            required: true
+            schema:
+              type: integer
+              format: int64
+              example: 1
+            description: Unique identifier of the courier
+          - name: order_id
+            in: path
+            required: true
+            schema:
+              type: integer
+              format: int64
+            description: Unique identifier of the order to assign
+          - name: authorizationId
+            in: header
+            required: true
+            schema:
+              type: integer
+            description: Identification of the user who is making the request
+        responses:
+          '200':
+            description: Order successfully assigned to the courier
+          '400':
+            description: Bad request if the courier ID or order ID is not valid
+          '404':
+            description: Not found if either the courier or the order doesn't exist
+          '500':
+            description: Internal server error
+
+  /delivery/courier/{courier_id}/any-order:
+      put:
+        summary: Assign any available order to a courier
+        tags:
+          - Courier
+        description: Automatically assigns an available order to the courier.
+        parameters:
+          - name: courier_id
+            in: path
+            required: true
+            schema:
+              type: integer
+              format: int64
+            description: Unique identifier of the courier
+          - name: authorizationId
+            in: header
+            required: true
+            schema:
+              type: integer
+            description: Identification of the user who is making the request
+        responses:
+          '200':
+            description: An available order has been successfully assigned to the courier.
+          '400':
+            description: Bad request if the courier ID is invalid or no available orders.
+          '404':
+            description: Courier not found.
+          '409':
+            description: No available orders to assign.
+          '500':
+            description: Server error or unable to assign orders due to internal issues.
+
+  /delivery:
+    parameters:
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    post:
+      summary: Create a delivery
+      tags:
+        - Delivery
+      description: Given the information of a Delivery, an object is created and persisted in the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order_id:
+                  type: integer
+                  description: Unique identifier for the order
+                  example: 12
+                customer_id:
+                  type: integer
+                  description: Unique identifier for the customer
+                  example: 45
+                destination:
+                  type: object
+                  description: Location of the customer
+                  example:
+                    longitude: 12.33239039
+                    latitude: 104.238381
+                vendor_id:
+                  type: integer
+                  description: Unique identifier of the vendor
+                  example: 4
+              required:
+                - customer_id
+                - order_id
+                - destination
+                - vendor_id
+      responses:
+        '200':
+          description: Successful Request
+        '400':
+          description: There was a problem with the request
+        '500':
+          description: There was a problem with the server
+  /delivery/{order_id}/status:
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Unique identifier of the order
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    get:
+      summary: Order status
+      tags:
+        - Delivery
+      description: Get the status of the order (i.e. Delivered, In Transit, ...)
+      responses:
+        '200':
+          description: Successful Request
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "Preparing"
+        '400':
+          description: There was a problem with the request
+        '404':
+          description: Resource not found
+        '500':
+          description: There was a problem with the server
+    put:
+      summary: Change order status
+      tags:
+        - Delivery
+      description: Change the status of the order (Preparing -> In Transit)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: Preparing
+      responses:
+        '200':
+          description: Successful Request
+        '400':
+          description: There was a problem with the request
+        '500':
+          description: There was a problem with the server
+  /delivery/{order_id}/eta:
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Unique identifier of the order
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    get:
+      summary: Order ETA
+      tags:
+        - Delivery Times
+      description: Get the estimated time of arrival of an order
+      responses:
+        '200':
+          description: Successful Request
+          content:
+            application/json:
+              schema:
+                type: string
+                format: date-time
+                example: 2023-07-16T19:20:30
+        '400':
+          description: There was a problem with the request
+        '404':
+          description: Resource not found
+        '500':
+          description: There was a problem with the server
+    put:
+      summary: Change order ETA
+      tags:
+        - Delivery Times
+      description: Change the estimated time of arrival for an order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              format: date-time
+              example: 2025-07-16T19:20:30+01:00
+      responses:
+        '200':
+          description: Successful Request
+        '400':
+          description: There was a problem with the request
+        '403':
+          description: Forbidden access
+        '500':
+          description: There was a problem with the server
+  /delivery/{order_id}/ready-time:
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Unique identifier of the order
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    get:
+      summary: Get the estimated ready time
+      tags:
+        - Delivery Times
+      description: Get the estimated ready time
+      responses:
+        '200':
+          description: Successful Request
+          content:
+            application/json:
+              schema:
+                type: string
+                format: date-time
+                example: 2023-07-16T19:20:30
+        '400':
+          description: There was a problem with the request
+        '404':
+          description: Resource not found
+        '500':
+          description: There was a problem with the server
+    put:
+      summary: Change order ready-time
+      tags:
+        - Delivery Times
+      description: Change the estimated time of when order will be ready for delivery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              format: date-time
+              example: 2025-07-16T19:20:30+01:00
+      responses:
+        '200':
+          description: Successful Request
+        '400':
+          description: There was a problem with the request
+        '403':
+          description: Forbidden access
+        '500':
+          description: There was a problem with the server
+  /delivery/{order_id}/tod:
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Unique identifier of the order
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    get:
+      summary: Get the time of delivery of an order
+      tags:
+        - Delivery Times
+      description: Get the time of delivery of an order
+      responses:
+        '200':
+          description: Successful Request
+          content:
+            application/json:
+              schema:
+                type: string
+                format: date-time
+                example: 2023-07-16T19:51:34
+        '400':
+          description: There was a problem with the request
+        '403':
+          description: Forbidden access
+        '404':
+          description: Resource not found
+        '500':
+          description: There was a problem with the server
+    put:
+      summary: Put order Time of Delivery
+      tags:
+        - Delivery Times
+      description: Input the order delivery time
+      requestBody:
+        required: true
+        description: Delivered time
+        content:
+          application/json:
+            schema:
+              type: string
+              format: date-time
+              example: 2025-07-16T19:20:30+01:00
+      responses:
+        '200':
+          description: successful
+        '400':
+          description: There was a problem with the request
+        '404':
+          description: Server not found
+        '500':
+          description: There was a problem with the server
+  /delivery/{order_id}/pickup-time:
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Unique identifier of the order
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    get:
+      summary: Order pickup time
+      tags:
+        - Delivery Times
+      description: Get the pickup time of the order
+      responses:
+        '200':
+          description: Successful Request
+          content:
+            application/json:
+              schema:
+                type: string
+                format: date-time
+                example: 2023-07-16T19:51:34
+        '400':
+          description: There was a problem with the request
+        '404':
+          description: Resource not found
+        '500':
+          description: There was a problem with the server
+    put:
+      summary:  Put order pickup time
+      tags:
+        - Delivery Times
+      description: Input the order pickup time
+      requestBody:
+        description: Pickup time
+        required: true
+        content:
+          application/json:
+            schema:
+                type: string
+                format: date-time
+                example: 2023-07-16T19:51:34
+      responses:
+        '200':
+          description: successful
+        '400':
+          description: There was a problem with the request
+        '404':
+          description: Server not found
+        '500':
+          description: There was a problem with the server
+  /delivery/{order_id}/courier:
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Unique identifier of the order
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    get:
+      summary: Order courier id
+      tags:
+        - Delivery
+      description: Get the courier id that is assigned to an order
+      responses:
+        '200':
+          description: Successful Request
+          content:
+            application/json:
+              schema:
+                type: integer
+                example: 74
+        '400':
+          description: There was a problem with the request
+        '404':
+          description: Resource not found
+        '500':
+          description: There was a problem with the server
+
+  /delivery/order/{order_id}/issue:
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Unique identifier of the order
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    put:
+      summary: Issue occurred in delivery process
+      tags:
+        - Exception Handling
+      description: We input an issue related to a delivery
+      requestBody:
+        description: Issue details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Issue'
+      responses:
+        '200':
+          description: successful
+        '400':
+          description: There was a problem with the request
+        '404':
+          description: Server not found
+        '500':
+          description: There was a problem with the server
+
+    get:
+      summary: Retrieve issue that occurred during delivery process
+      tags:
+        - Exception Handling
+      description: Given order returns the issue that occurred during delivery process
+      responses:
+        '200':
+          description: returns issue details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Issue'
+        '400':
+          description: There was a problem with the request
+        '404':
+          description: Server not found
+        '500':
+          description: There was a problem with the server
+
+  /delivery/analytics/courier/{courier_id}/efficiency:
+    parameters:
+      - name: courier_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: "3"
+        description: The id of the courier
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    get:
+      summary: Get the efficiency of a courier
+      tags:
+        - Analytics
+      description: Calculate the efficiency of the deliveries a courier has made
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: integer
+                example: "70"
+        '400':
+          description: There was a problem with the request
+        '403':
+          description: Forbidden access
+        '404':
+          description: Not found
+        '500':
+          description: There was a problem with the server
+  /delivery/analytics/courier/{courier_id}/deliveries-per-day:
+    parameters:
+      - name: courier_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: "75"
+        description: The id of the courier
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    get:
+      summary: Deliveries/day of a courier
+      tags:
+        - Analytics
+      description: Retrieve the average number of deliveries a courier has made/day
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: integer
+                example: "3"
+        '400':
+          description: There was a problem with the request
+        '403':
+          description: Forbidden access
+        '404':
+          description: Not found
+        '500':
+          description: There was a problem with the server
+  /delivery/analytics/courier/{courier_id}/successful-deliveries:
+    parameters:
+      - name: courier_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: "3"
+        description: The id of the courier
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    get:
+      summary: Number of successful deliveries of a courier
+      tags:
+        - Analytics
+      description: Retrieve the number of successful deliveries a courier has made
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: integer
+                example: "53"
+        '400':
+          description: There was a problem with the request
+        '403':
+          description: Forbidden access
+        '404':
+          description: Not found
+        '500':
+          description: There was a problem with the server
+  /delivery/analytics/courier/{courier_id}/courier-issues:
+    parameters:
+      - name: courier_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: "3"
+        description: The id of the courier
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    get:
+      summary: Issues of a courier
+      tags:
+        - Analytics
+      description: Retrieve the issues a courier has encountered during deliveries
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example: "traffic, accident"
+        '400':
+          description: There was a problem with the request
+        '404':
+          description: Not found
+        '500':
+          description: There was a problem with the server
+  /delivery/analytics/vendor/{vendor_id}/vendor-average:
+    parameters:
+      - name: vendor_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: "3"
+        description: The id of the vendor
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    get:
+      summary: Average delivery times for a vendor
+      tags:
+        - Analytics
+      description: Retrieve the average delivery times for a vendor
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: integer
+                example: "2"
+        '400':
+          description: There was a problem with the request
+        '403':
+          description: Forbidden access
+        '404':
+          description: Not found
+        '500':
+          description: There was a problem with the server
+
+  /delivery/analytics/order/{order_id}/rating:
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: "3"
+        description: The id of the order
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    put:
+      summary: Set the rating of an order
+      tags:
+        - Analytics
+      description: Set the rating of an order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Rating'
+      responses:
+        '200':
+          description: successful
+        '400':
+          description: There was a problem with the request
+        '404':
+          description: Not found
+        '500':
+          description: There was a problem with the server
+    get:
+      summary: Rating for an order
+      tags:
+        - Analytics
+      description: Retrieve the rating for an order
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rating'
+        '400':
+          description: There was a problem with the request
+        '404':
+          description: Not found
+        '500':
+          description: There was a problem with the server
+  /delivery/{order_id}/location:
+    parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: The unique identifier of the order.
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    put:
+      summary: Update Order Location
+      tags:
+        - Delivery
+      description: |
+        Sets the current location of the courier carrying the delivery for the order with ID order_id.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Location'
+      responses:
+        '200':
+          description: Courier location updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+              example:
+                latitude: 37.7749
+                longitude: -122.4194
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: Bad Request
+                message: Invalid input parameter
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              example:
+                error: Not Found
+                message: Order or courier not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: Internal Server Error
+                message: An unexpected error occurred while processing the request
+    get:
+      summary: Current location of an order
+      tags:
+        - Delivery
+      description: Retrieve the current location for an order
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '400':
+          description: There was a problem with the request
+        '404':
+          description: Not found
+        '500':
+          description: There was a problem with the server
+
+  /delivery/vendor/{vendor_id}/assign/{courier_id}:
+    parameters:
+      - name: vendor_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: The unique identifier of the order.
+      - name: courier_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: The unique identifier of the courier.
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    put:
+      summary: Assign Courier to Vendor
+      tags:
+        - Vendor
+      description: |
+        Assigns the courier with ID courier_id to the vendor with ID vendor_id.
+      responses:
+        '200':
+          description: Vendor updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+              example:
+                id: 123
+                customer:
+                  id: 456
+                  # ... other customer properties
+                vendor:
+                  id: 789
+                  # ... other vendor properties
+                status: "asc"
+                destination:
+                  latitude: 37.7749
+                  longitude: -122.4194
+                # ... other order properties
+                courier:
+                  currentLocation:
+                    latitude: 37.7896
+                    longitude: -122.3906
+                  activeDelivery:
+                    id: 987
+                    # ... other delivery properties
+                # ... other courier properties
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: Bad Request
+                message: Invalid input parameter
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              example:
+                error: Not Found
+                message: Order or courier not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: Internal Server Error
+                message: An unexpected error occurred while processing the request
+  /delivery/vendor/{vendor_id}/couriers:
+    parameters:
+      - name: vendor_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: The unique identifier of the vendor.
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    get:
+      summary: Retrieve Couriers Assigned to Vendor
+      tags:
+        - Vendor
+      description: |
+        Retrieves all couriers assigned to the vendor with the specified ID.
+      responses:
+        '200':
+          description: Couriers retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Courier'
+              example:
+                - currentLocation:
+                    latitude: 37.7749
+                    longitude: -122.4194
+                  activeDelivery: null
+                - currentLocation:
+                    latitude: 37.7896
+                    longitude: -122.3906
+                  activeDelivery:
+                    id: 456
+                    order:
+                      id: 789
+                      customer:
+                        id: 987
+                        # ... other customer properties
+                      vendor:
+                        id: 654
+                        # ... other vendor properties
+                      status: "asc"
+                      destination:
+                        latitude: 37.7749
+                        longitude: -122.4194
+                    courier:
+                    # ... courier properties
+                    # ... other order properties
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: Bad Request
+                message: Invalid input parameter
+        '404':
+          description: Vendor Not Found
+          content:
+            application/json:
+              example:
+                error: Not Found
+                message: Vendor with ID {vendor_id} not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: Internal Server Error
+                message: An unexpected error occurred while processing the request
+
+
+  /delivery/vendor/{vendor_id}/delivery-zone:
+    parameters:
+      - name: vendor_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: The unique identifier of the vendor.
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    get:
+      summary: Retrieve Vendor Delivery Zone
+      tags:
+        - Vendor
+      description: |
+        Retrieves the delivery zone radius of the vendor with the specified ID.
+      responses:
+        '200':
+          description: Delivery zone retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: integer
+              example: 5
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: Bad Request
+                message: Invalid input parameter
+        '404':
+          description: Vendor Not Found
+          content:
+            application/json:
+              example:
+                error: Not Found
+                message: Vendor with ID {vendor_id} not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: Internal Server Error
+                message: An unexpected error occurred while processing the request
+
+
+    put:
+      summary: Update Vendor Delivery Zone
+      tags:
+        - Vendor
+      description: |
+        Sets the delivery zone radius of the vendor with the specified ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: integer
+            examples:
+              example1:
+                value: 7
+      responses:
+        '200':
+          description: Delivery zone updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+              example:
+                id: 123
+                deliveryZone: 7
+                address:
+                  latitude: 37.7749
+                  longitude: -122.4194
+                couriers:
+                  - currentLocation:
+                      latitude: 37.7749
+                      longitude: -122.4194
+                    activeDelivery: null
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: Bad Request
+                message: Invalid delivery zone value
+        '404':
+          description: Vendor Not Found
+          content:
+            application/json:
+              example:
+                error: Not Found
+                message: Vendor with ID {vendor_id} not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: Internal Server Error
+                message: An unexpected error occurred while processing the request
+
+
+
+  /delivery/vendor/{vendor_id}/vendor-address:
+    parameters:
+      - name: vendor_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Unique identifier of the vendor.
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+        description: Identification of the user who is making the request
+    get:
+      summary: Retrieve Vendor Address
+      tags:
+        - Vendor
+      description: |
+        Retrieves the address of the specified vendor identified by `vendor_id`.
+      responses:
+        '200':
+          description: Vendor Address Retrieved Successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+              example:
+                latitude: 37.7749
+                longitude: -122.4194
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: "Invalid request. Please check your input."
+        '404':
+          description: Vendor Not Found
+          content:
+            application/json:
+              example:
+                error: "The specified vendor could not be found."
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: "An unexpected error occurred. Please try again later."
+
+
+components:
+  schemas:
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Identifier for the order of the delivery
+          example: "3"
+        customer:
+          $ref: '#/components/schemas/Customer'
+        vendor:
+          $ref: '#/components/schemas/Vendor'
+        status:
+          type: string
+        destination:
+          $ref: '#/components/schemas/Location'
+    Delivery:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: uuid
+          description: Unique identifier for the delivery
+          example: "3"
+        order:
+          $ref: '#/components/schemas/Order'
+        courier:
+          $ref: '#/components/schemas/Courier'
+        rating:
+          $ref: '#/components/schemas/Rating'
+        time:
+          $ref: '#/components/schemas/Time'
+        issue:
+          $ref: '#/components/schemas/Issue'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: The id of the User
+          example: "3"
+    Customer:
+      allOf:
+        - $ref: '#/components/schemas/User'
+      type: object
+    Vendor:
+      allOf:
+        - $ref: '#/components/schemas/User'
+      type: object
+      properties:
+        deliveryZone:
+          type: integer
+          format: int64
+          description: The radius of the delivery zone of the Vendor
+          example: "50"
+        address:
+          $ref: '#/components/schemas/Location'
+        couriers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Courier'
+    Courier:
+      allOf:
+        - $ref: '#/components/schemas/User'
+      type: object
+      properties:
+        currentLocation:
+          $ref: '#/components/schemas/Location'
+        activeDelivery:
+          $ref: '#/components/schemas/Delivery'
+    Admin:
+      allOf:
+        - $ref: '#/components/schemas/User'
+      type: object
+    Location:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+          description: The latitude of the location
+          example: 12.33239039
+        longitude:
+          type: number
+          format: double
+          description: The longitude of the location
+          example: 104.238381
+    Time:
+      type: object
+      properties:
+        pickUpTime:
+          type: string
+          format: date-time
+        readyTime:
+          type: string
+          format: date-time
+        deliveredTime:
+          type: string
+          format: date-time
+    Issue:
+      type: object
+      properties:
+        typeOfIssue:
+          type: string
+          example: "accident"
+        comment:
+          type: string
+          example: "I got into an accident while delivering"
+    Rating:
+      type: object
+      properties:
+        grade:
+          type: integer
+          example: "3"
+        comment:
+          type: string
