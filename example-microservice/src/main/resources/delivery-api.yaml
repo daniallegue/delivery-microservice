@@ -26,13 +26,14 @@ paths:
           schema:
             type: integer
             format: int64
-            example: 1
+            example: 10
           description: Unique identifier of the courier
         - name: authorizationId
           in: header
           required: true
           schema:
             type: integer
+            example: 1
           description: Identification of the user who is making the request
       responses:
         '200':
@@ -51,10 +52,10 @@ paths:
                   value: [ 101, 102, 103 ]
         '400':
           description: Bad request if the courier ID is not valid
+        '403':
+          description: Forbidden access
         '404':
-          description: Courier not found or no available orders are present
-        '500':
-          description: Internal server error
+          description: Courier not found
 
   /delivery/courier/{courier_id}/orders:
       get:
@@ -69,12 +70,14 @@ paths:
             schema:
               type: integer
               format: int64
+              example: 1
             description: Unique identifier of the courier
           - name: authorizationId
             in: header
             required: true
             schema:
               type: integer
+              example: 20
             description: Identification of the user who is making the request
         responses:
           '200':
@@ -93,10 +96,10 @@ paths:
                     value: [ 201, 202, 203 ]
           '400':
             description: Bad request if the courier ID is not valid
+          '403':
+            description: Forbidden access
           '404':
-            description: Not found if the courier has no orders assigned
-          '500':
-            description: Internal server error
+            description: Resources could not be found
 
   /delivery/courier/{courier_id}/assign/{order_id}:
     put:
@@ -111,7 +114,7 @@ paths:
             schema:
               type: integer
               format: int64
-              example: 1
+              example: 10
             description: Unique identifier of the courier
           - name: order_id
             in: path
@@ -119,22 +122,24 @@ paths:
             schema:
               type: integer
               format: int64
+              example: 1
             description: Unique identifier of the order to assign
           - name: authorizationId
             in: header
             required: true
             schema:
               type: integer
+              example: 1
             description: Identification of the user who is making the request
         responses:
           '200':
             description: Order successfully assigned to the courier
           '400':
             description: Bad request if the courier ID or order ID is not valid
+          '403':
+            description: Forbidden access
           '404':
-            description: Not found if either the courier or the order doesn't exist
-          '500':
-            description: Internal server error
+            description: Some resources were not found
 
   /delivery/courier/{courier_id}/any-order:
       put:
@@ -149,24 +154,24 @@ paths:
             schema:
               type: integer
               format: int64
+              example: 10
             description: Unique identifier of the courier
           - name: authorizationId
             in: header
             required: true
             schema:
               type: integer
+              example: 1
             description: Identification of the user who is making the request
         responses:
           '200':
             description: An available order has been successfully assigned to the courier.
           '400':
-            description: Bad request if the courier ID is invalid or no available orders.
+            description: Bad request if the courier ID is invalid
+          '403':
+            description: Forbidden access
           '404':
-            description: Courier not found.
-          '409':
-            description: No available orders to assign.
-          '500':
-            description: Server error or unable to assign orders due to internal issues.
+            description: Some resources could not be found
 
   /delivery:
     parameters:
@@ -175,6 +180,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
         description: Identification of the user who is making the request
     post:
       summary: Create a delivery
@@ -216,8 +222,9 @@ paths:
           description: Successful Request
         '400':
           description: There was a problem with the request
-        '500':
-          description: There was a problem with the server
+        '403':
+          description: Forbidden access
+
   /delivery/{order_id}/status:
     parameters:
       - name: order_id
@@ -225,12 +232,14 @@ paths:
         required: true
         schema:
           type: integer
+          example: 10
         description: Unique identifier of the order
       - name: authorizationId
         in: header
         required: true
         schema:
           type: integer
+          example: 1
         description: Identification of the user who is making the request
     get:
       summary: Order status
@@ -247,10 +256,10 @@ paths:
                 example: "Preparing"
         '400':
           description: There was a problem with the request
+        '403':
+          description: Forbidden access
         '404':
           description: Resource not found
-        '500':
-          description: There was a problem with the server
     put:
       summary: Change order status
       tags:
@@ -262,14 +271,14 @@ paths:
           application/json:
             schema:
               type: string
-              example: Preparing
+              example: "Preparing"
       responses:
         '200':
           description: Successful Request
         '400':
           description: There was a problem with the request
-        '500':
-          description: There was a problem with the server
+        '403':
+          description: Forbidden access
   /delivery/{order_id}/eta:
     parameters:
       - name: order_id
@@ -277,12 +286,14 @@ paths:
         required: true
         schema:
           type: integer
+          example: 10
         description: Unique identifier of the order
       - name: authorizationId
         in: header
         required: true
         schema:
           type: integer
+          example: 1
         description: Identification of the user who is making the request
     get:
       summary: Order ETA
@@ -300,10 +311,10 @@ paths:
                 example: 2023-07-16T19:20:30
         '400':
           description: There was a problem with the request
+        '403':
+          description: Forbidden access
         '404':
           description: Resource not found
-        '500':
-          description: There was a problem with the server
     put:
       summary: Change order ETA
       tags:
@@ -324,8 +335,6 @@ paths:
           description: There was a problem with the request
         '403':
           description: Forbidden access
-        '500':
-          description: There was a problem with the server
   /delivery/{order_id}/ready-time:
     parameters:
       - name: order_id
@@ -333,12 +342,14 @@ paths:
         required: true
         schema:
           type: integer
+          example: 10
         description: Unique identifier of the order
       - name: authorizationId
         in: header
         required: true
         schema:
           type: integer
+          example: 1
         description: Identification of the user who is making the request
     get:
       summary: Get the estimated ready time
@@ -356,10 +367,10 @@ paths:
                 example: 2023-07-16T19:20:30
         '400':
           description: There was a problem with the request
+        '403':
+          description: Forbidden access
         '404':
           description: Resource not found
-        '500':
-          description: There was a problem with the server
     put:
       summary: Change order ready-time
       tags:
@@ -389,12 +400,14 @@ paths:
         required: true
         schema:
           type: integer
+          example: 10
         description: Unique identifier of the order
       - name: authorizationId
         in: header
         required: true
         schema:
           type: integer
+          example: 1
         description: Identification of the user who is making the request
     get:
       summary: Get the time of delivery of an order
@@ -437,10 +450,8 @@ paths:
           description: successful
         '400':
           description: There was a problem with the request
-        '404':
-          description: Server not found
-        '500':
-          description: There was a problem with the server
+        '403':
+          description: Forbidden access
   /delivery/{order_id}/pickup-time:
     parameters:
       - name: order_id
@@ -448,12 +459,14 @@ paths:
         required: true
         schema:
           type: integer
+          example: 10
         description: Unique identifier of the order
       - name: authorizationId
         in: header
         required: true
         schema:
           type: integer
+          example: 1
         description: Identification of the user who is making the request
     get:
       summary: Order pickup time
@@ -471,10 +484,10 @@ paths:
                 example: 2023-07-16T19:51:34
         '400':
           description: There was a problem with the request
+        '403':
+          description: Forbidden access
         '404':
           description: Resource not found
-        '500':
-          description: There was a problem with the server
     put:
       summary:  Put order pickup time
       tags:
@@ -494,6 +507,8 @@ paths:
           description: successful
         '400':
           description: There was a problem with the request
+        '403':
+          description: Forbidden access
         '404':
           description: Server not found
         '500':
@@ -505,12 +520,14 @@ paths:
         required: true
         schema:
           type: integer
+          example: 10
         description: Unique identifier of the order
       - name: authorizationId
         in: header
         required: true
         schema:
           type: integer
+          example: 1
         description: Identification of the user who is making the request
     get:
       summary: Order courier id
@@ -527,6 +544,8 @@ paths:
                 example: 74
         '400':
           description: There was a problem with the request
+        '403':
+          description: Forbidden access
         '404':
           description: Resource not found
         '500':
@@ -539,12 +558,14 @@ paths:
         required: true
         schema:
           type: integer
+          example: 10
         description: Unique identifier of the order
       - name: authorizationId
         in: header
         required: true
         schema:
           type: integer
+          example: 1
         description: Identification of the user who is making the request
     put:
       summary: Issue occurred in delivery process
@@ -558,11 +579,14 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Issue'
+
       responses:
         '200':
           description: successful
         '400':
           description: There was a problem with the request
+        '403':
+          description: Forbidden access
         '404':
           description: Server not found
         '500':
@@ -582,6 +606,8 @@ paths:
                 $ref: '#/components/schemas/Issue'
         '400':
           description: There was a problem with the request
+        '403':
+          description: Forbidden access
         '404':
           description: Server not found
         '500':
@@ -601,6 +627,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
         description: Identification of the user who is making the request
     get:
       summary: Get the efficiency of a courier
@@ -637,6 +664,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
         description: Identification of the user who is making the request
     get:
       summary: Deliveries/day of a courier
@@ -673,6 +701,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
         description: Identification of the user who is making the request
     get:
       summary: Number of successful deliveries of a courier
@@ -709,6 +738,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
         description: Identification of the user who is making the request
     get:
       summary: Issues of a courier
@@ -727,6 +757,8 @@ paths:
                 example: "traffic, accident"
         '400':
           description: There was a problem with the request
+        '403':
+          description: Forbidden access
         '404':
           description: Not found
         '500':
@@ -745,6 +777,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
         description: Identification of the user who is making the request
     get:
       summary: Average delivery times for a vendor
@@ -782,6 +815,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
         description: Identification of the user who is making the request
     put:
       summary: Set the rating of an order
@@ -799,6 +833,8 @@ paths:
           description: successful
         '400':
           description: There was a problem with the request
+        '403':
+          description: Forbidden access
         '404':
           description: Not found
         '500':
@@ -817,6 +853,8 @@ paths:
                 $ref: '#/components/schemas/Rating'
         '400':
           description: There was a problem with the request
+        '403':
+          description: Forbidden access
         '404':
           description: Not found
         '500':
@@ -828,12 +866,14 @@ paths:
         required: true
         schema:
           type: integer
+          example: 7
         description: The unique identifier of the order.
       - name: authorizationId
         in: header
         required: true
         schema:
           type: integer
+          example: 1
         description: Identification of the user who is making the request
     put:
       summary: Update Order Location
@@ -864,6 +904,8 @@ paths:
               example:
                 error: Bad Request
                 message: Invalid input parameter
+        '403':
+          description: Forbidden access
         '404':
           description: Not Found
           content:
@@ -892,6 +934,8 @@ paths:
                 $ref: '#/components/schemas/Location'
         '400':
           description: There was a problem with the request
+        '403':
+          description: Forbidden access
         '404':
           description: Not found
         '500':
@@ -904,18 +948,21 @@ paths:
         required: true
         schema:
           type: integer
+          example: 8
         description: The unique identifier of the order.
       - name: courier_id
         in: path
         required: true
         schema:
           type: integer
+          example: 10
         description: The unique identifier of the courier.
       - name: authorizationId
         in: header
         required: true
         schema:
           type: integer
+          example: 30
         description: Identification of the user who is making the request
     put:
       summary: Assign Courier to Vendor
@@ -958,6 +1005,8 @@ paths:
               example:
                 error: Bad Request
                 message: Invalid input parameter
+        '403':
+          description: Forbidden access
         '404':
           description: Not Found
           content:
@@ -979,12 +1028,14 @@ paths:
         required: true
         schema:
           type: integer
+          example: 20
         description: The unique identifier of the vendor.
       - name: authorizationId
         in: header
         required: true
         schema:
           type: integer
+          example: 1
         description: Identification of the user who is making the request
     get:
       summary: Retrieve Couriers Assigned to Vendor
@@ -1033,6 +1084,8 @@ paths:
               example:
                 error: Bad Request
                 message: Invalid input parameter
+        '403':
+          description: Forbidden access
         '404':
           description: Vendor Not Found
           content:
@@ -1056,19 +1109,21 @@ paths:
         required: true
         schema:
           type: integer
+          example: 20
         description: The unique identifier of the vendor.
       - name: authorizationId
         in: header
         required: true
         schema:
           type: integer
+          example: 20
         description: Identification of the user who is making the request
     get:
       summary: Retrieve Vendor Delivery Zone
       tags:
         - Vendor
       description: |
-        Retrieves the delivery zone radius of the vendor with the specified ID.
+        Retrieves the delivery zone, which is a radius of the vendor with the specified ID.
       responses:
         '200':
           description: Delivery zone retrieved successfully.
@@ -1084,6 +1139,8 @@ paths:
               example:
                 error: Bad Request
                 message: Invalid input parameter
+        '403':
+          description: Forbidden access
         '404':
           description: Vendor Not Found
           content:
@@ -1112,9 +1169,8 @@ paths:
           application/json:
             schema:
               type: integer
-            examples:
-              example1:
-                value: 7
+              description: radius of the delivery zone
+              example: 7
       responses:
         '200':
           description: Delivery zone updated successfully.
@@ -1140,6 +1196,8 @@ paths:
               example:
                 error: Bad Request
                 message: Invalid delivery zone value
+        '403':
+          description: Forbidden access
         '404':
           description: Vendor Not Found
           content:
@@ -1164,12 +1222,14 @@ paths:
         required: true
         schema:
           type: integer
+          example: 20
         description: Unique identifier of the vendor.
       - name: authorizationId
         in: header
         required: true
         schema:
           type: integer
+          example: 3
         description: Identification of the user who is making the request
     get:
       summary: Retrieve Vendor Address
@@ -1187,6 +1247,8 @@ paths:
               example:
                 latitude: 37.7749
                 longitude: -122.4194
+        '403':
+          description: Forbidden access
         '400':
           description: Bad Request
           content:
@@ -1194,17 +1256,11 @@ paths:
               example:
                 error: "Invalid request. Please check your input."
         '404':
-          description: Vendor Not Found
+          description: Resource not found
           content:
             application/json:
               example:
                 error: "The specified vendor could not be found."
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              example:
-                error: "An unexpected error occurred. Please try again later."
 
 
 components:
@@ -1223,6 +1279,7 @@ components:
           $ref: '#/components/schemas/Vendor'
         status:
           type: string
+          example: "Preparing"
         destination:
           $ref: '#/components/schemas/Location'
     Delivery:
@@ -1304,12 +1361,18 @@ components:
         pickUpTime:
           type: string
           format: date-time
+          example: 2023-07-16T19:51:34
+          description: The time when an order was picked up
         readyTime:
           type: string
           format: date-time
+          example: 2023-07-16T19:51:34
+          description: The estimation time for when an order will be ready
         deliveredTime:
           type: string
           format: date-time
+          example: 2023-07-16T19:51:34
+          description: The time when an order was delivered
     Issue:
       type: object
       properties:
@@ -1327,3 +1390,4 @@ components:
           example: "3"
         comment:
           type: string
+          description: "Very fast delivery"
