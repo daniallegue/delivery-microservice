@@ -1226,8 +1226,8 @@ components:
             - Accepted
             - Rejected
             - Preparing
-            - GivenToCourier
-            - OnTransit
+            - Given_To_Courier
+            - On_Transit
             - Delivered
           example: "Preparing"
         destination:
