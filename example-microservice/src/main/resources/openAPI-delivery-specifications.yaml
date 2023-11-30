@@ -1071,6 +1071,66 @@ paths:
                 error: Internal Server Error
                 message: An unexpected error occurred while processing the request
 
+  /delivery/default-delivery-zone:
+    parameters:
+      - name: authorizationId
+        in: header
+        required: true
+        schema:
+          type: integer
+          example: 20
+        description: Identification of the user who is making the request
+    get:
+      summary: Retrieve the default delivery zone set by the admin
+      tags:
+        - Order
+      description: |
+        Retrieve the default delivery zone radius set by the admin.
+      responses:
+        '200':
+          description: Delivery zone retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: integer
+              example: 5
+        '403':
+          description: Forbidden access
+        '404':
+          description: Value not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: Internal Server Error
+                message: An unexpected error occurred while processing the request
+    put:
+      summary: Update the default Delivery Zone
+      tags:
+        - Order
+      description: |
+        Sets the default delivery zone radius.
+      requestBody:
+        description: Default delivery zone radius
+        required: true
+        content:
+          application/json:
+            schema:
+              type: integer
+              example: 8
+      responses:
+        '200':
+          description: Delivery zone updated successfully.
+        '403':
+          description: Forbidden access
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                error: Internal Server Error
+                message: An unexpected error occurred while processing the request
 
   /vendor/delivery/{vendor_id}/delivery-zone:
     parameters:
