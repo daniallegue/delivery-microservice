@@ -12,7 +12,7 @@ tags:
   - name: Analytics
 
 paths:
-  /delivery/courier/{courier_id}/available-orders:
+  /courier/delivery/{courier_id}/available-orders:
     get:
       summary: Get all available orders
       tags:
@@ -55,7 +55,7 @@ paths:
         '404':
           description: Courier not found
 
-  /delivery/courier/{courier_id}/orders:
+  /courier/delivery/{courier_id}/orders:
     get:
       summary: Get orders assigned to a courier
       tags:
@@ -99,7 +99,7 @@ paths:
         '404':
           description: Resources could not be found
 
-  /delivery/courier/{courier_id}/assign/{order_id}:
+  /courier/delivery/{courier_id}/assign/{order_id}:
     put:
       summary: Assign a specific order to a courier
       tags:
@@ -139,7 +139,7 @@ paths:
         '404':
           description: Some resources were not found
 
-  /delivery/courier/{courier_id}/assign-any-order:
+  /courier/delivery/{courier_id}/assign-any-order:
     put:
       summary: Assign any available order to a courier
       tags:
@@ -613,7 +613,7 @@ paths:
         '500':
           description: There was a problem with the server
 
-  /delivery/analytics/courier/{courier_id}/efficiency:
+  /analytics/courier/{courier_id}/efficiency:
     parameters:
       - name: courier_id
         in: path
@@ -650,7 +650,7 @@ paths:
           description: Courier not found
         '500':
           description: There was a problem with the server
-  /delivery/analytics/courier/{courier_id}/deliveries-per-day:
+  /analytics/courier/{courier_id}/deliveries-per-day:
     parameters:
       - name: courier_id
         in: path
@@ -687,7 +687,7 @@ paths:
           description: Courier not found
         '500':
           description: There was a problem with the server
-  /delivery/analytics/courier/{courier_id}/successful-deliveries:
+  /analytics/courier/{courier_id}/successful-deliveries:
     parameters:
       - name: courier_id
         in: path
@@ -724,7 +724,7 @@ paths:
           description: Courier not found
         '500':
           description: There was a problem with the server
-  /delivery/analytics/courier/{courier_id}/courier-issues:
+  /analytics/courier/{courier_id}/courier-issues:
     parameters:
       - name: courier_id
         in: path
@@ -763,7 +763,7 @@ paths:
           description: Courier not found
         '500':
           description: There was a problem with the server
-  /delivery/analytics/vendor/{vendor_id}/vendor-average:
+  /analytics/vendor/{vendor_id}/vendor-average:
     parameters:
       - name: vendor_id
         in: path
@@ -801,7 +801,7 @@ paths:
         '500':
           description: There was a problem with the server
 
-  /delivery/analytics/order/{order_id}/rating:
+  /analytics/order/{order_id}/rating:
     parameters:
       - name: order_id
         in: path
@@ -931,7 +931,7 @@ paths:
         '500':
           description: There was a problem with the server
 
-  /delivery/vendor/{vendor_id}/assign/{courier_id}:
+  /vendor/delivery/{vendor_id}/assign/{courier_id}:
     parameters:
       - name: vendor_id
         in: path
@@ -1001,7 +1001,7 @@ paths:
               example:
                 error: Internal Server Error
                 message: An unexpected error occurred while processing the request
-  /delivery/vendor/{vendor_id}/couriers:
+  /vendor/delivery/{vendor_id}/couriers:
     parameters:
       - name: vendor_id
         in: path
@@ -1072,7 +1072,7 @@ paths:
                 message: An unexpected error occurred while processing the request
 
 
-  /delivery/vendor/{vendor_id}/delivery-zone:
+  /vendor/delivery/{vendor_id}/delivery-zone:
     parameters:
       - name: vendor_id
         in: path
@@ -1165,7 +1165,7 @@ paths:
 
 
 
-  /delivery/vendor/{vendor_id}/vendor-address:
+  /vendor/delivery/{vendor_id}/vendor-address:
     parameters:
       - name: vendor_id
         in: path
