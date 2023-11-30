@@ -141,7 +141,7 @@ paths:
         '404':
           description: Some resources were not found
 
-  /delivery/courier/{courier_id}/any-order:
+  /delivery/courier/{courier_id}/assign-any-order:
     put:
       summary: Assign any available order to a courier
       tags:
@@ -225,7 +225,7 @@ paths:
         '403':
           description: Forbidden access
 
-  /delivery/{order_id}/status:
+  /delivery/order/{order_id}/status:
     parameters:
       - name: order_id
         in: path
@@ -279,7 +279,7 @@ paths:
           description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
-  /delivery/{order_id}/eta:
+  /delivery/order/{order_id}/eta:
     parameters:
       - name: order_id
         in: path
@@ -335,7 +335,7 @@ paths:
           description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
-  /delivery/{order_id}/ready-time:
+  /delivery/order/{order_id}/ready-time:
     parameters:
       - name: order_id
         in: path
@@ -393,7 +393,7 @@ paths:
           description: Forbidden access
         '500':
           description: There was a problem with the server
-  /delivery/{order_id}/tod:
+  /delivery/order/{order_id}/tod:
     parameters:
       - name: order_id
         in: path
@@ -452,7 +452,7 @@ paths:
           description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
-  /delivery/{order_id}/pickup-time:
+  /delivery/order/{order_id}/pickup-time:
     parameters:
       - name: order_id
         in: path
@@ -513,7 +513,7 @@ paths:
           description: Order not found
         '500':
           description: There was a problem with the server
-  /delivery/{order_id}/courier:
+  /delivery/order/{order_id}/courier:
     parameters:
       - name: order_id
         in: path
@@ -542,6 +542,8 @@ paths:
               schema:
                 type: integer
                 example: 74
+        '204':
+          description: No courier assigned to this order
         '400':
           description: Bad request if the order ID is invalid
         '403':
@@ -1058,6 +1060,11 @@ paths:
                     # ... courier properties
                     # ... other order properties
         '400':
+          description: Bad request if the Vendor ID is invalid
+        '403':
+          description: Forbidden access
+        '404':
+          description: Vendor not found
         '500':
           description: Internal Server Error
           content:
