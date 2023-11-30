@@ -58,120 +58,120 @@ paths:
           description: Courier not found
 
   /delivery/courier/{courier_id}/orders:
-      get:
-        summary: Get orders assigned to a courier
-        tags:
-          - Courier
-        description: Retrieve a set of order IDs that are currently assigned to a courier.
-        parameters:
-          - name: courier_id
-            in: path
-            required: true
-            schema:
-              type: integer
-              format: int64
-              example: 1
-            description: Unique identifier of the courier
-          - name: authorizationId
-            in: header
-            required: true
-            schema:
-              type: integer
-              example: 20
-            description: Identification of the user who is making the request
-        responses:
-          '200':
-            description: A list of assigned order IDs
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
-                    description: Unique identifier of an order
-                examples:
-                  assignedOrders:
-                    summary: Example of assigned order IDs
-                    value: [ 201, 202, 203 ]
-          '400':
-            description: Bad request if the courier ID is not valid
-          '403':
-            description: Forbidden access
-          '404':
-            description: Resources could not be found
+    get:
+      summary: Get orders assigned to a courier
+      tags:
+        - Courier
+      description: Retrieve a set of order IDs that are currently assigned to a courier.
+      parameters:
+        - name: courier_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 1
+          description: Unique identifier of the courier
+        - name: authorizationId
+          in: header
+          required: true
+          schema:
+            type: integer
+            example: 20
+          description: Identification of the user who is making the request
+      responses:
+        '200':
+          description: A list of assigned order IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                  description: Unique identifier of an order
+              examples:
+                assignedOrders:
+                  summary: Example of assigned order IDs
+                  value: [ 201, 202, 203 ]
+        '400':
+          description: Bad request if the courier ID is not valid
+        '403':
+          description: Forbidden access
+        '404':
+          description: Resources could not be found
 
   /delivery/courier/{courier_id}/assign/{order_id}:
     put:
-        summary: Assign a specific order to a courier
-        tags:
-          - Courier
-        description: Assign an order to a courier by specifying the order ID in the path.
-        parameters:
-          - name: courier_id
-            in: path
-            required: true
-            schema:
-              type: integer
-              format: int64
-              example: 10
-            description: Unique identifier of the courier
-          - name: order_id
-            in: path
-            required: true
-            schema:
-              type: integer
-              format: int64
-              example: 1
-            description: Unique identifier of the order to assign
-          - name: authorizationId
-            in: header
-            required: true
-            schema:
-              type: integer
-              example: 1
-            description: Identification of the user who is making the request
-        responses:
-          '200':
-            description: Order successfully assigned to the courier
-          '400':
-            description: Bad request if the courier ID or order ID is not valid
-          '403':
-            description: Forbidden access
-          '404':
-            description: Some resources were not found
+      summary: Assign a specific order to a courier
+      tags:
+        - Courier
+      description: Assign an order to a courier by specifying the order ID in the path.
+      parameters:
+        - name: courier_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 10
+          description: Unique identifier of the courier
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 1
+          description: Unique identifier of the order to assign
+        - name: authorizationId
+          in: header
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: Identification of the user who is making the request
+      responses:
+        '200':
+          description: Order successfully assigned to the courier
+        '400':
+          description: Bad request if the courier ID or order ID is not valid
+        '403':
+          description: Forbidden access
+        '404':
+          description: Some resources were not found
 
   /delivery/courier/{courier_id}/any-order:
-      put:
-        summary: Assign any available order to a courier
-        tags:
-          - Courier
-        description: Automatically assigns an available order to the courier.
-        parameters:
-          - name: courier_id
-            in: path
-            required: true
-            schema:
-              type: integer
-              format: int64
-              example: 10
-            description: Unique identifier of the courier
-          - name: authorizationId
-            in: header
-            required: true
-            schema:
-              type: integer
-              example: 1
-            description: Identification of the user who is making the request
-        responses:
-          '200':
-            description: An available order has been successfully assigned to the courier.
-          '400':
-            description: Bad request if the courier ID is invalid
-          '403':
-            description: Forbidden access
-          '404':
-            description: Some resources could not be found
+    put:
+      summary: Assign any available order to a courier
+      tags:
+        - Courier
+      description: Automatically assigns an available order to the courier.
+      parameters:
+        - name: courier_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 10
+          description: Unique identifier of the courier
+        - name: authorizationId
+          in: header
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: Identification of the user who is making the request
+      responses:
+        '200':
+          description: An available order has been successfully assigned to the courier.
+        '400':
+          description: Bad request if the courier ID is invalid
+        '403':
+          description: Forbidden access
+        '404':
+          description: Some resources could not be found
 
   /delivery:
     parameters:
@@ -255,11 +255,11 @@ paths:
                 type: string
                 example: "Preparing"
         '400':
-          description: There was a problem with the request
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Resource not found
+          description: Order not found
     put:
       summary: Change order status
       tags:
@@ -276,7 +276,7 @@ paths:
         '200':
           description: Successful Request
         '400':
-          description: There was a problem with the request
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
   /delivery/{order_id}/eta:
@@ -310,11 +310,11 @@ paths:
                 format: date-time
                 example: 2023-07-16T19:20:30
         '400':
-          description: There was a problem with the request
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Resource not found
+          description: Order not found
     put:
       summary: Change order ETA
       tags:
@@ -332,7 +332,7 @@ paths:
         '200':
           description: Successful Request
         '400':
-          description: There was a problem with the request
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
   /delivery/{order_id}/ready-time:
@@ -366,11 +366,11 @@ paths:
                 format: date-time
                 example: 2023-07-16T19:20:30
         '400':
-          description: There was a problem with the request
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Resource not found
+          description: Order not found
     put:
       summary: Change order ready-time
       tags:
@@ -388,7 +388,7 @@ paths:
         '200':
           description: Successful Request
         '400':
-          description: There was a problem with the request
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
         '500':
@@ -424,11 +424,11 @@ paths:
                 format: date-time
                 example: 2023-07-16T19:51:34
         '400':
-          description: There was a problem with the request
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Resource not found
+          description: Order not found
         '500':
           description: There was a problem with the server
     put:
@@ -449,7 +449,7 @@ paths:
         '200':
           description: successful
         '400':
-          description: There was a problem with the request
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
   /delivery/{order_id}/pickup-time:
@@ -483,11 +483,11 @@ paths:
                 format: date-time
                 example: 2023-07-16T19:51:34
         '400':
-          description: There was a problem with the request
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Resource not found
+          description: Order not found
     put:
       summary:  Put order pickup time
       tags:
@@ -499,18 +499,18 @@ paths:
         content:
           application/json:
             schema:
-                type: string
-                format: date-time
-                example: 2023-07-16T19:51:34
+              type: string
+              format: date-time
+              example: 2023-07-16T19:51:34
       responses:
         '200':
           description: successful
         '400':
-          description: There was a problem with the request
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Server not found
+          description: Order not found
         '500':
           description: There was a problem with the server
   /delivery/{order_id}/courier:
@@ -543,11 +543,11 @@ paths:
                 type: integer
                 example: 74
         '400':
-          description: There was a problem with the request
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Resource not found
+          description: Order not found
         '500':
           description: There was a problem with the server
 
@@ -584,11 +584,11 @@ paths:
         '200':
           description: successful
         '400':
-          description: There was a problem with the request
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Server not found
+          description: Order not found
         '500':
           description: There was a problem with the server
 
@@ -605,11 +605,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Issue'
         '400':
-          description: There was a problem with the request
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Server not found
+          description: Order not found
         '500':
           description: There was a problem with the server
 
@@ -643,11 +643,11 @@ paths:
                 type: integer
                 example: "70"
         '400':
-          description: There was a problem with the request
+          description: Bad request if the courier ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Not found
+          description: Courier not found
         '500':
           description: There was a problem with the server
   /delivery/analytics/courier/{courier_id}/deliveries-per-day:
@@ -680,11 +680,11 @@ paths:
                 type: integer
                 example: "3"
         '400':
-          description: There was a problem with the request
+          description: Bad request if the courier ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Not found
+          description: Courier not found
         '500':
           description: There was a problem with the server
   /delivery/analytics/courier/{courier_id}/successful-deliveries:
@@ -717,11 +717,11 @@ paths:
                 type: integer
                 example: "53"
         '400':
-          description: There was a problem with the request
+          description: Bad request if the courier ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Not found
+          description: Courier not found
         '500':
           description: There was a problem with the server
   /delivery/analytics/courier/{courier_id}/courier-issues:
@@ -756,11 +756,11 @@ paths:
                   type: string
                 example: "traffic, accident"
         '400':
-          description: There was a problem with the request
+          description: Bad request if the courier ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Not found
+          description: Courier not found
         '500':
           description: There was a problem with the server
   /delivery/analytics/vendor/{vendor_id}/vendor-average:
@@ -793,11 +793,11 @@ paths:
                 type: integer
                 example: "2"
         '400':
-          description: There was a problem with the request
+          description: Bad request if the vendor ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Not found
+          description: Vendor not found
         '500':
           description: There was a problem with the server
 
@@ -832,11 +832,11 @@ paths:
         '200':
           description: successful
         '400':
-          description: There was a problem with the request
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Not found
+          description: Order not found
         '500':
           description: There was a problem with the server
     get:
@@ -852,11 +852,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Rating'
         '400':
-          description: There was a problem with the request
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Not found
+          description: Order not found
         '500':
           description: There was a problem with the server
   /delivery/{order_id}/location:
@@ -898,21 +898,11 @@ paths:
                 latitude: 37.7749
                 longitude: -122.4194
         '400':
-          description: Bad Request
-          content:
-            application/json:
-              example:
-                error: Bad Request
-                message: Invalid input parameter
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Not Found
-          content:
-            application/json:
-              example:
-                error: Not Found
-                message: Order or courier not found
+          description: Order not found
         '500':
           description: Internal Server Error
           content:
@@ -933,11 +923,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Location'
         '400':
-          description: There was a problem with the request
+          description: Bad request if the order ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Not found
+          description: Order not found
         '500':
           description: There was a problem with the server
 
@@ -999,21 +989,11 @@ paths:
                     # ... other delivery properties
                 # ... other courier properties
         '400':
-          description: Bad Request
-          content:
-            application/json:
-              example:
-                error: Bad Request
-                message: Invalid input parameter
+          description: Bad request if the order ID or courier ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Not Found
-          content:
-            application/json:
-              example:
-                error: Not Found
-                message: Order or courier not found
+          description: Order or Courier not found
         '500':
           description: Internal Server Error
           content:
@@ -1078,21 +1058,6 @@ paths:
                     # ... courier properties
                     # ... other order properties
         '400':
-          description: Bad Request
-          content:
-            application/json:
-              example:
-                error: Bad Request
-                message: Invalid input parameter
-        '403':
-          description: Forbidden access
-        '404':
-          description: Vendor Not Found
-          content:
-            application/json:
-              example:
-                error: Not Found
-                message: Vendor with ID {vendor_id} not found
         '500':
           description: Internal Server Error
           content:
@@ -1133,21 +1098,11 @@ paths:
                 type: integer
               example: 5
         '400':
-          description: Bad Request
-          content:
-            application/json:
-              example:
-                error: Bad Request
-                message: Invalid input parameter
+          description: Bad request if the Vendor ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Vendor Not Found
-          content:
-            application/json:
-              example:
-                error: Not Found
-                message: Vendor with ID {vendor_id} not found
+          description: Vendor not found
         '500':
           description: Internal Server Error
           content:
@@ -1190,21 +1145,11 @@ paths:
                       longitude: -122.4194
                     activeDelivery: null
         '400':
-          description: Bad Request
-          content:
-            application/json:
-              example:
-                error: Bad Request
-                message: Invalid delivery zone value
+          description: Bad request if the Vendor ID is invalid
         '403':
           description: Forbidden access
         '404':
-          description: Vendor Not Found
-          content:
-            application/json:
-              example:
-                error: Not Found
-                message: Vendor with ID {vendor_id} not found
+          description: Vendor not found
         '500':
           description: Internal Server Error
           content:
@@ -1247,20 +1192,12 @@ paths:
               example:
                 latitude: 37.7749
                 longitude: -122.4194
+        '400':
+          description: Bad request if the Vendor ID is invalid
         '403':
           description: Forbidden access
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              example:
-                error: "Invalid request. Please check your input."
         '404':
-          description: Resource not found
-          content:
-            application/json:
-              example:
-                error: "The specified vendor could not be found."
+          description: Vendor not found
 
 
 components:
