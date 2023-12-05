@@ -1,4 +1,3 @@
 rootProject.name = 'template'
 
-include 'authentication-microservice'
-include 'example-microservice'
+include 'delivery-microservice'

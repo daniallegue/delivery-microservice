@@ -1,0 +1,168 @@
+buildscript {
+	repositories {
+		mavenCentral()
+		mavenLocal()
+		//Needed only for SNAPSHOT versions
+		//maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+	}
+	dependencies {
+		classpath 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.5.2'
+		classpath "org.openapitools:openapi-generator-gradle-plugin:6.6.0"
+	}
+}
+
+plugins {
+	id 'org.springframework.boot' version '2.3.5.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+	id 'java'
+	// Test coverage
+	id 'jacoco'
+
+	// Code style
+	id 'checkstyle'
+
+	// PMD
+	id 'pmd'
+
+	// PITest
+	id 'info.solidsoft.pitest' version '1.5.2'
+
+	// OpenAPI
+	id 'org.openapi.generator' version '4.0.1'
+}
+
+group = 'nl.tudelft.cse.sem.template'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 15
+targetCompatibility = 15
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+
+	compileOnly 'org.projectlombok:lombok:1.18.24'
+	annotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// Local test database (in-memory)
+	implementation 'com.h2database:h2'
+	developmentOnly 'org.hibernate:hibernate-entitymanager'
+
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+	testImplementation('org.junit.jupiter:junit-jupiter:5.8.2')
+	testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.12.4'
+	testImplementation('org.assertj:assertj-core:3.23.1')
+
+	// Annotation
+	implementation 'io.springfox:springfox-swagger2:2.8.0'
+	implementation 'io.springfox:springfox-swagger-ui:2.8.0'
+	implementation 'org.openapitools:jackson-databind-nullable:0.1.0'
+	implementation 'io.swagger.core.v3:swagger-core:2.2.15'
+}
+
+test {
+	useJUnitPlatform()
+	jacoco {
+		enabled = true
+		includes = ['nl.tudelft.sem.template.*']
+		excludes = []
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+jacocoTestCoverageVerification() {
+	dependsOn test
+	violationRules {
+		rule {
+			enabled = true
+			element = 'CLASS'
+			includes = ['nl.tudelft.sem.template.*']
+
+			limit {
+				counter = 'BRANCH'
+				value = 'COVEREDRATIO'
+				minimum = 0.1
+			}
+		}
+	}
+}
+
+// Define a task to run Checkstyle
+task customCheckstyle(type: Checkstyle) {
+	// Set the Checkstyle configuration file
+	configFile = file("${rootDir}/config/checkstyle/checkstyle.xml") // Modify the path as needed
+
+	// Apply Checkstyle to the main source set while excluding generated code
+	source = sourceSets.main.allJava.filter { file ->
+		// Exclude directories or files associated with generated code
+		!file.path.contains('generated') // Example condition, modify as per your generated code path
+	}
+}
+
+checkstyle {
+	toolVersion "10.12.5"
+	// Link Checkstyle task to customCheckstyle
+	configFile = customCheckstyle.configFile
+	ignoreFailures = false // Set to true if you want the build to ignore Checkstyle failures
+	showViolations = true // Set to true to display Checkstyle violations in the console
+}
+
+pmd {
+	incrementalAnalysis = true
+	ignoreFailures = true
+	sourceSets = [sourceSets.main]
+	// Exclude specific rules or files/directories
+	pmdMain {
+		excludes = ['**/generated/.*']
+	}
+}
+
+apply plugin: 'info.solidsoft.pitest'
+pitest {
+	//adds dependency to org.pitest:pitest-junit5-plugin and sets "testPlugin" to "junit5"
+	junit5PluginVersion = '0.12'
+
+	targetClasses = ['nl.tudelft.sem.template.*']  //by default "${project.group}.*"
+	pitestVersion = '1.5.1' //not needed when a default PIT version should be used
+	threads = 4
+	outputFormats = ['XML', 'HTML']
+	timestampedReports = false
+}
+
+apply plugin: 'org.openapi.generator'
+openApiGenerate {
+	generatorName.set("spring")
+	inputSpec.set("$rootDir/delivery-microservice/src/main/resources/openAPI-delivery-specifications.yaml")
+	outputDir.set("$buildDir/generated")
+	apiPackage.set("nl.tudelft.sem.template.api")
+	modelPackage.set("nl.tudelft.sem.template.model")
+	configOptions.set([
+			dateLibrary: "java15"
+	])
+
+	// Exclude controller generation
+	configOptions = [
+			interfaceOnly: 'true'
+	]
+}
+
+compileJava.dependsOn tasks.named("openApiGenerate")
+
+sourceSets {
+	getByName("main") {
+		java {
+			srcDir("$buildDir/generated/src/main/java")
+		}
+	}
+}
