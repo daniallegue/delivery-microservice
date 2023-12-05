@@ -73,7 +73,7 @@ test {
 	jacoco {
 		enabled = true
 		includes = ['nl.tudelft.sem.template.*']
-		excludes = []
+		excludes = ['**/build/*']
 	}
 }
 
