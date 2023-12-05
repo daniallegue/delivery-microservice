@@ -39,6 +39,9 @@ targetCompatibility = 15
 repositories {
 	mavenCentral()
 }
+jacoco{
+	toolVersion = "0.8.7"
+}
 
 dependencies {
 
