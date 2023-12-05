@@ -18,7 +18,7 @@ variables:
       - .gradle/
     policy: pull
 
-build-example-microservice:
+build-delivery-microservice:
   extends:
     - .build_cached
   needs:
@@ -27,9 +27,9 @@ build-example-microservice:
     - gradle_build
   stage: build
   script:
-    gradle example-microservice:assemble example-microservice:testClasses
+    gradle delivery-microservice:assemble delivery-microservice:testClasses
 
-checkStyle-example-microservice:
+checkStyle-delivery-microservice:
   extends:
     - .build_cached
   needs:
@@ -38,11 +38,11 @@ checkStyle-example-microservice:
     - gradle_build
   stage: staticAnalysis
   script:
-    gradle example-microservice:checkstyleMain example-microservice:checkStyleTest
+    gradle delivery-microservice:checkstyleMain delivery-microservice:checkStyleTest
   allow_failure: true
 
 
-PMD-example-microservice:
+PMD-delivery-microservice:
   extends:
     - .build_cached
   needs:
@@ -51,10 +51,10 @@ PMD-example-microservice:
     - gradle_build
   stage: staticAnalysis
   script:
-    gradle example-microservice:pmdMain
+    gradle delivery-microservice:pmdMain
   allow_failure: true
 
-test-example-microservice:
+test-delivery-microservice:
   extends:
     - .build_cached
   needs:
@@ -63,7 +63,7 @@ test-example-microservice:
     - gradle_build
   stage: test
   script:
-    - gradle example-microservice:test example-microservice:jacocoTestReport
-    - cat example-microservice/build/reports/jacoco/test/html/index.html | grep -Po "Total.*?([0-9]{1,3})%"
+    - gradle delivery-microservice:test delivery-microservice:jacocoTestReport
+    - cat delivery-microservice/build/reports/jacoco/test/html/index.html | grep -Po "Total.*?([0-9]{1,3})%"
   coverage: /([0-9]{1,3})%/
 
