@@ -1275,10 +1275,11 @@ components:
           format: int64
           description: Identifier for the order of the delivery
           example: "3"
-        customer:
-          $ref: '#/components/schemas/Customer'
-        vendor:
-          $ref: '#/components/schemas/Vendor'
+          x-field-extra-annotation: "@javax.persistence.Id"
+        customer_id:
+          type: integer
+        vendor_id:
+          type: integer
         status:
           type: string
           enum:
@@ -1292,6 +1293,7 @@ components:
           example: "Preparing"
         destination:
           $ref: '#/components/schemas/Location'
+      x-class-extra-annotation: "@javax.persistence.Entity"
     Delivery:
       type: object
       properties:
@@ -1300,6 +1302,7 @@ components:
           format: uuid
           description: Unique identifier for the delivery
           example: "3"
+          x-field-extra-annotation: "@javax.persistence.Id"
         order:
           $ref: '#/components/schemas/Order'
         courier:
@@ -1310,6 +1313,7 @@ components:
           $ref: '#/components/schemas/Time'
         issue:
           $ref: '#/components/schemas/Issue'
+#      x-class-extra-annotation: "@javax.persistence.Entity"
 
     User:
       type: object
@@ -1319,10 +1323,12 @@ components:
           format: int64
           description: The id of the User
           example: "3"
+#          x-field-extra-annotation: "@javax.persistence.Id"
     Customer:
       allOf:
         - $ref: '#/components/schemas/User'
       type: object
+#      x-class-extra-annotation: "@javax.persistence.Entity"
     Vendor:
       allOf:
         - $ref: '#/components/schemas/User'
@@ -1339,6 +1345,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Courier'
+#      x-class-extra-annotation: "@javax.persistence.Entity"
     Courier:
       allOf:
         - $ref: '#/components/schemas/User'
@@ -1348,10 +1355,12 @@ components:
           $ref: '#/components/schemas/Location'
         activeDelivery:
           $ref: '#/components/schemas/Delivery'
+#      x-class-extra-annotation: "@javax.persistence.Entity"
     Admin:
       allOf:
         - $ref: '#/components/schemas/User'
       type: object
+#      x-class-extra-annotation: "@javax.persistence.Entity"
     Location:
       type: object
       properties:
