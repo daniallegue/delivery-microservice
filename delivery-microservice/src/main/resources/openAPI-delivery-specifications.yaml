@@ -1275,6 +1275,7 @@ components:
           format: int64
           description: Identifier for the order of the delivery
           example: "3"
+          x-field-extra-annotation: "@javax.persistence.Id"
         customer:
           $ref: '#/components/schemas/Customer'
         vendor:
@@ -1292,6 +1293,8 @@ components:
           example: "Preparing"
         destination:
           $ref: '#/components/schemas/Location'
+      x-class-extra-annotation: "@javax.persistence.Entity"
+      x-field-extra-annotation: "@javax.persistence.OneToOne(cascade = javax.persistence.CascadeType.ALL)"
     Delivery:
       type: object
       properties:
@@ -1300,17 +1303,19 @@ components:
           format: uuid
           description: Unique identifier for the delivery
           example: "3"
+          x-field-extra-annotation: "@javax.persistence.Id"
         order:
           $ref: '#/components/schemas/Order'
         courier:
           $ref: '#/components/schemas/Courier'
+          x-field-extra-annotation: "@javax.persistence.ManyToOne(cascade = javax.persistence.CascadeType.ALL)"
         rating:
           $ref: '#/components/schemas/Rating'
         time:
           $ref: '#/components/schemas/Time'
         issue:
           $ref: '#/components/schemas/Issue'
-
+      x-class-extra-annotation: "@javax.persistence.Entity"
     User:
       type: object
       properties:
@@ -1319,15 +1324,22 @@ components:
           format: int64
           description: The id of the User
           example: "3"
+          x-field-extra-annotation: "@javax.persistence.Id"
+      x-class-extra-annotation: "@javax.persistence.Entity"
     Customer:
       allOf:
         - $ref: '#/components/schemas/User'
       type: object
+      x-class-extra-annotation: "@javax.persistence.Entity"
+      x-field-extra-annotation: "@javax.persistence.OneToMany(cascade = javax.persistence.CascadeType.ALL)"
     Vendor:
       allOf:
         - $ref: '#/components/schemas/User'
       type: object
+      x-field-extra-annotation: "@javax.persistence.OneToMany(cascade = javax.persistence.CascadeType.ALL)"
       properties:
+        deliveryId:
+          type: integer
         deliveryZone:
           type: integer
           format: int64
@@ -1339,6 +1351,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Courier'
+      x-class-extra-annotation: "@javax.persistence.Entity"
     Courier:
       allOf:
         - $ref: '#/components/schemas/User'
@@ -1348,10 +1361,13 @@ components:
           $ref: '#/components/schemas/Location'
         activeDelivery:
           $ref: '#/components/schemas/Delivery'
+      x-class-extra-annotation: "@javax.persistence.Entity"
+      x-field-extra-annotation: "@javax.persistence.OneToMany(cascade = javax.persistence.CascadeType.ALL) @javax.persistence.JoinColumn(name = \"deliveryId\")"
     Admin:
       allOf:
         - $ref: '#/components/schemas/User'
       type: object
+      x-class-extra-annotation: "@javax.persistence.Entity"
     Location:
       type: object
       properties:
