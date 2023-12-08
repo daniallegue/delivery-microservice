@@ -966,7 +966,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Vendor'
+#                $ref: '#/components/schemas/Vendor'
+                type: integer
               example:
                 id: 123
                 customer:
@@ -1031,7 +1032,8 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Courier'
+#                  $ref: '#/components/schemas/Courier'
+                  type: integer
               example:
                 - currentLocation:
                     latitude: 37.7749
@@ -1197,7 +1199,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Vendor'
+                type: integer
               example:
                 id: 123
                 deliveryZone: 7
@@ -1270,14 +1272,15 @@ components:
     Order:
       type: object
       properties:
-        id:
+        orderId:
           type: integer
           format: int64
           description: Identifier for the order of the delivery
           example: "3"
           x-field-extra-annotation: "@javax.persistence.Id"
-        customer:
-          $ref: '#/components/schemas/Customer'
+        customerId:
+          type: integer
+          format: int64
         vendor:
           $ref: '#/components/schemas/Vendor'
         status:
@@ -1293,7 +1296,7 @@ components:
           example: "Preparing"
         destination:
           $ref: '#/components/schemas/Location'
-      x-class-extra-annotation: "@javax.persistence.Entity"
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"orders\")"
       x-field-extra-annotation: "@javax.persistence.OneToOne(cascade = javax.persistence.CascadeType.ALL)"
     Delivery:
       type: object
@@ -1306,18 +1309,28 @@ components:
           x-field-extra-annotation: "@javax.persistence.Id"
         order:
           $ref: '#/components/schemas/Order'
-        courier:
-          $ref: '#/components/schemas/Courier'
-          x-field-extra-annotation: "@javax.persistence.ManyToOne(cascade = javax.persistence.CascadeType.ALL)"
+        courier_id:
+          type: integer
         rating:
           $ref: '#/components/schemas/Rating'
         time:
           $ref: '#/components/schemas/Time'
         issue:
           $ref: '#/components/schemas/Issue'
-      x-class-extra-annotation: "@javax.persistence.Entity"
-    User:
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"deliveries\")"
+#    User:
+#      type: object
+#      properties:
+#        id:
+#          type: integer
+#          format: int64
+#          description: The id of the User
+#          example: "3"
+#          x-field-extra-annotation: "@javax.persistence.Id"
+#      x-class-extra-annotation: "@javax.persistence.Entity"
+    Vendor:
       type: object
+      x-field-extra-annotation: "@javax.persistence.ManyToOne(cascade = javax.persistence.CascadeType.ALL)"
       properties:
         id:
           type: integer
@@ -1325,21 +1338,6 @@ components:
           description: The id of the User
           example: "3"
           x-field-extra-annotation: "@javax.persistence.Id"
-      x-class-extra-annotation: "@javax.persistence.Entity"
-    Customer:
-      allOf:
-        - $ref: '#/components/schemas/User'
-      type: object
-      x-class-extra-annotation: "@javax.persistence.Entity"
-      x-field-extra-annotation: "@javax.persistence.OneToMany(cascade = javax.persistence.CascadeType.ALL)"
-    Vendor:
-      allOf:
-        - $ref: '#/components/schemas/User'
-      type: object
-      x-field-extra-annotation: "@javax.persistence.OneToMany(cascade = javax.persistence.CascadeType.ALL)"
-      properties:
-        deliveryId:
-          type: integer
         deliveryZone:
           type: integer
           format: int64
@@ -1350,26 +1348,26 @@ components:
         couriers:
           type: array
           items:
-            $ref: '#/components/schemas/Courier'
-      x-class-extra-annotation: "@javax.persistence.Entity"
-    Courier:
-      allOf:
-        - $ref: '#/components/schemas/User'
-      type: object
-      properties:
-        currentLocation:
-          $ref: '#/components/schemas/Location'
-        activeDelivery:
-          $ref: '#/components/schemas/Delivery'
-      x-class-extra-annotation: "@javax.persistence.Entity"
-      x-field-extra-annotation: "@javax.persistence.OneToMany(cascade = javax.persistence.CascadeType.ALL) @javax.persistence.JoinColumn(name = \"deliveryId\")"
-    Admin:
-      allOf:
-        - $ref: '#/components/schemas/User'
-      type: object
-      x-class-extra-annotation: "@javax.persistence.Entity"
+            type: integer
+            format: int64
+            description: the list of courier ids
+          x-field-extra-annotation: "@javax.persistence.ElementCollection"
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"vendors\")"
+#    Courier:
+#      allOf:
+#        - $ref: '#/components/schemas/User'
+#      type: object
+#      properties:
+#        currentLocation:
+#          $ref: '#/components/schemas/Location'
+#        activeDelivery:
+#          $ref: '#/components/schemas/Delivery'
+#      x-class-extra-annotation: "@javax.persistence.Entity"
+
     Location:
       type: object
+      x-field-extra-annotation: "@javax.persistence.Embedded"
+      x-class-extra-annotation: "@javax.persistence.Embeddable"
       properties:
         latitude:
           type: number
@@ -1383,6 +1381,8 @@ components:
           example: 104.238381
     Time:
       type: object
+      x-field-extra-annotation: "@javax.persistence.Embedded"
+      x-class-extra-annotation: "@javax.persistence.Embeddable"
       properties:
         pickUpTime:
           type: string
@@ -1401,15 +1401,19 @@ components:
           description: The time when an order was delivered
     Issue:
       type: object
+      x-field-extra-annotation: "@javax.persistence.Embedded"
+      x-class-extra-annotation: "@javax.persistence.Embeddable"
       properties:
         typeOfIssue:
           type: string
           example: "accident"
-        comment:
+        description:
           type: string
           example: "I got into an accident while delivering"
     Rating:
       type: object
+      x-field-extra-annotation: "@javax.persistence.Embedded"
+      x-class-extra-annotation: "@javax.persistence.Embeddable"
       properties:
         grade:
           type: integer
