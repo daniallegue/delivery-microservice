@@ -966,8 +966,7 @@ paths:
           content:
             application/json:
               schema:
-#                $ref: '#/components/schemas/Vendor'
-                type: integer
+                $ref: '#/components/schemas/Vendor'
               example:
                 id: 123
                 customer:
@@ -1032,33 +1031,13 @@ paths:
               schema:
                 type: array
                 items:
-#                  $ref: '#/components/schemas/Courier'
                   type: integer
+                  format: int64
+                  description: ids of couriers
               example:
-                - currentLocation:
-                    latitude: 37.7749
-                    longitude: -122.4194
-                  activeDelivery: null
-                - currentLocation:
-                    latitude: 37.7896
-                    longitude: -122.3906
-                  activeDelivery:
-                    id: 456
-                    order:
-                      id: 789
-                      customer:
-                        id: 987
-                        # ... other customer properties
-                      vendor:
-                        id: 654
-                        # ... other vendor properties
-                      status: "asc"
-                      destination:
-                        latitude: 37.7749
-                        longitude: -122.4194
-                    courier:
-                    # ... courier properties
-                    # ... other order properties
+                - 5
+                - 7
+                - 9
         '400':
           description: Bad request if the Vendor ID is invalid
         '403':
@@ -1199,7 +1178,7 @@ paths:
           content:
             application/json:
               schema:
-                type: integer
+                $ref: '#/components/schemas/Vendor'
               example:
                 id: 123
                 deliveryZone: 7
@@ -1296,7 +1275,7 @@ components:
           example: "Preparing"
         destination:
           $ref: '#/components/schemas/Location'
-      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"orders\")"
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"orders\") @lombok.Builder @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
       x-field-extra-annotation: "@javax.persistence.OneToOne(cascade = javax.persistence.CascadeType.ALL)"
     Delivery:
       type: object
@@ -1317,17 +1296,7 @@ components:
           $ref: '#/components/schemas/Time'
         issue:
           $ref: '#/components/schemas/Issue'
-      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"deliveries\")"
-#    User:
-#      type: object
-#      properties:
-#        id:
-#          type: integer
-#          format: int64
-#          description: The id of the User
-#          example: "3"
-#          x-field-extra-annotation: "@javax.persistence.Id"
-#      x-class-extra-annotation: "@javax.persistence.Entity"
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"deliveries\") @lombok.Builder @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
     Vendor:
       type: object
       x-field-extra-annotation: "@javax.persistence.ManyToOne(cascade = javax.persistence.CascadeType.ALL)"
@@ -1352,22 +1321,12 @@ components:
             format: int64
             description: the list of courier ids
           x-field-extra-annotation: "@javax.persistence.ElementCollection"
-      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"vendors\")"
-#    Courier:
-#      allOf:
-#        - $ref: '#/components/schemas/User'
-#      type: object
-#      properties:
-#        currentLocation:
-#          $ref: '#/components/schemas/Location'
-#        activeDelivery:
-#          $ref: '#/components/schemas/Delivery'
-#      x-class-extra-annotation: "@javax.persistence.Entity"
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"vendors\") @lombok.Builder @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
 
     Location:
       type: object
       x-field-extra-annotation: "@javax.persistence.Embedded"
-      x-class-extra-annotation: "@javax.persistence.Embeddable"
+      x-class-extra-annotation: "@javax.persistence.Embeddable @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
       properties:
         latitude:
           type: number
@@ -1382,7 +1341,7 @@ components:
     Time:
       type: object
       x-field-extra-annotation: "@javax.persistence.Embedded"
-      x-class-extra-annotation: "@javax.persistence.Embeddable"
+      x-class-extra-annotation: "@javax.persistence.Embeddable @lombok.Builder @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
       properties:
         pickUpTime:
           type: string
@@ -1402,7 +1361,7 @@ components:
     Issue:
       type: object
       x-field-extra-annotation: "@javax.persistence.Embedded"
-      x-class-extra-annotation: "@javax.persistence.Embeddable"
+      x-class-extra-annotation: "@javax.persistence.Embeddable @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
       properties:
         typeOfIssue:
           type: string
@@ -1413,7 +1372,7 @@ components:
     Rating:
       type: object
       x-field-extra-annotation: "@javax.persistence.Embedded"
-      x-class-extra-annotation: "@javax.persistence.Embeddable"
+      x-class-extra-annotation: "@javax.persistence.Embeddable @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
       properties:
         grade:
           type: integer

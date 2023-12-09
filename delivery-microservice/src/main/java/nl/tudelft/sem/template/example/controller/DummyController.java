@@ -29,22 +29,22 @@ public class DummyController implements DeliveryApi {
 
     @Override
     public ResponseEntity<String> deliveryOrderOrderIdStatusGet(@PathVariable("order_id") Integer orderId, @RequestHeader(value = "authorizationId") Integer authorizationId) {
-        Order o = new Order();
-        o.setOrderId(Long.valueOf(orderId));
-        o.setStatus(Order.StatusEnum.PENDING);
-        Vendor vendor = new Vendor();
-        vendor.setId(3L);
-        Location location = new Location();
-        location.setLatitude(3.0);
-        location.setLongitude(4.0);
-        vendor.setAddress(location);
-        vendor.setCouriers(new ArrayList<>());
-        vendor.setDeliveryZone(9L);
-        o.setCustomerId(4L);
-        o.setVendor(vendor);
-        o.setDestination(location);
-        or.save(o);
-        return ResponseEntity.ok(o.getStatus().toString());
+        Location location = new Location(3.0,4.0);
+        Vendor vendor = Vendor.builder()
+                .id(3L)
+                .couriers(new ArrayList<>())
+                .address(location)
+                .deliveryZone(9L)
+                .build();
+        Order order = Order.builder()
+                .orderId(Long.valueOf(orderId))
+                .status(Order.StatusEnum.PENDING)
+                .vendor(vendor)
+                .destination(location)
+                .customerId(5L)
+                .build();
+        or.save(order);
+        return ResponseEntity.ok(order.getStatus().toString());
     }
 
     @GetMapping("/delivery/order/id/{order_id}")
