@@ -1290,6 +1290,7 @@ components:
           $ref: '#/components/schemas/Order'
         courier_id:
           type: integer
+          description: the id of the Courier assigned to the delivery
         rating:
           $ref: '#/components/schemas/Rating'
         time:
