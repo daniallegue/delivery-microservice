@@ -1275,7 +1275,7 @@ components:
           example: "Preparing"
         destination:
           $ref: '#/components/schemas/Location'
-      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"orders\") @lombok.Builder @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"orders\") @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
       x-field-extra-annotation: "@javax.persistence.OneToOne(cascade = javax.persistence.CascadeType.ALL)"
     Delivery:
       type: object
@@ -1297,7 +1297,7 @@ components:
           $ref: '#/components/schemas/Time'
         issue:
           $ref: '#/components/schemas/Issue'
-      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"deliveries\") @lombok.Builder @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"deliveries\") @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
     Vendor:
       type: object
       x-field-extra-annotation: "@javax.persistence.ManyToOne(cascade = javax.persistence.CascadeType.ALL)"
@@ -1322,7 +1322,7 @@ components:
             format: int64
             description: the list of courier ids
           x-field-extra-annotation: "@javax.persistence.ElementCollection"
-      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"vendors\") @lombok.Builder @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"vendors\") @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
 
     Location:
       type: object
@@ -1342,7 +1342,7 @@ components:
     Time:
       type: object
       x-field-extra-annotation: "@javax.persistence.Embedded"
-      x-class-extra-annotation: "@javax.persistence.Embeddable @lombok.Builder @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
+      x-class-extra-annotation: "@javax.persistence.Embeddable @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
       properties:
         pickUpTime:
           type: string

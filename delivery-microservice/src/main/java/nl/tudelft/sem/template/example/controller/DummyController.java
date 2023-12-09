@@ -30,25 +30,15 @@ public class DummyController implements DeliveryApi {
     @Override
     public ResponseEntity<String> deliveryOrderOrderIdStatusGet(@PathVariable("order_id") Integer orderId, @RequestHeader(value = "authorizationId") Integer authorizationId) {
         Location location = new Location(3.0,4.0);
-        Vendor vendor = Vendor.builder()
-                .id(3L)
-                .couriers(new ArrayList<>())
-                .address(location)
-                .deliveryZone(9L)
-                .build();
-        Order order = Order.builder()
-                .orderId(Long.valueOf(orderId))
-                .status(Order.StatusEnum.PENDING)
-                .vendor(vendor)
-                .destination(location)
-                .customerId(5L)
-                .build();
+        Vendor vendor = new Vendor(3L, 9L, location, new ArrayList<>());
+        Order order = new Order(Long.valueOf(orderId), 5L, vendor, Order.StatusEnum.PENDING,  location);
         or.save(order);
         return ResponseEntity.ok(order.getStatus().toString());
     }
 
     @GetMapping("/delivery/order/id/{order_id}")
     public ResponseEntity<Order> getOrderByIdd(@PathVariable("order_id") Integer orderId, @RequestHeader(value = "authorizationId") Integer authorizationId) {
+        Order order = or.findOrderByOrderId(Long.valueOf(orderId));
         return ResponseEntity.ok(or.findOrderByOrderId(Long.valueOf(orderId)));
     }
 
