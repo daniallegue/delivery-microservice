@@ -1022,7 +1022,7 @@ paths:
       tags:
         - Vendor
       description: |
-        Retrieves all couriers assigned to the vendor with the specified ID.
+        Retrieves the ids of all couriers assigned to the vendor with the specified ID.
       responses:
         '200':
           description: Couriers retrieved successfully.
@@ -1031,32 +1031,13 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Courier'
+                  type: integer
+                  format: int64
+                  description: the list of the ids of couriers assigned to the vendor
               example:
-                - currentLocation:
-                    latitude: 37.7749
-                    longitude: -122.4194
-                  activeDelivery: null
-                - currentLocation:
-                    latitude: 37.7896
-                    longitude: -122.3906
-                  activeDelivery:
-                    id: 456
-                    order:
-                      id: 789
-                      customer:
-                        id: 987
-                        # ... other customer properties
-                      vendor:
-                        id: 654
-                        # ... other vendor properties
-                      status: "asc"
-                      destination:
-                        latitude: 37.7749
-                        longitude: -122.4194
-                    courier:
-                    # ... courier properties
-                    # ... other order properties
+                - 5
+                - 7
+                - 9
         '400':
           description: Bad request if the Vendor ID is invalid
         '403':
@@ -1204,11 +1185,8 @@ paths:
                 address:
                   latitude: 37.7749
                   longitude: -122.4194
-                couriers:
-                  - currentLocation:
-                      latitude: 37.7749
-                      longitude: -122.4194
-                    activeDelivery: null
+                couriers: []
+
         '400':
           description: Bad request if the Vendor ID is invalid
         '403':
@@ -1270,13 +1248,15 @@ components:
     Order:
       type: object
       properties:
-        id:
+        orderId:
           type: integer
           format: int64
           description: Identifier for the order of the delivery
           example: "3"
-        customer:
-          $ref: '#/components/schemas/Customer'
+          x-field-extra-annotation: "@javax.persistence.Id"
+        customerId:
+          type: integer
+          format: int64
         vendor:
           $ref: '#/components/schemas/Vendor'
         status:
@@ -1292,42 +1272,40 @@ components:
           example: "Preparing"
         destination:
           $ref: '#/components/schemas/Location'
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"orders\") @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
+      x-field-extra-annotation: "@javax.persistence.OneToOne(cascade = javax.persistence.CascadeType.ALL)"
     Delivery:
       type: object
       properties:
         id:
           type: integer
-          format: uuid
+          format: int64
           description: Unique identifier for the delivery
           example: "3"
+          x-field-extra-annotation: "@javax.persistence.Id @javax.persistence.GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)"
         order:
           $ref: '#/components/schemas/Order'
-        courier:
-          $ref: '#/components/schemas/Courier'
+        courier_id:
+          type: integer
+          format: int64
+          description: the id of the Courier assigned to the delivery
         rating:
           $ref: '#/components/schemas/Rating'
         time:
           $ref: '#/components/schemas/Time'
         issue:
           $ref: '#/components/schemas/Issue'
-
-    User:
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"deliveries\") @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
+    Vendor:
       type: object
+      x-field-extra-annotation: "@javax.persistence.ManyToOne(cascade = javax.persistence.CascadeType.ALL)"
       properties:
         id:
           type: integer
           format: int64
           description: The id of the User
           example: "3"
-    Customer:
-      allOf:
-        - $ref: '#/components/schemas/User'
-      type: object
-    Vendor:
-      allOf:
-        - $ref: '#/components/schemas/User'
-      type: object
-      properties:
+          x-field-extra-annotation: "@javax.persistence.Id"
         deliveryZone:
           type: integer
           format: int64
@@ -1338,22 +1316,16 @@ components:
         couriers:
           type: array
           items:
-            $ref: '#/components/schemas/Courier'
-    Courier:
-      allOf:
-        - $ref: '#/components/schemas/User'
-      type: object
-      properties:
-        currentLocation:
-          $ref: '#/components/schemas/Location'
-        activeDelivery:
-          $ref: '#/components/schemas/Delivery'
-    Admin:
-      allOf:
-        - $ref: '#/components/schemas/User'
-      type: object
+            type: integer
+            format: int64
+            description: the list of courier ids assigned to the vendor
+          x-field-extra-annotation: "@javax.persistence.ElementCollection"
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"vendors\") @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
+
     Location:
       type: object
+      x-field-extra-annotation: "@javax.persistence.Embedded"
+      x-class-extra-annotation: "@javax.persistence.Embeddable @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
       properties:
         latitude:
           type: number
@@ -1367,6 +1339,8 @@ components:
           example: 104.238381
     Time:
       type: object
+      x-field-extra-annotation: "@javax.persistence.Embedded"
+      x-class-extra-annotation: "@javax.persistence.Embeddable @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
       properties:
         pickUpTime:
           type: string
@@ -1385,15 +1359,19 @@ components:
           description: The time when an order was delivered
     Issue:
       type: object
+      x-field-extra-annotation: "@javax.persistence.Embedded"
+      x-class-extra-annotation: "@javax.persistence.Embeddable @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
       properties:
         typeOfIssue:
           type: string
           example: "accident"
-        comment:
+        description:
           type: string
           example: "I got into an accident while delivering"
     Rating:
       type: object
+      x-field-extra-annotation: "@javax.persistence.Embedded"
+      x-class-extra-annotation: "@javax.persistence.Embeddable @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
       properties:
         grade:
           type: integer
