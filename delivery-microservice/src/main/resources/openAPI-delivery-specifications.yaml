@@ -1022,7 +1022,7 @@ paths:
       tags:
         - Vendor
       description: |
-        Retrieves all couriers assigned to the vendor with the specified ID.
+        Retrieves the ids of all couriers assigned to the vendor with the specified ID.
       responses:
         '200':
           description: Couriers retrieved successfully.
@@ -1033,7 +1033,7 @@ paths:
                 items:
                   type: integer
                   format: int64
-                  description: ids of couriers
+                  description: the list of the ids of couriers assigned to the vendor
               example:
                 - 5
                 - 7
@@ -1185,11 +1185,8 @@ paths:
                 address:
                   latitude: 37.7749
                   longitude: -122.4194
-                couriers:
-                  - currentLocation:
-                      latitude: 37.7749
-                      longitude: -122.4194
-                    activeDelivery: null
+                couriers: []
+
         '400':
           description: Bad request if the Vendor ID is invalid
         '403':
@@ -1282,14 +1279,15 @@ components:
       properties:
         id:
           type: integer
-          format: uuid
+          format: int64
           description: Unique identifier for the delivery
           example: "3"
-          x-field-extra-annotation: "@javax.persistence.Id"
+          x-field-extra-annotation: "@javax.persistence.Id @javax.persistence.GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)"
         order:
           $ref: '#/components/schemas/Order'
         courier_id:
           type: integer
+          format: int64
           description: the id of the Courier assigned to the delivery
         rating:
           $ref: '#/components/schemas/Rating'
@@ -1320,7 +1318,7 @@ components:
           items:
             type: integer
             format: int64
-            description: the list of courier ids
+            description: the list of courier ids assigned to the vendor
           x-field-extra-annotation: "@javax.persistence.ElementCollection"
       x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"vendors\") @lombok.AllArgsConstructor @lombok.NoArgsConstructor"
 
