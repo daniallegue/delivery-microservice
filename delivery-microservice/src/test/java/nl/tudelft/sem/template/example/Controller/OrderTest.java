@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.example;
+package nl.tudelft.sem.template.example.Controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
