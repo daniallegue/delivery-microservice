@@ -28,6 +28,7 @@ gradle-app.setting
 
 ### IntelliJ IDEA ###
 .idea
+.run
 
 ### VS Code ###
 .vscode/
