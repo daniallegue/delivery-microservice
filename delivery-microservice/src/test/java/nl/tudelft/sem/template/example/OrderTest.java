@@ -61,7 +61,8 @@ public class OrderTest {
         status = orderController.deliveryOrderOrderIdStatusGet(4, 1).getBody();
         assertThat(status).isEqualTo("Preparing");
 
-        assertThat(orderController.deliveryOrderOrderIdStatusGet(5, 1).getBody()).isEqualTo("Order id not found");
+        assertThat(orderController.deliveryOrderOrderIdStatusGet(5, 1).getBody())
+                .isEqualTo("Order id not found");
     }
 
     @Test
@@ -71,6 +72,7 @@ public class OrderTest {
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
         assertThat(status).isEqualTo("Pending");
     }
+
     @Test
     void putOrderStatusPendingToAccepted() {
         String newStatus = "Accepted";
@@ -78,6 +80,7 @@ public class OrderTest {
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
         assertThat(status).isEqualTo("Accepted");
     }
+
     @Test
     void putOrderStatusPendingToRejected() {
         String newStatus = "Rejected";
@@ -85,6 +88,7 @@ public class OrderTest {
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
         assertThat(status).isEqualTo("Rejected");
     }
+
     @Test
     void putOrderStatusAcceptedToPreparingTest() {
         String newStatus = "Preparing";
@@ -92,6 +96,7 @@ public class OrderTest {
         String status = orderController.deliveryOrderOrderIdStatusGet(2, 1).getBody();
         assertThat(status).isEqualTo("Preparing");
     }
+
     @Test
     void putOrderStatusPendingToPreparingTest() {
         String newStatus = "Preparing";
@@ -99,6 +104,7 @@ public class OrderTest {
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
         assertThat(status).isEqualTo("Pending");
     }
+
     @Test
     void putOrderStatusRejectedToPreparingTest() {
         String newStatus = "Preparing";
@@ -106,6 +112,7 @@ public class OrderTest {
         String status = orderController.deliveryOrderOrderIdStatusGet(3, 1).getBody();
         assertThat(status).isEqualTo("Rejected");
     }
+
     @Test
     void putOrderStatusAcceptedToElseTest() {
         String newStatus = "Pending";
@@ -117,6 +124,5 @@ public class OrderTest {
     @Test
     void putOrderStatusWrongId() {
         assertThat(orderController.deliveryOrderOrderIdStatusPut(5, 1, "Accepted").getStatusCode()).isEqualTo(HttpStatus.valueOf(400));
-
     }
 }
