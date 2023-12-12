@@ -39,12 +39,12 @@ public class OrderTest {
         location = new Location(0.0,0.0);
         vendor = new Vendor(6L, Long.MIN_VALUE, location, new ArrayList<>());
         order = new Order(3L, 0L, vendor, Order.StatusEnum.REJECTED,  location);
-        Mockito.when(orderRepository.findById(3L)).thenReturn(Optional.of(order));;
+        Mockito.when(orderRepository.findById(3L)).thenReturn(Optional.of(order));
 
         location = new Location(Double.MAX_VALUE, Double.MAX_VALUE);
         vendor = new Vendor(1L, 11L, location, new ArrayList<>());
         order = new Order(4L, 5L, vendor, Order.StatusEnum.PREPARING,  location);
-        Mockito.when(orderRepository.findById(4L)).thenReturn(Optional.of(order));;
+        Mockito.when(orderRepository.findById(4L)).thenReturn(Optional.of(order));
     }
 
     @Test
