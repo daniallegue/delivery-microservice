@@ -1,19 +1,15 @@
 package nl.tudelft.sem.template.example.controller;
 
+import static nl.tudelft.sem.template.model.Order.StatusEnum;
 
 import nl.tudelft.sem.template.api.DeliveryApi;
 import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.service.OrderService;
-import nl.tudelft.sem.template.model.Location;
-import nl.tudelft.sem.template.model.Order;
-import nl.tudelft.sem.template.model.Vendor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class OrderController implements DeliveryApi {
@@ -21,6 +17,7 @@ public class OrderController implements DeliveryApi {
 
     /**
      * Simple constructor that handles dependency injection of the service.
+     *
      * @param orderService Instance of OrderService to handle the logic
      */
     @Autowired
@@ -29,8 +26,8 @@ public class OrderController implements DeliveryApi {
     }
 
     /**
-     * If user has necessary permissions, the order's status is changed
-     * to the string found in the body.
+     * If user has required permissions, the order's status is changed
+     * to the one found in the body.
      *
      * @path PUT: /delivery/order/{order_id}/status
      * @param orderId         Unique identifier of the order (required)
@@ -51,7 +48,7 @@ public class OrderController implements DeliveryApi {
     }
 
     /**
-     * Returns a text format of the order's string
+     * Returns a text format of the order's string.
      *
      * @path GET: /delivery/order/{order_id}/status
      * @param orderId         Unique identifier of the order (required)
@@ -62,7 +59,7 @@ public class OrderController implements DeliveryApi {
     public ResponseEntity<String> deliveryOrderOrderIdStatusGet(Integer orderId, Integer authorizationId) {
         //TODO(@mmadara): Handle authorization.
         try {
-            Order.StatusEnum status = orderService.getOrderStatus(orderId);
+            StatusEnum status = orderService.getOrderStatus(orderId);
             return ResponseEntity.ok(status.toString());
         } catch (OrderNotFoundException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

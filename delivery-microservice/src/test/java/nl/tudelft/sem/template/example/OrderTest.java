@@ -1,8 +1,8 @@
 package nl.tudelft.sem.template.example;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import nl.tudelft.sem.template.example.controller.OrderController;
-import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
-import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.example.service.OrderService;
 import nl.tudelft.sem.template.model.Location;
@@ -13,10 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

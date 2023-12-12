@@ -1,14 +1,14 @@
 package nl.tudelft.sem.template.example.service;
 
+import static nl.tudelft.sem.template.model.Order.StatusEnum;
+
+import java.util.Optional;
 import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.model.Order;
-import static nl.tudelft.sem.template.model.Order.StatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class OrderService {
@@ -48,10 +48,11 @@ public class OrderService {
      * @param orderId Unique identifier of the order (required)
      * @param orderStatusString String format of the new status
      * @throws IllegalOrderStatusException if status doesn't respect the flow
-     * or status string is not available.
+     *     or status string is not available.
      * @throws OrderNotFoundException if order was not found
      */
-    public void setOrderStatus(Integer orderId, String orderStatusString) throws IllegalOrderStatusException, OrderNotFoundException {
+    public void setOrderStatus(Integer orderId, String orderStatusString)
+            throws IllegalOrderStatusException, OrderNotFoundException {
         Optional<Order> orderOptional = orderRepository.findById(Long.valueOf(orderId));
         if (orderOptional.isEmpty()) {
             throw new OrderNotFoundException("Order id not found");
@@ -75,22 +76,25 @@ public class OrderService {
      * @param newStatus New status of an order
      * @throws IllegalOrderStatusException if status doesn't respect the flow
      */
-    private void assertStatusFlowIsCorrect(StatusEnum oldStatus, StatusEnum newStatus) throws IllegalOrderStatusException {
+    private void assertStatusFlowIsCorrect(StatusEnum oldStatus, StatusEnum newStatus)
+            throws IllegalOrderStatusException {
         switch (oldStatus) {
             case PENDING -> {
                 if (newStatus != StatusEnum.ACCEPTED && newStatus != StatusEnum.REJECTED) {
-                    throw new IllegalOrderStatusException("Error! Order status cant go from PENDING to " + newStatus.toString().toUpperCase() + ".");
+                    throw new IllegalOrderStatusException("Error! Order status cant go from PENDING to "
+                            + newStatus.toString().toUpperCase() + ".");
                 }
             }
             case REJECTED -> {
                 throw new IllegalOrderStatusException("Error! Order status can't change after being REJECTED");
             }
             case ACCEPTED -> {
-                if(newStatus != StatusEnum.PREPARING) {
-                    throw new IllegalOrderStatusException("Error! Order status can't change from ACCEPTED to " +
-                            newStatus.toString().toUpperCase() + ".");
+                if (newStatus != StatusEnum.PREPARING) {
+                    throw new IllegalOrderStatusException("Error! Order status can't change from ACCEPTED to "
+                            + newStatus.toString().toUpperCase() + ".");
                 }
             }
+            default -> { }
             //TODO(@rgherasa): Finish rest of the status flows (i.e. GivenToCourier, InTransit, Delivered).
         }
     }
