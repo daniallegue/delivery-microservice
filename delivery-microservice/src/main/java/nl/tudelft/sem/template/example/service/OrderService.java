@@ -113,8 +113,8 @@ public class OrderService {
                 }
             }
             case DELIVERED -> {
-                    throw new IllegalOrderStatusException("Error! Order status can't change from DELIVERED to "
-                            + newStatus.toString().toUpperCase() + ".");
+                throw new IllegalOrderStatusException("Error! Order status can't change from DELIVERED to "
+                        + newStatus.toString().toUpperCase() + ".");
             }
             default -> { }
         }
