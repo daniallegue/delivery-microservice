@@ -32,19 +32,19 @@ public class OrderController implements DeliveryApi {
      * @path PUT: /delivery/order/{order_id}/status
      * @param orderId         Unique identifier of the order (required)
      * @param authorizationId Identification of the user who is making the request (required)
-     * @param newStatus       (required) - New status of order.
-     * @return Response code.
+     * @param newStatus       (required) - New status of order
+     * @return Response code
      */
     @Override
     public ResponseEntity<Void> deliveryOrderOrderIdStatusPut(Integer orderId, Integer authorizationId, String newStatus) {
         //TODO(@mmadara): Handle authorization.
         try {
             orderService.setOrderStatus(orderId, newStatus);
+            return ResponseEntity.ok().build();
         } catch (OrderNotFoundException | IllegalOrderStatusException e) {
             //TODO: Decide what to do with error message.
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        return ResponseEntity.ok().build();
     }
 
     /**

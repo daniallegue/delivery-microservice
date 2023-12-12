@@ -29,8 +29,8 @@ public class OrderService {
      * Returns status of a given error.
      *
      * @param orderId Unique identifier of the order (required)
-     * @return StatusEnum containing the status of the order.
-     * @throws OrderNotFoundException if the order was not found.
+     * @return StatusEnum containing the status of the order
+     * @throws OrderNotFoundException if the order was not found
      */
     public Order.StatusEnum getOrderStatus(Integer orderId) throws OrderNotFoundException {
         Optional<Order> orderOptional = orderRepository.findById(Long.valueOf(orderId));
@@ -48,7 +48,7 @@ public class OrderService {
      * @param orderId Unique identifier of the order (required)
      * @param orderStatusString String format of the new status
      * @throws IllegalOrderStatusException if status doesn't respect the flow
-     *     or status string is not available.
+     *     or status string is not available
      * @throws OrderNotFoundException if order was not found
      */
     public void setOrderStatus(Integer orderId, String orderStatusString)
