@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Optional;
 
 public class OrderTest {
-    @Mock
     OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
     OrderService orderService = new OrderService(orderRepository);
     OrderController orderController = new OrderController(orderService);
