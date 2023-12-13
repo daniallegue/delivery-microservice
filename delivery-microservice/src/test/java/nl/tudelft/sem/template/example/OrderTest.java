@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Optional;
 
 public class OrderTest {
-    OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
-    OrderService orderService = new OrderService(orderRepository);
-    OrderController orderController = new OrderController(orderService);
-    
+    private final OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
+    private final OrderService orderService = new OrderService(orderRepository);
+    private final OrderController orderController = new OrderController(orderService);
+
     @BeforeEach
     void setup() {
         Location location = new Location(5.0,1.0);
