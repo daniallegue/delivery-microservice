@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.example.Service;
+package nl.tudelft.sem.template.example.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -10,35 +10,21 @@ import java.util.Optional;
 import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
-import nl.tudelft.sem.template.example.service.OrderService;
 import nl.tudelft.sem.template.model.Order;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-public class ServiceTest {
+public class OrderServiceTest {
 
-    @Mock
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
 
-    private OrderService orderService;
-
-    private AutoCloseable closeable;
-
-    @BeforeEach
-    public void setup() {
-        closeable = MockitoAnnotations.openMocks(this);
-        orderService = new OrderService(orderRepository);
-    }
-
-    @AfterEach
-    public void tearDown() throws Exception {
-        closeable.close();
-    }
+    private final OrderService orderService = new OrderService(orderRepository);
 
     @Test
     public void getOrderStatus_existingOrder_returnsStatus() throws OrderNotFoundException {

@@ -1,8 +1,7 @@
-package nl.tudelft.sem.template.example.Controller;
+package nl.tudelft.sem.template.example.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import nl.tudelft.sem.template.example.controller.OrderController;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.example.service.OrderService;
 import nl.tudelft.sem.template.model.Location;
