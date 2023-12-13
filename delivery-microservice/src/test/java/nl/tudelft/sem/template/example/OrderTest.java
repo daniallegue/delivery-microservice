@@ -21,8 +21,7 @@ public class OrderTest {
     OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
     OrderService orderService = new OrderService(orderRepository);
     OrderController orderController = new OrderController(orderService);
-    List<Order> orderList = new ArrayList<>();
-
+    
     @BeforeEach
     void setup() {
         Location location = new Location(5.0,1.0);
