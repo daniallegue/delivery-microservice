@@ -19,7 +19,9 @@ import java.util.Optional;
 
 public class OrderTest {
     private final OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
+
     private final OrderService orderService = new OrderService(orderRepository);
+
     private final OrderController orderController = new OrderController(orderService);
 
     @BeforeEach
@@ -122,7 +124,7 @@ public class OrderTest {
         String newStatus = "Pending";
         orderController.deliveryOrderOrderIdStatusPut(2, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(2, 1).getBody();
-        
+
         assertThat(status).isEqualTo("Accepted");
     }
 
