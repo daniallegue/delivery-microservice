@@ -68,6 +68,7 @@ public class OrderTest {
         String newStatus = "Pending";
         orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
+
         assertThat(status).isEqualTo("Pending");
     }
 
@@ -76,6 +77,7 @@ public class OrderTest {
         String newStatus = "Accepted";
         orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
+
         assertThat(status).isEqualTo("Accepted");
     }
 
@@ -84,6 +86,7 @@ public class OrderTest {
         String newStatus = "Rejected";
         orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
+
         assertThat(status).isEqualTo("Rejected");
     }
 
@@ -92,6 +95,7 @@ public class OrderTest {
         String newStatus = "Preparing";
         orderController.deliveryOrderOrderIdStatusPut(2, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(2, 1).getBody();
+
         assertThat(status).isEqualTo("Preparing");
     }
 
@@ -100,6 +104,7 @@ public class OrderTest {
         String newStatus = "Preparing";
         orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
+
         assertThat(status).isEqualTo("Pending");
     }
 
@@ -108,6 +113,7 @@ public class OrderTest {
         String newStatus = "Preparing";
         orderController.deliveryOrderOrderIdStatusPut(3, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(3, 1).getBody();
+
         assertThat(status).isEqualTo("Rejected");
     }
 
@@ -116,6 +122,7 @@ public class OrderTest {
         String newStatus = "Pending";
         orderController.deliveryOrderOrderIdStatusPut(2, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(2, 1).getBody();
+        
         assertThat(status).isEqualTo("Accepted");
     }
 
