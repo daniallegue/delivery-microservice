@@ -1,14 +1,15 @@
 package nl.tudelft.sem.template.example.service;
 
-import static nl.tudelft.sem.template.model.Order.StatusEnum;
-
-import java.util.Optional;
 import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.model.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+import static nl.tudelft.sem.template.model.Order.StatusEnum;
 
 @Service
 public class OrderService {
