@@ -30,8 +30,7 @@ public class DeliveryService {
      *
      * @param deliveryPostRequest The basic elements of a delivery object.
      * @return The delivery that was created.
-     * @throws VendorNotFoundException If there is a problem with the retrieval of the vendor
-     * (i.e. problem in the communication of the microservices), this exception is thrown.
+     * @throws VendorNotFoundException If the retrieval of vendor (i.e. problem in the communication of the microservices)
      */
     public Delivery createDelivery(DeliveryPostRequest deliveryPostRequest) throws Exception {
         Vendor vendor = vendorService.findVendorOrCreate(Long.valueOf(deliveryPostRequest.getVendorId()));
