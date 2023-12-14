@@ -29,6 +29,7 @@ plugins {
 
 	// OpenAPI
 	id 'org.openapi.generator' version '4.0.1'
+	id 'com.diffplug.spotless' version '5.14.0'
 }
 
 group = 'nl.tudelft.cse.sem.template'
@@ -45,6 +46,8 @@ jacoco{
 
 dependencies {
 
+	testImplementation 'junit:junit:4.13.1'
+	testImplementation 'junit:junit:4.13.1'
 	compileOnly 'org.projectlombok:lombok:1.18.24'
 	annotationProcessor 'org.projectlombok:lombok:1.18.24'
 
@@ -57,12 +60,15 @@ dependencies {
 	implementation 'com.h2database:h2'
 	developmentOnly 'org.hibernate:hibernate-entitymanager'
 
+	testImplementation "org.wiremock:wiremock:3.3.1"
+
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
 	testImplementation('org.junit.jupiter:junit-jupiter:5.8.2')
 	testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.12.4'
 	testImplementation('org.assertj:assertj-core:3.23.1')
+
 
 	// Annotation
 	implementation 'io.springfox:springfox-swagger2:2.8.0'
@@ -109,8 +115,9 @@ task customCheckstyle(type: Checkstyle) {
 	// Apply Checkstyle to the main source set while excluding generated code
 	source = sourceSets.main.allJava.filter { file ->
 		// Exclude directories or files associated with generated code
-		!file.path.contains('generated') // Example condition, modify as per your generated code path
+		!file.path.contains("${File.separator}generated${File.separator}")// Example condition, modify as per your generated code path
 	}
+	classpath = configurations.checkstyle
 }
 
 checkstyle {
@@ -127,7 +134,7 @@ pmd {
 	sourceSets = [sourceSets.main]
 	// Exclude specific rules or files/directories
 	pmdMain {
-		excludes = ['**/generated/.*']
+		excludes = ['**/generated/**']
 	}
 }
 
