@@ -17,11 +17,11 @@ import java.util.List;
 import java.util.Optional;
 
 public class OrderTest {
-    @Mock
-    OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
-    OrderService orderService = new OrderService(orderRepository);
-    OrderController orderController = new OrderController(orderService);
-    List<Order> orderList = new ArrayList<>();
+    private final OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
+
+    private final OrderService orderService = new OrderService(orderRepository);
+
+    private final OrderController orderController = new OrderController(orderService);
 
     @BeforeEach
     void setup() {
@@ -112,27 +112,34 @@ public class OrderTest {
         String newStatus = "Pending";
         orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
+
         assertThat(status).isEqualTo("Pending");
     }
+
     @Test
     void putOrderStatusPendingToAcceptedTest() {
         String newStatus = "Accepted";
         orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
+
         assertThat(status).isEqualTo("Accepted");
     }
+
     @Test
     void putOrderStatusPendingToRejectedTest() {
         String newStatus = "Rejected";
         orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
+
         assertThat(status).isEqualTo("Rejected");
     }
+
     @Test
     void putOrderStatusAcceptedToPreparingTest() {
         String newStatus = "Preparing";
         orderController.deliveryOrderOrderIdStatusPut(2, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(2, 1).getBody();
+
         assertThat(status).isEqualTo("Preparing");
     }
 
@@ -159,25 +166,31 @@ public class OrderTest {
         String status = orderController.deliveryOrderOrderIdStatusGet(6, 1).getBody();
         assertThat(status).isEqualTo("Delivered");
     }
+
     @Test
     void putOrderStatusPendingToPreparingTest() {
         String newStatus = "Preparing";
         orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
+
         assertThat(status).isEqualTo("Pending");
     }
+
     @Test
     void putOrderStatusRejectedToPreparingTest() {
         String newStatus = "Preparing";
         orderController.deliveryOrderOrderIdStatusPut(3, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(3, 1).getBody();
+
         assertThat(status).isEqualTo("Rejected");
     }
+
     @Test
     void putOrderStatusAcceptedToElseTest() {
         String newStatus = "Pending";
         orderController.deliveryOrderOrderIdStatusPut(2, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(2, 1).getBody();
+
         assertThat(status).isEqualTo("Accepted");
     }
 
@@ -214,5 +227,6 @@ public class OrderTest {
         orderController.deliveryOrderOrderIdStatusPut(7, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(7, 1).getBody();
         assertThat(status).isEqualTo("Delivered");
+        assertThat(orderController.deliveryOrderOrderIdStatusPut(5, 1, "Accepted").getStatusCode()).isEqualTo(HttpStatus.valueOf(400));
     }
 }
