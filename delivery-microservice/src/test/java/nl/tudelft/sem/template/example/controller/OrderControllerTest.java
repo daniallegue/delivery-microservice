@@ -9,14 +9,12 @@ import nl.tudelft.sem.template.model.Order;
 import nl.tudelft.sem.template.model.Vendor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
-public class OrderTest {
+public class OrderControllerTest {
     private final OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
 
     private final OrderService orderService = new OrderService(orderRepository);
