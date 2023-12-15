@@ -1,5 +1,7 @@
 package nl.tudelft.sem.template.example.service;
 
+import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
+import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.model.Delivery;
@@ -8,6 +10,7 @@ import nl.tudelft.sem.template.model.Vendor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -99,5 +102,37 @@ public class CourierService {
                 .collect(Collectors.toList());
 
     }
+
+    /**
+     * Assigns a courier to a random available order
+     *
+     * @param courierId
+     * @return returns orderId of order being assigned to
+     */
+    //NoAvailableOrderException
+    public Long assignCourierToRandomOrder(Long courierId) throws DeliveryNotFoundException {
+        List<Long> availableOrders = getAvailableOrderIds(courierId);
+        //TODO: Handle No Available orders
+        int idx = (int) Math.random() * availableOrders.size();
+        Long order = availableOrders.get(idx);
+
+        //Find delivery with required orderId
+        Delivery deliveryToUpdate = deliveryRepository.findAll()
+                .stream()
+                .filter(delivery -> delivery.getOrder().getOrderId() == order)
+                .collect(Collectors.toList()).get(0);
+
+        Optional<Delivery> deliveryOptional = deliveryRepository.findById(Long.valueOf(deliveryToUpdate.getId()));
+        if (deliveryOptional.isEmpty()) {
+            throw new DeliveryNotFoundException("Delivery id not found");
+        }
+        Delivery delivery = deliveryOptional.get();
+        delivery.setCourierId(courierId);
+        deliveryRepository.save(delivery);
+
+        return delivery.getId();
+
+    }
+
 
 }

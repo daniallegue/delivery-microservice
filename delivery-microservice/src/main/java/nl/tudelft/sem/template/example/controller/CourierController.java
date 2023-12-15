@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.controller;
 
 import nl.tudelft.sem.template.api.CourierApi;
+import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.service.CourierService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,17 @@ public class CourierController implements CourierApi {
 
         List<Long> availableOrderIds = courierService.getAvailableOrderIds(courierId);
         return ResponseEntity.ok(availableOrderIds);
+    }
 
+
+    @Override
+    public ResponseEntity<Void> courierDeliveryCourierIdAssignAnyOrderPut(Long courierId, Integer authorizationId)  {
+        try {
+            Long response = courierService.assignCourierToRandomOrder(courierId);
+        } catch (DeliveryNotFoundException e) {
+            //return ResponseEntity
+        }
+        return ResponseEntity.ok().build();
     }
 
 
