@@ -110,27 +110,26 @@ public class CourierService {
      * @return returns orderId of order being assigned to
      */
     //NoAvailableOrderException
-    public Long assignCourierToRandomOrder(Long courierId) throws DeliveryNotFoundException {
+    public void assignCourierToRandomOrder(Long courierId) throws DeliveryNotFoundException {
         List<Long> availableOrders = getAvailableOrderIds(courierId);
         //TODO: Handle No Available orders
+
         int idx = (int) Math.random() * availableOrders.size();
         Long order = availableOrders.get(idx);
 
         //Find delivery with required orderId
         Delivery deliveryToUpdate = deliveryRepository.findAll()
                 .stream()
-                .filter(delivery -> delivery.getOrder().getOrderId() == order)
+                .filter(delivery -> delivery.getOrder().getOrderId().equals(order))
                 .collect(Collectors.toList()).get(0);
 
-        Optional<Delivery> deliveryOptional = deliveryRepository.findById(Long.valueOf(deliveryToUpdate.getId()));
+        Optional<Delivery> deliveryOptional = deliveryRepository.findById((deliveryToUpdate.getId()));
         if (deliveryOptional.isEmpty()) {
             throw new DeliveryNotFoundException("Delivery id not found");
         }
         Delivery delivery = deliveryOptional.get();
         delivery.setCourierId(courierId);
         deliveryRepository.save(delivery);
-
-        return delivery.getId();
 
     }
 
