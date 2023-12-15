@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class OrderController implements DeliveryApi {
+public class DeliveryController implements DeliveryApi {
     OrderService orderService;
 
     /**
@@ -21,7 +21,7 @@ public class OrderController implements DeliveryApi {
      * @param orderService Instance of OrderService to handle the logic
      */
     @Autowired
-    public OrderController(OrderService orderService) {
+    public DeliveryController(OrderService orderService) {
         this.orderService = orderService;
     }
 

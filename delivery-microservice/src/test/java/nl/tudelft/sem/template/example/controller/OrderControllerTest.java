@@ -19,7 +19,7 @@ public class OrderControllerTest {
 
     private final OrderService orderService = new OrderService(orderRepository);
 
-    private final OrderController orderController = new OrderController(orderService);
+    private final DeliveryController orderController = new DeliveryController(orderService);
 
     @BeforeEach
     void setup() {
