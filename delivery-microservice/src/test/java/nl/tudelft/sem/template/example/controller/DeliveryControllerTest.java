@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.controller;
 import nl.tudelft.sem.template.example.exception.OrderAlreadyExistsException;
 import nl.tudelft.sem.template.example.service.DeliveryService;
+import nl.tudelft.sem.template.example.service.OrderService;
 import nl.tudelft.sem.template.model.Delivery;
 import nl.tudelft.sem.template.model.DeliveryPostRequest;
 import nl.tudelft.sem.template.model.Location;
@@ -17,6 +18,8 @@ public class DeliveryControllerTest {
 
 
     private DeliveryService deliveryService;
+
+    private OrderService orderService;
     private DeliveryController deliveryController;
 
     private DeliveryPostRequest dummyDeliveryPostRequest;
@@ -31,7 +34,8 @@ public class DeliveryControllerTest {
         dummyDeliveryPostRequest.setDestination(new Location(4.0, 5.0));
 
         deliveryService = Mockito.mock(DeliveryService.class);
-        deliveryController = new DeliveryController(deliveryService);
+        orderService = Mockito.mock(OrderService.class);
+        deliveryController = new DeliveryController(deliveryService, orderService);
     }
 
     @Test
