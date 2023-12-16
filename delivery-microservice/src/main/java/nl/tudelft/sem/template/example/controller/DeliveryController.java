@@ -1,5 +1,7 @@
 package nl.tudelft.sem.template.example.controller;
 
+import static nl.tudelft.sem.template.model.Order.StatusEnum;
+
 import nl.tudelft.sem.template.api.DeliveryApi;
 import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
@@ -13,8 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-
-import static nl.tudelft.sem.template.model.Order.StatusEnum;
 
 
 @RestController

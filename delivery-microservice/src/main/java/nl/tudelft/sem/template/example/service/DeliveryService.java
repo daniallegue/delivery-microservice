@@ -16,6 +16,14 @@ public class DeliveryService {
     VendorRepository vendorRepository;
     VendorService vendorService;
 
+    /**
+     * Constructor for the Delivery Service that allow dependency injection.
+     *
+     * @param deliveryRepository The repository where Delivery objects are saved in.
+     * @param orderRepository The repository where Order objects are saved in.
+     * @param vendorRepository The repository where Vendor objects are saved in.
+     * @param vendorService The service that handles the vendor interaction logic.
+     */
     @Autowired
     DeliveryService(DeliveryRepository deliveryRepository, OrderRepository orderRepository,
                     VendorRepository vendorRepository, VendorService vendorService) {
