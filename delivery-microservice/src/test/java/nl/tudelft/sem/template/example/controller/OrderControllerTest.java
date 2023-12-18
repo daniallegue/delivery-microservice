@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.example.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import nl.tudelft.sem.template.example.repository.OrderRepository;
+import nl.tudelft.sem.template.example.service.DeliveryService;
 import nl.tudelft.sem.template.example.service.OrderService;
 import nl.tudelft.sem.template.model.Location;
 import nl.tudelft.sem.template.model.Order;
@@ -19,7 +20,9 @@ public class OrderControllerTest {
 
     private final OrderService orderService = new OrderService(orderRepository);
 
-    private final DeliveryController orderController = new DeliveryController(orderService);
+    private final DeliveryService deliveryService = Mockito.mock(DeliveryService.class);
+
+    private final DeliveryController orderController = new DeliveryController(deliveryService, orderService);
 
     @BeforeEach
     void setup() {
