@@ -13,6 +13,12 @@ public class VendorService {
     VendorRepository vendorRepository;
     ConfigurationProperties configurationProperties;
 
+    /**
+     * Constructor for the Service allowing dependency injection.
+     *
+     * @param vendorRepository The JPA repository holding the Vendor entities.
+     * @param configurationProperties The configurations holding the delivery zone.
+     */
     @Autowired
     VendorService(VendorRepository vendorRepository, ConfigurationProperties configurationProperties) {
         this.vendorRepository = vendorRepository;
