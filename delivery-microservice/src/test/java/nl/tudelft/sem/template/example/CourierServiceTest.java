@@ -1,5 +1,7 @@
 package nl.tudelft.sem.template.example;
 
+import com.sun.nio.sctp.PeerAddressChangeNotification;
+import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.example.service.CourierService;
@@ -10,8 +12,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -20,6 +24,8 @@ public class CourierServiceTest {
 
     private final DeliveryRepository deliveryRepository = Mockito.mock(DeliveryRepository.class);
     private final VendorRepository vendorRepository = Mockito.mock(VendorRepository.class);
+
+    private final Random random = new Random(0);
     private final CourierService courierService = new CourierService(deliveryRepository, vendorRepository);
 
 
@@ -55,6 +61,7 @@ public class CourierServiceTest {
         delivery = new Delivery(2L, order, null, rating, time, issue);
         deliveryList.add(delivery);
         vendors.add(vendor);
+
 
         Mockito.when(deliveryRepository.findAll()).thenReturn(deliveryList);
         Mockito.when(vendorRepository.findAll()).thenReturn(vendors);
@@ -92,6 +99,23 @@ public class CourierServiceTest {
         assertThat(couriers).isEqualTo(List.of(2L, 3L));
 
     }
+
+
+    @Test
+    void assignCourierToRandomOrderTest() throws DeliveryNotFoundException {
+        List<Long> deliveries = courierService.getAvailableOrderIds(1L);
+        for(Long l : deliveries){
+            System.out.println(l);
+        }
+        courierService.assignCourierToRandomOrder(1L);
+
+        Assertions.assertThat(1).isEqualTo(1);
+
+
+
+
+    }
+
 
 
 }

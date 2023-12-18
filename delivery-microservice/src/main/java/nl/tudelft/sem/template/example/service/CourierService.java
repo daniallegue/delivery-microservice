@@ -115,15 +115,18 @@ public class CourierService {
         //TODO: Handle No Available orders
 
         int idx = (int) Math.random() * availableOrders.size();
-        Long order = availableOrders.get(idx);
+        Long orderId = availableOrders.get(idx);
 
         //Find delivery with required orderId
         Delivery deliveryToUpdate = deliveryRepository.findAll()
                 .stream()
-                .filter(delivery -> delivery.getOrder().getOrderId().equals(order))
+                .filter(delivery -> delivery.getOrder().getOrderId().equals(orderId))
                 .collect(Collectors.toList()).get(0);
 
-        Optional<Delivery> deliveryOptional = deliveryRepository.findById((deliveryToUpdate.getId()));
+        System.out.println(deliveryToUpdate.toString());
+        System.out.println(deliveryToUpdate.getId());
+        Optional<Delivery> deliveryOptional = deliveryRepository.findById(orderId);
+        System.out.println(deliveryOptional.get().toString());
         if (deliveryOptional.isEmpty()) {
             throw new DeliveryNotFoundException("Delivery id not found");
         }
