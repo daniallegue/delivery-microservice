@@ -1,7 +1,7 @@
 package nl.tudelft.sem.template.example;
 
-import com.sun.nio.sctp.PeerAddressChangeNotification;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
+import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.example.service.CourierService;
@@ -11,16 +11,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 public class CourierServiceTest {
@@ -107,11 +104,12 @@ public class CourierServiceTest {
 
 
     @Test
-    void assignCourierToRandomOrderTest() throws DeliveryNotFoundException {
+    void assignCourierToRandomOrderTest() throws DeliveryNotFoundException, NoAvailableOrdersException {
         courierService.assignCourierToRandomOrder(1L);
 
         Long actual = deliveryRepository.findById(2L).get().getCourierId();
         Assertions.assertThat(actual).isEqualTo(1L);
     }
+
 
 }

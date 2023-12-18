@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
+import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.model.Delivery;
@@ -108,9 +109,14 @@ public class CourierService {
      *
      * @param courierId Unique identifier of the courier (required)
      */
-    public void assignCourierToRandomOrder(Long courierId) throws DeliveryNotFoundException {
+    public void assignCourierToRandomOrder(Long courierId) throws DeliveryNotFoundException, NoAvailableOrdersException {
         List<Long> availableOrders = getAvailableOrderIds(courierId);
-        //TODO: Handle No Available orders - Another Exception?
+
+        if(availableOrders.size() <= 0){
+            throw new NoAvailableOrdersException("No orders available for courier with id: " + courierId);
+        }
+
+        System.out.println(availableOrders.size());
 
         int idx = (int) Math.random() * availableOrders.size();
         Long orderId = availableOrders.get(idx);

@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.example.controller;
 
 import nl.tudelft.sem.template.api.CourierApi;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
+import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
 import nl.tudelft.sem.template.example.service.CourierService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -48,7 +49,7 @@ public class CourierController implements CourierApi {
     public ResponseEntity<Void> courierDeliveryCourierIdAssignAnyOrderPut(Long courierId, Integer authorizationId)  {
         try {
             courierService.assignCourierToRandomOrder(courierId);
-        } catch (DeliveryNotFoundException e) {
+        } catch (DeliveryNotFoundException | NoAvailableOrdersException e) {
             return (ResponseEntity<Void>) ResponseEntity.status(HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok().build();
