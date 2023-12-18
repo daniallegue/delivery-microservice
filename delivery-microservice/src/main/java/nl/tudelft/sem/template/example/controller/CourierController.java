@@ -16,14 +16,17 @@ public class CourierController implements CourierApi {
         this.courierService = courierService;
     }
 
+    /**
+     * Returns a list of ids of available orders for a given courier.
+     *
+     * @param courierId Unique identifier of the courier (required)
+     * @param authorizationId Identification of the user who is making the request (required)
+     * @return List of ids of available orders
+     */
     @Override
     public ResponseEntity<List<Long>> courierDeliveryCourierIdAvailableOrdersGet(Long courierId, Integer authorizationId) {
         //TODO: handle authorization
-
         List<Long> availableOrderIds = courierService.getAvailableOrderIds(courierId);
         return ResponseEntity.ok(availableOrderIds);
-
     }
-
-
 }
