@@ -11,13 +11,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 public class CourierServiceTest {
@@ -62,7 +65,9 @@ public class CourierServiceTest {
         deliveryList.add(delivery);
         vendors.add(vendor);
 
+        Delivery deliveryAssigning = new Delivery(2L, order, 1L, rating, time, issue);
 
+        Mockito.when(deliveryRepository.findById(2L)).thenReturn(Optional.of(deliveryAssigning));
         Mockito.when(deliveryRepository.findAll()).thenReturn(deliveryList);
         Mockito.when(vendorRepository.findAll()).thenReturn(vendors);
 
@@ -103,19 +108,10 @@ public class CourierServiceTest {
 
     @Test
     void assignCourierToRandomOrderTest() throws DeliveryNotFoundException {
-        List<Long> deliveries = courierService.getAvailableOrderIds(1L);
-        for(Long l : deliveries){
-            System.out.println(l);
-        }
         courierService.assignCourierToRandomOrder(1L);
 
-        Assertions.assertThat(1).isEqualTo(1);
-
-
-
-
+        Long actual = deliveryRepository.findById(2L).get().getCourierId();
+        Assertions.assertThat(actual).isEqualTo(1L);
     }
-
-
 
 }

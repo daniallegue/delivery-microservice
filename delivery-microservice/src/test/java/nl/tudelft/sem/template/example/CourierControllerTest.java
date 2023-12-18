@@ -5,12 +5,14 @@ import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.example.service.CourierService;
 import nl.tudelft.sem.template.model.*;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -56,6 +58,10 @@ public class CourierControllerTest {
         deliveryList.add(delivery);
         vendors.add(vendor);
 
+        Delivery deliveryAssigning = new Delivery(2L, order, 1L, rating, time, issue);
+
+
+        Mockito.when(deliveryRepository.findById(2L)).thenReturn(Optional.of(deliveryAssigning));
         Mockito.when(deliveryRepository.findAll()).thenReturn(deliveryList);
         Mockito.when(vendorRepository.findAll()).thenReturn(vendors);
 
