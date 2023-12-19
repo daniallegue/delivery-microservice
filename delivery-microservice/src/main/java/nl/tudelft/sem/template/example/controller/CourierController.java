@@ -14,6 +14,11 @@ import java.util.List;
 public class CourierController implements CourierApi {
     CourierService courierService;
 
+    /**
+     * Simple constructor that handles dependency injection of the service.
+     *
+     * @param courierService Instance of CourierService to handle the logic
+     */
     @Autowired
     public CourierController(CourierService courierService) {
         this.courierService = courierService;
@@ -27,11 +32,11 @@ public class CourierController implements CourierApi {
      * @param courierId Unique identifier of the courier (required)
      * @param authorizationId Identification of the user who is making the request (required)
      * @return list of Order Ids which are available to the courier
+
      */
     @Override
     public ResponseEntity<List<Long>> courierDeliveryCourierIdAvailableOrdersGet(Long courierId, Integer authorizationId) {
         //TODO: handle authorization
-
         List<Long> availableOrderIds = courierService.getAvailableOrderIds(courierId);
         return ResponseEntity.ok(availableOrderIds);
     }
@@ -53,7 +58,6 @@ public class CourierController implements CourierApi {
             return (ResponseEntity<Void>) ResponseEntity.status(HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok().build();
+
     }
-
-
 }

@@ -1,6 +1,5 @@
-package nl.tudelft.sem.template.example;
+package nl.tudelft.sem.template.example.controller;
 
-import nl.tudelft.sem.template.example.controller.CourierController;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.example.service.CourierService;

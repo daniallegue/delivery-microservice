@@ -1,10 +1,10 @@
-package nl.tudelft.sem.template.example;
+package nl.tudelft.sem.template.example.service;
 
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
-import nl.tudelft.sem.template.example.service.CourierService;
 import nl.tudelft.sem.template.model.*;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.Random;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 public class CourierServiceTest {
@@ -69,7 +70,6 @@ public class CourierServiceTest {
         Mockito.when(vendorRepository.findAll()).thenReturn(vendors);
 
     }
-
     @Test
     void getAvailableOrdersTest() {
 
@@ -82,24 +82,18 @@ public class CourierServiceTest {
         Assertions.assertThat(orderIds).isEqualTo(expectedResult);
 
     }
-
     @Test
-    void checkIfCourierIsAssignedTest() {
-
+    void checkIfCourierIsAssignedTest() throws CourierNotFoundException {
         Long vendorId = courierService.checkIfCourierIsAssignedToVendor(8L);
         assertThat(vendorId).isEqualTo(3L);
-
-        vendorId = courierService.checkIfCourierIsAssignedToVendor(5L);
-        assertThat(vendorId).isEqualTo(-1L);
-
+        assertThrows(CourierNotFoundException.class, () -> {
+            courierService.checkIfCourierIsAssignedToVendor(5L);
+        });
     }
-
     @Test
-    void getVendorsWithCouriers() {
-
+    void getVendorsWithCouriersTest() {
         List<Long> couriers = courierService.getVendorsThatHaveTheirOwnCouriers();
         assertThat(couriers).isEqualTo(List.of(2L, 3L));
-
     }
 
 
