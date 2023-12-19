@@ -60,4 +60,23 @@ public class CourierController implements CourierApi {
         return ResponseEntity.ok().build();
 
     }
+
+    /**
+     * Assigns a specific order to a courier.
+     *
+     * @path PUT: /courier/delivery/{courier_id}/assign/{order_id}
+     * @param courierId Unique identifier of the courier (required)
+     * @param deliveryId Unique identifier of the delivery to be assigned (required)
+     * @param authorizationId Identification of the user who is making the request (required)
+     * @return ResponseEntity with appropriate status code
+     */
+    @Override
+    public ResponseEntity<Void> courierDeliveryCourierIdAssignOrderIdPut(Long courierId, Long deliveryId, Integer authorizationId) {
+        try {
+            courierService.assignCourierToSpecificOrder(courierId, deliveryId);
+            return ResponseEntity.ok().build();
+        } catch (DeliveryNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
 }

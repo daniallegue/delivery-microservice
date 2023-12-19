@@ -131,5 +131,23 @@ public class CourierService {
 
     }
 
+    /**
+     * Assigns a specific order to a courier.
+     *
+     * @param courierId Unique identifier of the courier (required)
+     * @param deliveryId Unique identifier of the order to be assigned (required)
+     * @throws DeliveryNotFoundException if the delivery is not found
+     */
+    public void assignCourierToSpecificOrder(Long courierId, Long deliveryId) throws DeliveryNotFoundException {
+
+        Optional<Delivery> deliveryOptional = deliveryRepository.findById(deliveryId);
+        if (deliveryOptional.isEmpty()) {
+            throw new DeliveryNotFoundException("Delivery with id " + deliveryId + " was not found.");
+        }
+
+        Delivery delivery = deliveryOptional.get();
+        delivery.setCourierId(courierId);
+        deliveryRepository.save(delivery);
+    }
 
 }
