@@ -83,7 +83,7 @@ public class CourierServiceTest {
         });
     }
     @Test
-    void getVendorsWithCouriers() {
+    void getVendorsWithCouriersTest() {
         List<Long> couriers = courierService.getVendorsThatHaveTheirOwnCouriers();
         assertThat(couriers).isEqualTo(List.of(2L, 3L));
     }

@@ -11,6 +11,11 @@ import java.util.List;
 public class CourierController implements CourierApi {
     CourierService courierService;
 
+    /**
+     * Simple constructor that handles dependency injection of the service.
+     *
+     * @param courierService Instance of CourierService to handle the logic
+     */
     @Autowired
     public CourierController(CourierService courierService) {
         this.courierService = courierService;
