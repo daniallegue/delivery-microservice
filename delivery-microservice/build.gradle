@@ -45,6 +45,8 @@ jacoco{
 
 dependencies {
 
+	testImplementation 'junit:junit:4.13.1'
+	testImplementation 'junit:junit:4.13.1'
 	compileOnly 'org.projectlombok:lombok:1.18.24'
 	annotationProcessor 'org.projectlombok:lombok:1.18.24'
 
@@ -57,12 +59,14 @@ dependencies {
 	implementation 'com.h2database:h2'
 	developmentOnly 'org.hibernate:hibernate-entitymanager'
 
+
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
 	testImplementation('org.junit.jupiter:junit-jupiter:5.8.2')
 	testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.12.4'
 	testImplementation('org.assertj:assertj-core:3.23.1')
+
 
 	// Annotation
 	implementation 'io.springfox:springfox-swagger2:2.8.0'
@@ -109,7 +113,7 @@ task customCheckstyle(type: Checkstyle) {
 	// Apply Checkstyle to the main source set while excluding generated code
 	source = sourceSets.main.allJava.filter { file ->
 		// Exclude directories or files associated with generated code
-		!file.path.contains('generated') // Example condition, modify as per your generated code path
+		!file.path.contains('generated')// Example condition, modify as per your generated code path
 	}
 }
 

@@ -201,11 +201,7 @@ paths:
                   description: Unique identifier for the customer
                   example: 45
                 destination:
-                  type: object
-                  description: Location of the customer
-                  example:
-                    longitude: 12.33239039
-                    latitude: 104.238381
+                  $ref: '#/components/schemas/Location'
                 vendor_id:
                   type: integer
                   description: Unique identifier of the vendor
