@@ -70,7 +70,7 @@ public class OrderService {
      * A status can go from:
      * Pending -> Accepted
      * Pending -> Rejected
-     * Accepted -> Preparing
+     * Accepted -> Preparing -> Given to courier -> On transit -> Delivered
      *
      * @param oldStatus Current status of an order
      * @param newStatus New status of an order
@@ -94,8 +94,29 @@ public class OrderService {
                             + newStatus.toString().toUpperCase() + ".");
                 }
             }
+            case PREPARING -> {
+                if (newStatus != StatusEnum.GIVEN_TO_COURIER) {
+                    throw new IllegalOrderStatusException("Error! Order status can't change from PREPARING to "
+                            + newStatus.toString().toUpperCase() + ".");
+                }
+            }
+            case GIVEN_TO_COURIER -> {
+                if (newStatus != StatusEnum.ON_TRANSIT) {
+                    throw new IllegalOrderStatusException("Error! Order status can't change from GIVEN_TO_COURIER to "
+                            + newStatus.toString().toUpperCase() + ".");
+                }
+            }
+            case ON_TRANSIT -> {
+                if (newStatus != StatusEnum.DELIVERED) {
+                    throw new IllegalOrderStatusException("Error! Order status can't change from ON_TRANSIT to "
+                            + newStatus.toString().toUpperCase() + ".");
+                }
+            }
+            case DELIVERED -> {
+                throw new IllegalOrderStatusException("Error! Order status can't change from DELIVERED to "
+                        + newStatus.toString().toUpperCase() + ".");
+            }
             default -> { }
-            //TODO(@rgherasa): Finish rest of the status flows (i.e. GivenToCourier, InTransit, Delivered).
         }
     }
 }
