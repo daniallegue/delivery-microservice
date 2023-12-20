@@ -116,10 +116,9 @@ public class CourierService {
             throw new NoAvailableOrdersException("No orders available for courier with id: " + courierId);
         }
 
-        System.out.println(availableOrders.size());
-
-        int idx = (int) Math.random() * availableOrders.size();
-        Long orderId = availableOrders.get(idx);
+        //Assign first order available for now, in the future this
+        // will eventually change to a more effective method of choosing random orders
+        Long orderId = availableOrders.get(0);
 
         //Find delivery with required orderId
         Delivery deliveryToUpdate = deliveryRepository.findAll()
