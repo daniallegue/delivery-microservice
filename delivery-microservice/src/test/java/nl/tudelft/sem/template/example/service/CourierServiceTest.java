@@ -105,5 +105,12 @@ public class CourierServiceTest {
         Assertions.assertThat(actual).isEqualTo(1L);
     }
 
+    @Test
+    void assignCourierToSpecificOrderTest() throws DeliveryNotFoundException {
+        courierService.assignCourierToSpecificOrder(3L, 2L);
 
+        Long actualCourier = deliveryRepository.findById(2L).get().getCourierId();
+        Assertions.assertThat(actualCourier).isEqualTo(3L);
+
+    }
 }
