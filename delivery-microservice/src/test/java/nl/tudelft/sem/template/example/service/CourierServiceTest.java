@@ -25,7 +25,6 @@ public class CourierServiceTest {
 
     private final DeliveryRepository deliveryRepository = Mockito.mock(DeliveryRepository.class);
     private final VendorRepository vendorRepository = Mockito.mock(VendorRepository.class);
-
     private final Random random = new Random(0);
     private final CourierService courierService = new CourierService(deliveryRepository, vendorRepository);
 
@@ -64,6 +63,9 @@ public class CourierServiceTest {
         vendors.add(vendor);
 
         Delivery deliveryAssigning = new Delivery(2L, order, 1L, rating, time, issue);
+
+        courierService.addCourier(1L);
+        courierService.addCourier(5L);
 
         Mockito.when(deliveryRepository.findById(2L)).thenReturn(Optional.of(deliveryAssigning));
         Mockito.when(deliveryRepository.findAll()).thenReturn(deliveryList);
@@ -106,11 +108,34 @@ public class CourierServiceTest {
     }
 
     @Test
-    void assignCourierToSpecificOrderTest() throws DeliveryNotFoundException {
-        courierService.assignCourierToSpecificOrder(3L, 2L);
+    void assignCourierToSpecificOrderTest() throws DeliveryNotFoundException, CourierNotFoundException {
+        courierService.assignCourierToSpecificOrder(5L, 2L);
 
         Long actualCourier = deliveryRepository.findById(2L).get().getCourierId();
-        Assertions.assertThat(actualCourier).isEqualTo(3L);
+        Assertions.assertThat(actualCourier).isEqualTo(5L);
+    }
 
+    @Test
+    void assigningNonExistentCourierToSpecificOrderTest() {
+        Long nonExistentCourierId = 999L;
+        Long existingOrderId = 2L;
+
+        Throwable exception = assertThrows(CourierNotFoundException.class, () -> {
+            courierService.assignCourierToSpecificOrder(nonExistentCourierId, existingOrderId);
+        });
+
+        assertThat(exception.getMessage()).isEqualTo("Courier with id " + nonExistentCourierId + " not found.");
+    }
+
+    @Test
+    void assigningNonExistentDeliveryToCourierTest() {
+        Long existingCourierId = 1L;
+        Long nonExistentOrderId = 999L;
+
+        Throwable exception = assertThrows(DeliveryNotFoundException.class, () -> {
+            courierService.assignCourierToSpecificOrder(existingCourierId, nonExistentOrderId);
+        });
+
+        assertThat(exception.getMessage()).isEqualTo("Delivery with id " + nonExistentOrderId + " was not found.");
     }
 }

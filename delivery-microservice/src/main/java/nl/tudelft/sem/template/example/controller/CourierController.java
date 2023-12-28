@@ -3,6 +3,8 @@ package nl.tudelft.sem.template.example.controller;
 import nl.tudelft.sem.template.api.CourierApi;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
+
 import nl.tudelft.sem.template.example.service.CourierService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,6 +15,7 @@ import java.util.List;
 @RestController
 public class CourierController implements CourierApi {
     CourierService courierService;
+
 
     /**
      * Simple constructor that handles dependency injection of the service.
@@ -75,7 +78,7 @@ public class CourierController implements CourierApi {
         try {
             courierService.assignCourierToSpecificOrder(courierId, deliveryId);
             return ResponseEntity.ok().build();
-        } catch (DeliveryNotFoundException e) {
+        } catch (DeliveryNotFoundException | CourierNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }

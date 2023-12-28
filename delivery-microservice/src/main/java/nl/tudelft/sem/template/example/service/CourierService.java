@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.example.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,6 +22,7 @@ public class CourierService {
     DeliveryRepository deliveryRepository;
     VendorRepository vendorRepository;
 
+    private List<Long> courierList = new ArrayList<>();
     /**
      * Constructor for handling dependency injection.
      *
@@ -33,6 +35,25 @@ public class CourierService {
         this.vendorRepository = vendorRepository;
     }
 
+    /** Adds a courier with a specific ID to our database.
+     *
+     * @param courierId Unique identifier of the courier (required)
+     */
+    public void addCourier(Long courierId) {
+        // Check if the courier ID is already known, if not, add it to the list
+        if (!courierList.contains(courierId)) {
+            courierList.add(courierId);
+        }
+    }
+
+    /**
+     *
+     * @param courierId Unique identifier of the courier (required)
+     * @return returns true if a courier with the specified ID exists in our database
+     */
+    public boolean doesCourierExist(Long courierId) {
+        return courierList.contains(courierId);
+    }
     /**
      * Gets ids of all available orders.
      *
@@ -138,11 +159,15 @@ public class CourierService {
      * @param deliveryId Unique identifier of the order to be assigned (required)
      * @throws DeliveryNotFoundException if the delivery is not found
      */
-    public void assignCourierToSpecificOrder(Long courierId, Long deliveryId) throws DeliveryNotFoundException {
+    public void assignCourierToSpecificOrder(Long courierId, Long deliveryId) throws DeliveryNotFoundException, CourierNotFoundException {
 
         Optional<Delivery> deliveryOptional = deliveryRepository.findById(deliveryId);
         if (deliveryOptional.isEmpty()) {
             throw new DeliveryNotFoundException("Delivery with id " + deliveryId + " was not found.");
+        }
+
+        if (!this.doesCourierExist(courierId)) {
+            throw new CourierNotFoundException("Courier with id " + courierId + " not found.");
         }
 
         Delivery delivery = deliveryOptional.get();
