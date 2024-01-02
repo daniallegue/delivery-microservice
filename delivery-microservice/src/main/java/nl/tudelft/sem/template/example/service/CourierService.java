@@ -1,14 +1,11 @@
 package nl.tudelft.sem.template.example.service;
 
-<<<<<<< 7937d327656075ee98835cd3ba6f7a20b11bcc85
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
-=======
 import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
->>>>>>> 7de2aa83e33fba199d935d97cadcc1a6a3d24eef
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.model.Delivery;
@@ -98,7 +95,6 @@ public class CourierService {
                 .map(Vendor::getId)
                 .collect(Collectors.toList());
     }
-<<<<<<< 7937d327656075ee98835cd3ba6f7a20b11bcc85
 
     /**
      * Assigns a courier to a random available order.
@@ -133,8 +129,4 @@ public class CourierService {
         deliveryRepository.save(delivery);
 
     }
-
-
-=======
->>>>>>> 7de2aa83e33fba199d935d97cadcc1a6a3d24eef
 }

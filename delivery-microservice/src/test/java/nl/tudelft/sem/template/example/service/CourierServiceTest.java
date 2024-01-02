@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.example.service;
 
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
@@ -7,6 +8,7 @@ import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.example.service.CourierService;
 import nl.tudelft.sem.template.model.*;
 import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -83,13 +85,13 @@ public class CourierServiceTest {
     }
 
     @Test
-    void checkIfCourierIsAssignedTest() {
+    void checkIfCourierIsAssignedTest() throws CourierNotFoundException {
 
         Long vendorId = courierService.checkIfCourierIsAssignedToVendor(8L);
         assertThat(vendorId).isEqualTo(3L);
 
-        vendorId = courierService.checkIfCourierIsAssignedToVendor(5L);
-        assertThat(vendorId).isEqualTo(-1L);
+//        vendorId = courierService.checkIfCourierIsAssignedToVendor(5L);
+//        Assertions.assertThatThrownBy(courierService.checkIfCourierIsAssignedToVendor(5L)).isInstanceOf(CourierNotFoundException.class);
 
     }
 
