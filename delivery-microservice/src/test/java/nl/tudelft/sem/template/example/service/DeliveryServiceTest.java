@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.service;
 
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
+import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.OrderAlreadyExistsException;
 import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
@@ -57,7 +58,7 @@ public class DeliveryServiceTest {
     }
 
     @Test
-    void testCreateDeliveryWhenVendorNotFound(){
+    void testCreateDeliveryWhenVendorNotFound() throws Exception {
         when(vendorService.findVendorOrCreate(anyLong())).thenReturn(null);
         assertThrows(VendorNotFoundException.class, () -> deliveryService.createDelivery(dummyDeliveryPostRequest));
     }

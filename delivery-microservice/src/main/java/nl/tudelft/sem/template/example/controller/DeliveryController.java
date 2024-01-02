@@ -44,6 +44,7 @@ public class DeliveryController implements DeliveryApi {
             Delivery delivery = deliveryService.createDelivery(deliveryPostRequest);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            System.out.println(e.toString());
             return ResponseEntity.badRequest().build();
         }
     }
