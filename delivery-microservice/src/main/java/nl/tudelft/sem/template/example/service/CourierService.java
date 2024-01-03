@@ -21,8 +21,8 @@ import org.springframework.stereotype.Service;
 public class CourierService {
     DeliveryRepository deliveryRepository;
     VendorRepository vendorRepository;
-
     private List<Long> courierList = new ArrayList<>();
+
     /**
      * Constructor for handling dependency injection.
      *
@@ -115,10 +115,7 @@ public class CourierService {
         Long orderId = availableOrders.get(0);
 
         //Find delivery with required orderId
-        Delivery deliveryToUpdate = deliveryRepository.findAll()
-                .stream()
-                .filter(delivery -> delivery.getOrder().getOrderId().equals(orderId))
-                .collect(Collectors.toList()).get(0);
+        Delivery deliveryToUpdate = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
 
 
         Optional<Delivery> deliveryOptional = deliveryRepository.findById(deliveryToUpdate.getId());

@@ -5,21 +5,25 @@ import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
+import nl.tudelft.sem.template.example.service.CourierService;
 import nl.tudelft.sem.template.model.*;
 import org.assertj.core.api.Assertions;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+        import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest
+        @SpringBootTest
 public class CourierServiceTest {
 
     private final DeliveryRepository deliveryRepository = Mockito.mock(DeliveryRepository.class);
@@ -68,6 +72,7 @@ public class CourierServiceTest {
 
         Mockito.when(deliveryRepository.findById(2L)).thenReturn(Optional.of(deliveryAssigning));
         Mockito.when(deliveryRepository.findAll()).thenReturn(deliveryList);
+        Mockito.when(deliveryRepository.findDeliveryByOrder_OrderId(5L)).thenReturn(deliveryAssigning);
         Mockito.when(vendorRepository.findAll()).thenReturn(vendors);
 
     }
@@ -113,36 +118,39 @@ public class CourierServiceTest {
         Assertions.assertThat(actual).isEqualTo(1L);
     }
 
-    @Test
-    void assignCourierToSpecificOrderTest() throws DeliveryNotFoundException, CourierNotFoundException {
-        courierService.assignCourierToSpecificOrder(5L, 2L);
 
-        Long actualCourier = deliveryRepository.findById(2L).get().getCourierId();
-        Assertions.assertThat(actualCourier).isEqualTo(5L);
-    }
+            @Test
+            void assignCourierToSpecificOrderTest() throws DeliveryNotFoundException, CourierNotFoundException {
+                courierService.assignCourierToSpecificOrder(5L, 2L);
 
-    @Test
-    void assigningNonExistentCourierToSpecificOrderTest() {
-        Long nonExistentCourierId = 999L;
-        Long existingOrderId = 2L;
+                Long actualCourier = deliveryRepository.findById(2L).get().getCourierId();
+                Assertions.assertThat(actualCourier).isEqualTo(5L);
+            }
 
-        Throwable exception = assertThrows(CourierNotFoundException.class, () -> {
-            courierService.assignCourierToSpecificOrder(nonExistentCourierId, existingOrderId);
-        });
+            @Test
+            void assigningNonExistentCourierToSpecificOrderTest() {
+                Long nonExistentCourierId = 999L;
+                Long existingOrderId = 2L;
 
-        assertThat(exception.getMessage()).isEqualTo("Courier with id " + nonExistentCourierId + " not found.");
-    }
+                Throwable exception = assertThrows(CourierNotFoundException.class, () -> {
+                    courierService.assignCourierToSpecificOrder(nonExistentCourierId, existingOrderId);
+                });
 
-    @Test
-    void assigningNonExistentDeliveryToCourierTest() {
-        Long existingCourierId = 1L;
-        Long nonExistentOrderId = 999L;
+                assertThat(exception.getMessage()).isEqualTo("Courier with id " + nonExistentCourierId + " not found.");
+            }
 
-        Throwable exception = assertThrows(DeliveryNotFoundException.class, () -> {
-            courierService.assignCourierToSpecificOrder(existingCourierId, nonExistentOrderId);
-        });
+            @Test
+            void assigningNonExistentDeliveryToCourierTest() {
+                Long existingCourierId = 1L;
+                Long nonExistentOrderId = 999L;
 
-        assertThat(exception.getMessage()).isEqualTo("Delivery with id " + nonExistentOrderId + " was not found.");
-    }
+                Throwable exception = assertThrows(DeliveryNotFoundException.class, () -> {
+                    courierService.assignCourierToSpecificOrder(existingCourierId, nonExistentOrderId);
+                });
 
-}
+                assertThat(exception.getMessage()).isEqualTo("Delivery with id " + nonExistentOrderId + " was not found.");
+            }
+
+
+
+        }
