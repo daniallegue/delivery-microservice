@@ -113,10 +113,7 @@ public class CourierService {
         Long orderId = availableOrders.get(0);
 
         //Find delivery with required orderId
-        Delivery deliveryToUpdate = deliveryRepository.findAll()
-                .stream()
-                .filter(delivery -> delivery.getOrder().getOrderId().equals(orderId))
-                .collect(Collectors.toList()).get(0);
+        Delivery deliveryToUpdate = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
 
 
         Optional<Delivery> deliveryOptional = deliveryRepository.findById(deliveryToUpdate.getId());

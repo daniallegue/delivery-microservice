@@ -11,6 +11,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -67,6 +68,7 @@ public class CourierServiceTest {
 
         Mockito.when(deliveryRepository.findById(2L)).thenReturn(Optional.of(deliveryAssigning));
         Mockito.when(deliveryRepository.findAll()).thenReturn(deliveryList);
+        Mockito.when(deliveryRepository.findDeliveryByOrder_OrderId(5L)).thenReturn(deliveryAssigning);
         Mockito.when(vendorRepository.findAll()).thenReturn(vendors);
 
     }
