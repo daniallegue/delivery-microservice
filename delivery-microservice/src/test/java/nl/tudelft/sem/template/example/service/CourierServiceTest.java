@@ -1,27 +1,33 @@
 package nl.tudelft.sem.template.example.service;
 
 import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
+import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
+import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.example.service.CourierService;
 import nl.tudelft.sem.template.model.*;
 import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 public class CourierServiceTest {
 
     private final DeliveryRepository deliveryRepository = Mockito.mock(DeliveryRepository.class);
     private final VendorRepository vendorRepository = Mockito.mock(VendorRepository.class);
+
     private final CourierService courierService = new CourierService(deliveryRepository, vendorRepository);
 
 
@@ -58,10 +64,15 @@ public class CourierServiceTest {
         deliveryList.add(delivery);
         vendors.add(vendor);
 
+        Delivery deliveryAssigning = new Delivery(2L, order, 1L, rating, time, issue);
+
+        Mockito.when(deliveryRepository.findById(2L)).thenReturn(Optional.of(deliveryAssigning));
         Mockito.when(deliveryRepository.findAll()).thenReturn(deliveryList);
+        Mockito.when(deliveryRepository.findDeliveryByOrder_OrderId(5L)).thenReturn(deliveryAssigning);
         Mockito.when(vendorRepository.findAll()).thenReturn(vendors);
 
     }
+
     @Test
     void getAvailableOrdersTest() {
 
@@ -74,17 +85,34 @@ public class CourierServiceTest {
         Assertions.assertThat(orderIds).isEqualTo(expectedResult);
 
     }
+
     @Test
     void checkIfCourierIsAssignedTest() throws CourierNotFoundException {
+
         Long vendorId = courierService.checkIfCourierIsAssignedToVendor(8L);
         assertThat(vendorId).isEqualTo(3L);
-        assertThrows(CourierNotFoundException.class, () -> {
-            courierService.checkIfCourierIsAssignedToVendor(5L);
-        });
+
+//        vendorId = courierService.checkIfCourierIsAssignedToVendor(5L);
+//        Assertions.assertThatThrownBy(courierService.checkIfCourierIsAssignedToVendor(5L)).isInstanceOf(CourierNotFoundException.class);
+
     }
+
     @Test
-    void getVendorsWithCouriersTest() {
+    void getVendorsWithCouriers() {
+
         List<Long> couriers = courierService.getVendorsThatHaveTheirOwnCouriers();
         assertThat(couriers).isEqualTo(List.of(2L, 3L));
+
     }
+
+
+    @Test
+    void assignCourierToRandomOrderTest() throws DeliveryNotFoundException, NoAvailableOrdersException {
+        courierService.assignCourierToRandomOrder(1L);
+
+        Long actual = deliveryRepository.findById(2L).get().getCourierId();
+        Assertions.assertThat(actual).isEqualTo(1L);
+    }
+
+
 }

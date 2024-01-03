@@ -1,11 +1,14 @@
 package nl.tudelft.sem.template.example.controller;
 
 import nl.tudelft.sem.template.api.CourierApi;
+import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
+import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
 import nl.tudelft.sem.template.example.service.CourierService;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.List;
 
 @RestController
 public class CourierController implements CourierApi {
@@ -22,16 +25,36 @@ public class CourierController implements CourierApi {
     }
 
     /**
-     * Returns a list of ids of available orders for a given courier.
+     * Returns a text format of the order's string.
      *
+     * @path GET: GET /courier/delivery/{courier_id}/available-orders
      * @param courierId Unique identifier of the courier (required)
      * @param authorizationId Identification of the user who is making the request (required)
-     * @return List of ids of available orders
+     * @return list of Order Ids which are available to the courier
      */
     @Override
     public ResponseEntity<List<Long>> courierDeliveryCourierIdAvailableOrdersGet(Long courierId, Integer authorizationId) {
         //TODO: handle authorization
         List<Long> availableOrderIds = courierService.getAvailableOrderIds(courierId);
         return ResponseEntity.ok(availableOrderIds);
+    }
+
+
+    /**
+     * Returns a text format of the order's string.
+     *
+     * @path PUT: /courier/delivery/{courier_id}/assign-any-order
+     * @param courierId Unique identifier of the courier (required)
+     * @param authorizationId Identification of the user who is making the request (required)
+     * @return Response code
+     */
+    @Override
+    public ResponseEntity<Void> courierDeliveryCourierIdAssignAnyOrderPut(Long courierId, Integer authorizationId)  {
+        try {
+            courierService.assignCourierToRandomOrder(courierId);
+        } catch (DeliveryNotFoundException | NoAvailableOrdersException e) {
+            return (ResponseEntity<Void>) ResponseEntity.status(HttpStatus.NOT_FOUND);
+        }
+        return ResponseEntity.ok().build();
     }
 }
