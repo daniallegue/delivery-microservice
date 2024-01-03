@@ -1,21 +1,19 @@
 package nl.tudelft.sem.template.example.controller;
 
 import nl.tudelft.sem.template.api.CourierApi;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
-import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
-
 import nl.tudelft.sem.template.example.service.CourierService;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.List;
 
 @RestController
 public class CourierController implements CourierApi {
     CourierService courierService;
-
 
     /**
      * Simple constructor that handles dependency injection of the service.
@@ -27,7 +25,6 @@ public class CourierController implements CourierApi {
         this.courierService = courierService;
     }
 
-
     /**
      * Returns a text format of the order's string.
      *
@@ -35,7 +32,6 @@ public class CourierController implements CourierApi {
      * @param courierId Unique identifier of the courier (required)
      * @param authorizationId Identification of the user who is making the request (required)
      * @return list of Order Ids which are available to the courier
-
      */
     @Override
     public ResponseEntity<List<Long>> courierDeliveryCourierIdAvailableOrdersGet(Long courierId, Integer authorizationId) {
@@ -61,7 +57,6 @@ public class CourierController implements CourierApi {
             return (ResponseEntity<Void>) ResponseEntity.status(HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok().build();
-
     }
 
     /**

@@ -35,25 +35,6 @@ public class CourierService {
         this.vendorRepository = vendorRepository;
     }
 
-    /** Adds a courier with a specific ID to our database.
-     *
-     * @param courierId Unique identifier of the courier (required)
-     */
-    public void addCourier(Long courierId) {
-        // Check if the courier ID is already known, if not, add it to the list
-        if (!courierList.contains(courierId)) {
-            courierList.add(courierId);
-        }
-    }
-
-    /**
-     *
-     * @param courierId Unique identifier of the courier (required)
-     * @return returns true if a courier with the specified ID exists in our database
-     */
-    public boolean doesCourierExist(Long courierId) {
-        return courierList.contains(courierId);
-    }
     /**
      * Gets ids of all available orders.
      *
@@ -129,10 +110,9 @@ public class CourierService {
             throw new NoAvailableOrdersException("No orders available for courier with id: " + courierId);
         }
 
-        System.out.println(availableOrders.size());
-
-        int idx = (int) Math.random() * availableOrders.size();
-        Long orderId = availableOrders.get(idx);
+        //Assign first order available for now, in the future this
+        // will eventually change to a more effective method of choosing random orders
+        Long orderId = availableOrders.get(0);
 
         //Find delivery with required orderId
         Delivery deliveryToUpdate = deliveryRepository.findAll()
@@ -150,6 +130,26 @@ public class CourierService {
         delivery.setCourierId(courierId);
         deliveryRepository.save(delivery);
 
+    }
+
+    /** Adds a courier with a specific ID to our database.
+     *
+     * @param courierId Unique identifier of the courier (required)
+     */
+    public void addCourier(Long courierId) {
+        // Check if the courier ID is already known, if not, add it to the list
+        if (!courierList.contains(courierId)) {
+            courierList.add(courierId);
+        }
+    }
+
+    /**
+     *
+     * @param courierId Unique identifier of the courier (required)
+     * @return returns true if a courier with the specified ID exists in our database
+     */
+    public boolean doesCourierExist(Long courierId) {
+        return courierList.contains(courierId);
     }
 
     /**
@@ -174,5 +174,4 @@ public class CourierService {
         delivery.setCourierId(courierId);
         deliveryRepository.save(delivery);
     }
-
 }
