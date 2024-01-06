@@ -64,6 +64,19 @@ public class VendorService {
         return vendor.getDeliveryZone();
     }
 
-
-
+    /**
+     * Updates the delivery zone radius from the vendor with the given vendorId
+     *
+     * @param vendorId The id of the vendor.
+     * @return The delivery zone from the radius.
+     */
+    public Vendor updateDeliveryZone(Long vendorId, Long deliveryZone) throws VendorNotFoundException {
+        if(!vendorRepository.existsById(vendorId)){
+            throw new VendorNotFoundException("Vendor was not found");
+        }
+        Vendor vendor = vendorRepository.findById(vendorId).get();
+        vendor.setDeliveryZone(deliveryZone);
+        vendorRepository.save(vendor);
+        return vendor;
+    }
 }

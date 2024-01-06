@@ -37,8 +37,11 @@ public class VendorServiceTest {
         Location address = new Location(0.0,0.0);
         vendor = new Vendor(1L, configurationProperties.getDefaultDeliveryZone(), address, new ArrayList<>());
         Vendor vendor1 = new Vendor(2L, 5L, address, new ArrayList<>());
+        Vendor vendor2 = new Vendor(3L, 7L, address, new ArrayList<>());
         when(vendorRepository.findById(1L)).thenReturn(Optional.ofNullable(vendor1));
+        when(vendorRepository.findById(3L)).thenReturn(Optional.ofNullable(vendor2));
         when(vendorRepository.existsById(1L)).thenReturn(true);
+        when(vendorRepository.existsById(3L)).thenReturn(true);
         when(vendorRepository.existsById(2L)).thenReturn(false);
     }
 
@@ -82,4 +85,20 @@ public class VendorServiceTest {
         assertThrows(VendorNotFoundException.class, () -> vendorService.getDeliveryZone(vendorId));
     }
 
+    @Test
+    void updateDeliveryZoneInvalidTest() throws VendorNotFoundException {
+        Long vendorId = 2L;
+        assertThrows(VendorNotFoundException.class, () -> vendorService.getDeliveryZone(vendorId));
+    }
+
+    @Test
+    void updateDeliveryZoneCorrectTest() throws VendorNotFoundException {
+        Long newZone = 10L;
+        Location address = new Location(0.0,0.0);
+        Vendor newVendor = new Vendor(3L, 10L, address, new ArrayList<>());
+
+        Vendor updated = vendorService.updateDeliveryZone(3L, newZone);
+        assertEquals(updated.getDeliveryZone(), newVendor.getDeliveryZone());
+        assertEquals(updated.getAddress(), address);
+    }
 }
