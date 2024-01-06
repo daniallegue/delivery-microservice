@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.service;
 
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
+import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.model.Location;
 import nl.tudelft.sem.template.model.Vendor;
@@ -35,6 +36,10 @@ public class VendorServiceTest {
         //TO DO: change address with the (mocked) one from other microservices
         Location address = new Location(0.0,0.0);
         vendor = new Vendor(1L, configurationProperties.getDefaultDeliveryZone(), address, new ArrayList<>());
+        Vendor vendor1 = new Vendor(2L, 5L, address, new ArrayList<>());
+        when(vendorRepository.findById(1L)).thenReturn(Optional.ofNullable(vendor1));
+        when(vendorRepository.existsById(1L)).thenReturn(true);
+        when(vendorRepository.existsById(2L)).thenReturn(false);
     }
 
     @Test
@@ -61,4 +66,20 @@ public class VendorServiceTest {
         verify(vendorRepository, times(1)).save(any());
         assertNotNull(resultingVendor);
     }
+
+    @Test
+    void getDeliveryZoneCorrectTest() throws VendorNotFoundException {
+        Long vendorId = 1L;
+        Long result = 5L;
+        assertEquals(result, vendorService.getDeliveryZone(1L));
+        assertDoesNotThrow(() -> vendorService.getDeliveryZone(vendorId));
+
+    }
+
+    @Test
+    void getDeliveryZoneInvalidTest() throws VendorNotFoundException {
+        Long vendorId = 2L;
+        assertThrows(VendorNotFoundException.class, () -> vendorService.getDeliveryZone(vendorId));
+    }
+
 }

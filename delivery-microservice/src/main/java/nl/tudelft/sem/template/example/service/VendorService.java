@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.example.service;
 
 import java.util.ArrayList;
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
+import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.model.Vendor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,4 +47,23 @@ public class VendorService {
 
         return vendorRepository.findById(vendorId).orElse(null);
     }
+
+
+    /**
+     * Retrieves the delivery zone radius from the vendor with the given vendorId
+     *
+     * @param vendorId The id of the vendor.
+     * @return The delivery zone from the radius.
+     */
+    public long getDeliveryZone(Long vendorId) throws VendorNotFoundException {
+        if(!vendorRepository.existsById(vendorId)){
+            throw new VendorNotFoundException("Vendor was not found");
+        }
+        Vendor vendor = vendorRepository.findById(vendorId).get();
+        //Check for Null/Default delivery zone
+        return vendor.getDeliveryZone();
+    }
+
+
+
 }
