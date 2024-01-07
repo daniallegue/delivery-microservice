@@ -88,4 +88,25 @@ public class DeliveryController implements DeliveryApi {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    /**
+     * Returns the default delivery zone.
+     *
+     * @param authorizationId Identification of the user who is making the request (required)
+     * @return Default delivery zone
+     * @path GET: /delivery/default-delivery-zone
+     */
+    @Override
+    public ResponseEntity<Integer> deliveryDefaultDeliveryZoneGet(Integer authorizationId) {
+        Integer defaultDeliveryZone = Math.toIntExact(deliveryService.getDefaultDeliveryZone());
+        return ResponseEntity.ok(defaultDeliveryZone);
+    }
+
+    @Override
+    public ResponseEntity<Void> deliveryDefaultDeliveryZonePut(Integer newDeliveryZone, Integer authorizationId) {
+        //TODO: Handle authorization.
+        deliveryService.updateDefaultDeliveryZone(newDeliveryZone);
+        return (ResponseEntity<Void>) ResponseEntity.ok();
+    }
+
 }

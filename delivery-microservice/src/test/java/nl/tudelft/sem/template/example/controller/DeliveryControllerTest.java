@@ -60,4 +60,13 @@ public class DeliveryControllerTest {
         
         assertEquals(400, response.getStatusCodeValue());
     }
+
+    @Test
+    public void getDefaultDeliveryZoneTest() {
+        when(deliveryService.getDefaultDeliveryZone()).thenReturn(30L);
+
+        ResponseEntity<Integer> defaultZone = deliveryController.deliveryDefaultDeliveryZoneGet(1);
+        assertEquals(defaultZone.getBody(), 30);
+    }
+
 }
