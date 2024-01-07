@@ -4,7 +4,6 @@ import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.exception.RatingNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
-import nl.tudelft.sem.template.example.repository.RatingRepository;
 import nl.tudelft.sem.template.model.Delivery;
 import nl.tudelft.sem.template.model.Rating;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +13,10 @@ import java.util.Optional;
 
 @Service
 public class AnalyticsService {
-    private final RatingRepository ratingRepository;
     private final DeliveryRepository deliveryRepository;
 
     @Autowired
-    public AnalyticsService(RatingRepository ratingRepository, DeliveryRepository deliveryRepository) {
-        this.ratingRepository = ratingRepository;
+    public AnalyticsService(DeliveryRepository deliveryRepository) {
         this.deliveryRepository = deliveryRepository;
     }
 
@@ -45,9 +42,8 @@ public class AnalyticsService {
         }
 
         delivery.setRating(rating);
-        deliveryRepository.save(delivery);
 
-        return ratingRepository.save(rating);
+        return delivery.getRating();
     }
 
     /**
@@ -71,7 +67,7 @@ public class AnalyticsService {
             throw new DeliveryNotFoundException("Delivery with the order id " + orderId + " was not found.");
         }
 
-        Rating rating = ratingRepository.findByOrderId(orderId);
+        Rating rating = delivery.getRating();
         if (rating == null) {
             throw new RatingNotFoundException("Rating for order id " + orderId + " was not found.");
         }

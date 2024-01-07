@@ -31,12 +31,10 @@ public class AnalyticsController implements AnalyticsApi {
     public ResponseEntity<Void> analyticsOrderOrderIdRatingPut(Integer orderId, Integer authorizationId, Rating rating) {
         try {
             analyticsService.saveRating(rating, Long.valueOf(orderId));
-            return ResponseEntity.ok().build();
-        } catch (OrderNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (DeliveryNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (OrderNotFoundException | DeliveryNotFoundException e) {
+            return (ResponseEntity<Void>) ResponseEntity.status(HttpStatus.NOT_FOUND);
         }
+        return ResponseEntity.ok().build();
     }
 
     /**
