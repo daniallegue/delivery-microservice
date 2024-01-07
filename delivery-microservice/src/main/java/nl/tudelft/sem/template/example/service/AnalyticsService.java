@@ -1,0 +1,81 @@
+package nl.tudelft.sem.template.example.service;
+
+import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
+import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
+import nl.tudelft.sem.template.example.exception.RatingNotFoundException;
+import nl.tudelft.sem.template.example.repository.DeliveryRepository;
+import nl.tudelft.sem.template.example.repository.RatingRepository;
+import nl.tudelft.sem.template.model.Delivery;
+import nl.tudelft.sem.template.model.Rating;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+@Service
+public class AnalyticsService {
+    private final RatingRepository ratingRepository;
+    private final DeliveryRepository deliveryRepository;
+
+    @Autowired
+    public AnalyticsService(RatingRepository ratingRepository, DeliveryRepository deliveryRepository) {
+        this.ratingRepository = ratingRepository;
+        this.deliveryRepository = deliveryRepository;
+    }
+
+    /**
+     * Saves a rating for a specific order.
+     *
+     * @param rating The rating object to be saved.
+     * @param orderId The unique identifier of the order to which the rating is to be associated.
+     * @return The saved rating object.
+     * @throws RatingNotFoundException If the rating is not found in the repository.
+     * @throws OrderNotFoundException If no order is found with the given ID.
+     * @throws DeliveryNotFoundException If no delivery is found for the given order ID.
+     */
+    public Rating saveRating(Rating rating, Long orderId) throws OrderNotFoundException, DeliveryNotFoundException {
+        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
+        if (delivery == null) {
+            throw new OrderNotFoundException("Order with id " + orderId + " was not found.");
+        }
+
+        Optional<Delivery> deliveryOptional = deliveryRepository.findById(delivery.getId());
+        if (deliveryOptional.isEmpty()) {
+            throw new DeliveryNotFoundException("Delivery with the order id " + orderId + " was not found.");
+        }
+
+        delivery.setRating(rating);
+        deliveryRepository.save(delivery);
+
+        return ratingRepository.save(rating);
+    }
+
+    /**
+     * Retrieves the rating associated with a specific order ID.
+     *
+     * @param orderId The unique identifier of the order for which the rating is to be retrieved.
+     * @return The rating associated with the specified order.
+     * @throws RatingNotFoundException If no rating is found for the specified order ID.
+     * @throws OrderNotFoundException If no order is found with the given ID.
+     * @throws DeliveryNotFoundException If no delivery is found for the given order ID.
+     */
+    public Rating getRatingByOrderId(Long orderId) throws RatingNotFoundException, OrderNotFoundException, DeliveryNotFoundException {
+
+        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
+        if (delivery == null) {
+            throw new OrderNotFoundException("Order with id " + orderId + " was not found.");
+        }
+
+        Optional<Delivery> deliveryOptional = deliveryRepository.findById(delivery.getId());
+        if (deliveryOptional.isEmpty()) {
+            throw new DeliveryNotFoundException("Delivery with the order id " + orderId + " was not found.");
+        }
+
+        Rating rating = ratingRepository.findByOrderId(orderId);
+        if (rating == null) {
+            throw new RatingNotFoundException("Rating for order id " + orderId + " was not found.");
+        }
+        return rating;
+    }
+
+}
