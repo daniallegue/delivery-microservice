@@ -1,7 +1,6 @@
 package nl.tudelft.sem.template.example.controller;
 
 import nl.tudelft.sem.template.api.AnalyticsApi;
-import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.exception.RatingNotFoundException;
 import nl.tudelft.sem.template.example.service.AnalyticsService;
@@ -30,11 +29,11 @@ public class AnalyticsController implements AnalyticsApi {
     @Override
     public ResponseEntity<Void> analyticsOrderOrderIdRatingPut(Integer orderId, Integer authorizationId, Rating rating) {
         try {
-            analyticsService.saveRating(rating, Long.valueOf(orderId));
-        } catch (OrderNotFoundException | DeliveryNotFoundException e) {
-            return (ResponseEntity<Void>) ResponseEntity.status(HttpStatus.NOT_FOUND);
+            analyticsService.saveRating(rating, (long) orderId);
+            return ResponseEntity.ok().build();
+        } catch (OrderNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return ResponseEntity.ok().build();
     }
 
     /**
@@ -48,12 +47,12 @@ public class AnalyticsController implements AnalyticsApi {
     @Override
     public ResponseEntity<Rating> analyticsOrderOrderIdRatingGet(Integer orderId, Integer authorizationId) {
         try {
-            Rating rating = analyticsService.getRatingByOrderId(Long.valueOf(orderId));
+            Rating rating = analyticsService.getRatingByOrderId((long) orderId);
             if (rating == null) {
                 throw new RatingNotFoundException("Rating for order ID " + orderId + " not found.");
             }
             return ResponseEntity.ok(rating);
-        } catch (RatingNotFoundException | OrderNotFoundException | DeliveryNotFoundException e) {
+        } catch (RatingNotFoundException | OrderNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }

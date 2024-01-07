@@ -9,7 +9,6 @@ import nl.tudelft.sem.template.model.Rating;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 
 @Service
 public class AnalyticsService {
@@ -30,16 +29,12 @@ public class AnalyticsService {
      * @throws OrderNotFoundException If no order is found with the given ID.
      * @throws DeliveryNotFoundException If no delivery is found for the given order ID.
      */
-    public Rating saveRating(Rating rating, Long orderId) throws OrderNotFoundException, DeliveryNotFoundException {
+    public Rating saveRating(Rating rating, Long orderId) throws OrderNotFoundException {
         Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
         if (delivery == null) {
             throw new OrderNotFoundException("Order with id " + orderId + " was not found.");
         }
 
-        Optional<Delivery> deliveryOptional = deliveryRepository.findById(delivery.getId());
-        if (deliveryOptional.isEmpty()) {
-            throw new DeliveryNotFoundException("Delivery with the order id " + orderId + " was not found.");
-        }
 
         delivery.setRating(rating);
 
@@ -55,17 +50,13 @@ public class AnalyticsService {
      * @throws OrderNotFoundException If no order is found with the given ID.
      * @throws DeliveryNotFoundException If no delivery is found for the given order ID.
      */
-    public Rating getRatingByOrderId(Long orderId) throws RatingNotFoundException, OrderNotFoundException, DeliveryNotFoundException {
+    public Rating getRatingByOrderId(Long orderId) throws RatingNotFoundException, OrderNotFoundException {
 
         Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
         if (delivery == null) {
             throw new OrderNotFoundException("Order with id " + orderId + " was not found.");
         }
 
-        Optional<Delivery> deliveryOptional = deliveryRepository.findById(delivery.getId());
-        if (deliveryOptional.isEmpty()) {
-            throw new DeliveryNotFoundException("Delivery with the order id " + orderId + " was not found.");
-        }
 
         Rating rating = delivery.getRating();
         if (rating == null) {
