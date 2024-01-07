@@ -75,6 +75,10 @@ public class CourierServiceTest {
         Mockito.when(deliveryRepository.findDeliveryByOrder_OrderId(5L)).thenReturn(deliveryAssigning);
         Mockito.when(vendorRepository.findAll()).thenReturn(vendors);
 
+        Mockito.when(deliveryRepository.findDeliveryByOrder_OrderId(9L)).thenReturn(delivery);
+        Mockito.when(deliveryRepository.findById(2L)).thenReturn(Optional.of(delivery));
+
+
     }
 
     @Test
@@ -121,7 +125,7 @@ public class CourierServiceTest {
 
             @Test
             void assignCourierToSpecificOrderTest() throws DeliveryNotFoundException, CourierNotFoundException {
-                courierService.assignCourierToSpecificOrder(5L, 2L);
+                courierService.assignCourierToSpecificOrder(5L, 9L);
 
                 Long actualCourier = deliveryRepository.findById(2L).get().getCourierId();
                 Assertions.assertThat(actualCourier).isEqualTo(5L);
@@ -130,7 +134,7 @@ public class CourierServiceTest {
             @Test
             void assigningNonExistentCourierToSpecificOrderTest() {
                 Long nonExistentCourierId = 999L;
-                Long existingOrderId = 2L;
+                Long existingOrderId = 9L;
 
                 Throwable exception = assertThrows(CourierNotFoundException.class, () -> {
                     courierService.assignCourierToSpecificOrder(nonExistentCourierId, existingOrderId);

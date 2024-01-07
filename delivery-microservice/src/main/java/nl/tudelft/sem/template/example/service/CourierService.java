@@ -153,22 +153,27 @@ public class CourierService {
      * Assigns a specific order to a courier.
      *
      * @param courierId Unique identifier of the courier (required)
-     * @param deliveryId Unique identifier of the order to be assigned (required)
+     * @param orderId Unique identifier of the order to be assigned (required)
      * @throws DeliveryNotFoundException if the delivery is not found
      */
-    public void assignCourierToSpecificOrder(Long courierId, Long deliveryId) throws DeliveryNotFoundException, CourierNotFoundException {
+    public void assignCourierToSpecificOrder(Long courierId, Long orderId) throws DeliveryNotFoundException, CourierNotFoundException {
 
-        Optional<Delivery> deliveryOptional = deliveryRepository.findById(deliveryId);
+        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
+        if (delivery == null) {
+            throw new DeliveryNotFoundException("Delivery with id " + orderId + " was not found.");
+        }
+
+        Optional<Delivery> deliveryOptional = deliveryRepository.findById(delivery.getId());
         if (deliveryOptional.isEmpty()) {
-            throw new DeliveryNotFoundException("Delivery with id " + deliveryId + " was not found.");
+            throw new DeliveryNotFoundException("Delivery id not found");
         }
 
         if (!this.doesCourierExist(courierId)) {
             throw new CourierNotFoundException("Courier with id " + courierId + " not found.");
         }
 
-        Delivery delivery = deliveryOptional.get();
-        delivery.setCourierId(courierId);
-        deliveryRepository.save(delivery);
+        Delivery deliveryFound = deliveryOptional.get();
+        deliveryFound.setCourierId(courierId);
+        deliveryRepository.save(deliveryFound);
     }
 }
