@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
 import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
+import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.model.Delivery;
@@ -154,26 +155,21 @@ public class CourierService {
      *
      * @param courierId Unique identifier of the courier (required)
      * @param orderId Unique identifier of the order to be assigned (required)
-     * @throws DeliveryNotFoundException if the delivery is not found
+     * @throws OrderNotFoundException if the order is not found
+     * @throws CourierNotFoundException if the courier is not found
      */
-    public void assignCourierToSpecificOrder(Long courierId, Long orderId) throws DeliveryNotFoundException, CourierNotFoundException {
+    public void assignCourierToSpecificOrder(Long courierId, Long orderId) throws OrderNotFoundException, CourierNotFoundException {
 
         Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
         if (delivery == null) {
-            throw new DeliveryNotFoundException("Delivery with id " + orderId + " was not found.");
-        }
-
-        Optional<Delivery> deliveryOptional = deliveryRepository.findById(delivery.getId());
-        if (deliveryOptional.isEmpty()) {
-            throw new DeliveryNotFoundException("Delivery id not found");
+            throw new OrderNotFoundException("Order with id " + orderId + " was not found.");
         }
 
         if (!this.doesCourierExist(courierId)) {
             throw new CourierNotFoundException("Courier with id " + courierId + " not found.");
         }
 
-        Delivery deliveryFound = deliveryOptional.get();
-        deliveryFound.setCourierId(courierId);
-        deliveryRepository.save(deliveryFound);
+        delivery.setCourierId(courierId);
+        deliveryRepository.save(delivery);
     }
 }
