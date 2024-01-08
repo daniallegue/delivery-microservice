@@ -91,7 +91,6 @@ public class CourierControllerTest {
         Long courierId = 1L;
         Long orderId = 5L;
 
-        // Ensure that the mock is correctly set up to do nothing when the method is called
         Mockito.doNothing().when(courierService).assignCourierToSpecificOrder(courierId, orderId);
 
         ResponseEntity<Void> response = courierController.courierDeliveryCourierIdAssignOrderIdPut(courierId, orderId, 1);
