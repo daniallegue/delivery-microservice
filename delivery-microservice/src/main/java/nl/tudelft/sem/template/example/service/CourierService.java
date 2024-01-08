@@ -107,7 +107,7 @@ public class CourierService {
     public void assignCourierToRandomOrder(Long courierId) throws DeliveryNotFoundException, NoAvailableOrdersException {
         List<Long> availableOrders = getAvailableOrderIds(courierId);
 
-        if(availableOrders.size() <= 0){
+        if (availableOrders.size() <= 0) {
             throw new NoAvailableOrdersException("No orders available for courier with id: " + courierId);
         }
 
@@ -142,6 +142,7 @@ public class CourierService {
     }
 
     /**
+     * Checks whether a courier exists
      *
      * @param courierId Unique identifier of the courier (required)
      * @return returns true if a courier with the specified ID exists in our database
@@ -158,7 +159,8 @@ public class CourierService {
      * @throws OrderNotFoundException if the order is not found
      * @throws CourierNotFoundException if the courier is not found
      */
-    public void assignCourierToSpecificOrder(Long courierId, Long orderId) throws OrderNotFoundException, CourierNotFoundException {
+    public void assignCourierToSpecificOrder(Long courierId, Long orderId)
+            throws OrderNotFoundException, CourierNotFoundException {
 
         Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
         if (delivery == null) {

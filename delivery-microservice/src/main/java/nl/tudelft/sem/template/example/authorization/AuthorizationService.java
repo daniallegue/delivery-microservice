@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.authorization;
 
-import java.util.*;
+import java.util.Optional;
+import java.util.Objects;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.external.UsersMicroservice;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
