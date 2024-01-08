@@ -1,6 +1,8 @@
 package nl.tudelft.sem.template.example.controller;
 
 import nl.tudelft.sem.template.example.controller.CourierController;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
+import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.example.service.CourierService;
@@ -8,18 +10,21 @@ import nl.tudelft.sem.template.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 public class CourierControllerTest {
 
     private final DeliveryRepository deliveryRepository = Mockito.mock(DeliveryRepository.class);
     private final VendorRepository vendorRepository = Mockito.mock(VendorRepository.class);
-    private final CourierService courierService = new CourierService(deliveryRepository, vendorRepository);
+    private final CourierService courierService = Mockito.mock(CourierService.class);
     private final CourierController courierController = new CourierController(courierService);
 
     @BeforeEach
@@ -68,6 +73,8 @@ public class CourierControllerTest {
 
     @Test
     void getAvailableOrdersTest() {
+        Mockito.when(courierService.getAvailableOrderIds(1L)).thenReturn(List.of(5L));
+        Mockito.when(courierService.getAvailableOrderIds(18L)).thenReturn(List.of(9L));
 
         List<Long> orderIds = courierController.courierDeliveryCourierIdAvailableOrdersGet(1L, 1).getBody();
         List<Long> expectedResult = new ArrayList<>(List.of(5L));
@@ -79,6 +86,46 @@ public class CourierControllerTest {
     }
 
 
+    @Test
+    void assignCourierToSpecificOrderSuccessTest() throws OrderNotFoundException, CourierNotFoundException {
+        Long courierId = 1L;
+        Long orderId = 5L;
 
+        // Ensure that the mock is correctly set up to do nothing when the method is called
+        Mockito.doNothing().when(courierService).assignCourierToSpecificOrder(courierId, orderId);
+
+        ResponseEntity<Void> response = courierController.courierDeliveryCourierIdAssignOrderIdPut(courierId, orderId, 1);
+        Mockito.verify(courierService).assignCourierToSpecificOrder(courierId, orderId);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void assignNonExistentCourierToOrderTest() throws OrderNotFoundException, CourierNotFoundException {
+        Long nonExistentCourierId = 999L;
+        Long orderId = 5L;
+
+        Mockito.doThrow(new CourierNotFoundException("Courier not found"))
+                .when(courierService).assignCourierToSpecificOrder(nonExistentCourierId, orderId);
+
+        ResponseEntity<Void> response = courierController.courierDeliveryCourierIdAssignOrderIdPut(nonExistentCourierId, orderId, 1);
+
+        Mockito.verify(courierService).assignCourierToSpecificOrder(nonExistentCourierId, orderId);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void assignCourierToNonExistentOrderTest() throws OrderNotFoundException, CourierNotFoundException {
+        Long courierId = 1L;
+        Long nonExistentOrderId = 999L;
+
+        Mockito.doThrow(new OrderNotFoundException("Order not found"))
+                .when(courierService).assignCourierToSpecificOrder(courierId, nonExistentOrderId);
+
+        ResponseEntity<Void> response = courierController.courierDeliveryCourierIdAssignOrderIdPut(courierId, nonExistentOrderId, 1);
+
+        Mockito.verify(courierService).assignCourierToSpecificOrder(courierId, nonExistentOrderId);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
 
 }
