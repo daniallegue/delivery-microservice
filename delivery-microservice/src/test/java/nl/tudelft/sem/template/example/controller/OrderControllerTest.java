@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.example.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import nl.tudelft.sem.template.example.authorization.AuthorizationService;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.example.service.DeliveryService;
 import nl.tudelft.sem.template.example.service.OrderService;
@@ -10,6 +11,7 @@ import nl.tudelft.sem.template.model.Order;
 import nl.tudelft.sem.template.model.Vendor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import java.util.ArrayList;
@@ -22,7 +24,9 @@ public class OrderControllerTest {
 
     private final DeliveryService deliveryService = Mockito.mock(DeliveryService.class);
 
-    private final DeliveryController orderController = new DeliveryController(deliveryService, orderService);
+    private final AuthorizationService authorizationService = Mockito.mock(AuthorizationService.class);
+
+    private final DeliveryController orderController = new DeliveryController(deliveryService, orderService, authorizationService);
 
     @BeforeEach
     void setup() {

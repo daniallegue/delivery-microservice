@@ -1,6 +1,8 @@
 package nl.tudelft.sem.template.example.controller;
 
 
+import nl.tudelft.sem.template.example.authorization.AuthorizationService;
+import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.VendorHasNoCouriersException;
 import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
@@ -27,7 +29,8 @@ public class VendorControllerTest {
     private final VendorRepository vendorRepository = Mockito.mock(VendorRepository.class);
 
     private final VendorService vendorService = Mockito.mock(VendorService.class);
-    private final VendorController vendorController = new VendorController(vendorService);
+    private final AuthorizationService authorizationService = Mockito.mock(AuthorizationService.class);
+    private final VendorController vendorController = new VendorController(vendorService, authorizationService);
 
     public Vendor vendor1;
     public Vendor vendor2;
@@ -53,22 +56,23 @@ public class VendorControllerTest {
         assertEquals(response.getBody(), 5);
     }
 
-//    @Test
-//    void getDeliveryZoneNotFoundTest() throws VendorNotFoundException {
-//        Integer authorizationId = 1;
-//        when(vendorService.getDeliveryZone(3L)).thenThrow(VendorNotFoundException.class);
-//        when(vendorRepository.existsById(3L)).thenReturn(false);
-//
-//        ResponseEntity<Integer> response = vendorController.vendorDeliveryVendorIdDeliveryZoneGet(3, 1);
-//        assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
-//    }
+    @Test
+    void getDeliveryZoneNotFound() throws VendorNotFoundException {
+        Integer authorizationId = 1;
+        when(vendorService.getDeliveryZone(2L)).thenThrow(VendorNotFoundException.class);
+        when(vendorRepository.existsById(2L)).thenReturn(false);
+
+        ResponseEntity<Integer> response = vendorController.vendorDeliveryVendorIdDeliveryZoneGet(2, 1);
+        assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
+    }
 
 
     @Test
-    void updateDeliveryZoneSuccessfulTest() throws VendorNotFoundException, VendorHasNoCouriersException {
+    void updateDeliveryZoneSuccessfulTest() throws VendorNotFoundException, VendorHasNoCouriersException, MicroserviceCommunicationException {
         when(vendorRepository.findById(2L)).thenReturn(Optional.ofNullable(vendor1));
         when(vendorRepository.existsById(2L)).thenReturn(true);
         when(vendorService.updateDeliveryZone(2L, 10L)).thenReturn(updated);
+        when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.VENDOR);
 
         ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
         Vendor updatedVendor = response.getBody();
@@ -77,5 +81,52 @@ public class VendorControllerTest {
         assertEquals(updatedVendor.getAddress(), vendor1.getAddress());
         assertEquals(updatedVendor.getCouriers(), vendor1.getCouriers());
     }
+
+    @Test
+    void updateDeliveryZoneUnauthorizedTest() throws VendorNotFoundException, VendorHasNoCouriersException, MicroserviceCommunicationException {
+        when(vendorRepository.findById(2L)).thenReturn(Optional.ofNullable(vendor1));
+        when(vendorRepository.existsById(2L)).thenReturn(true);
+        when(vendorService.updateDeliveryZone(2L, 10L)).thenReturn(updated);
+        when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.CUSTOMER);
+
+        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
+        assertEquals(response.getStatusCode(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void updateDeliveryZoneNotFoundTest() throws VendorNotFoundException, VendorHasNoCouriersException, MicroserviceCommunicationException {
+        when(vendorRepository.existsById(2L)).thenReturn(false);
+        when(vendorService.updateDeliveryZone(2L, 10L)).thenThrow(VendorNotFoundException.class);
+        when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.ADMIN);
+
+        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
+        assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void updateDeliveryZoneNoCouriersTest() throws VendorNotFoundException, VendorHasNoCouriersException, MicroserviceCommunicationException {
+        when(vendorRepository.findById(2L)).thenReturn(Optional.ofNullable(vendor1));
+        when(vendorRepository.existsById(2L)).thenReturn(true);
+        when(vendorService.updateDeliveryZone(2L, 10L)).thenThrow(VendorHasNoCouriersException.class);
+        when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.ADMIN);
+
+        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
+        assertEquals(response.getStatusCode(), HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void updateDeliveryZoneMiscommunicationTest() throws MicroserviceCommunicationException {
+        when(vendorRepository.findById(2L)).thenReturn(Optional.ofNullable(vendor1));
+        when(vendorRepository.existsById(2L)).thenReturn(true);
+        when(authorizationService.getUserRole(1L)).thenThrow(MicroserviceCommunicationException.class);
+
+        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
+        assertEquals(response.getStatusCode(), HttpStatus.BAD_REQUEST);
+    }
+
+
+
+
+
 
 }
