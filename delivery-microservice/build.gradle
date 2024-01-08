@@ -73,6 +73,7 @@ dependencies {
 	implementation 'io.springfox:springfox-swagger-ui:2.8.0'
 	implementation 'org.openapitools:jackson-databind-nullable:0.1.0'
 	implementation 'io.swagger.core.v3:swagger-core:2.2.15'
+	testImplementation "com.github.tomakehurst:wiremock-jre8-standalone:2.33.2"
 }
 
 test {
