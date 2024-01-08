@@ -1,11 +1,13 @@
 package nl.tudelft.sem.template.example.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
 import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
+import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.model.Delivery;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 public class CourierService {
     DeliveryRepository deliveryRepository;
     VendorRepository vendorRepository;
+    private List<Long> courierList = new ArrayList<>();
 
     /**
      * Constructor for handling dependency injection.
@@ -125,5 +128,48 @@ public class CourierService {
         delivery.setCourierId(courierId);
         deliveryRepository.save(delivery);
 
+    }
+
+    /** Adds a courier with a specific ID to our database.
+     *
+     * @param courierId Unique identifier of the courier (required)
+     */
+    public void addCourier(Long courierId) {
+        // Check if the courier ID is already known, if not, add it to the list
+        if (!courierList.contains(courierId)) {
+            courierList.add(courierId);
+        }
+    }
+
+    /**
+     *
+     * @param courierId Unique identifier of the courier (required)
+     * @return returns true if a courier with the specified ID exists in our database
+     */
+    public boolean doesCourierExist(Long courierId) {
+        return courierList.contains(courierId);
+    }
+
+    /**
+     * Assigns a specific order to a courier.
+     *
+     * @param courierId Unique identifier of the courier (required)
+     * @param orderId Unique identifier of the order to be assigned (required)
+     * @throws OrderNotFoundException if the order is not found
+     * @throws CourierNotFoundException if the courier is not found
+     */
+    public void assignCourierToSpecificOrder(Long courierId, Long orderId) throws OrderNotFoundException, CourierNotFoundException {
+
+        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
+        if (delivery == null) {
+            throw new OrderNotFoundException("Order with id " + orderId + " was not found.");
+        }
+
+        if (!this.doesCourierExist(courierId)) {
+            throw new CourierNotFoundException("Courier with id " + courierId + " not found.");
+        }
+
+        delivery.setCourierId(courierId);
+        deliveryRepository.save(delivery);
     }
 }

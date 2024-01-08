@@ -1,8 +1,10 @@
 package nl.tudelft.sem.template.example.controller;
 
 import nl.tudelft.sem.template.api.CourierApi;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
+import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.service.CourierService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,5 +58,24 @@ public class CourierController implements CourierApi {
             return (ResponseEntity<Void>) ResponseEntity.status(HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Assigns a specific order to a courier.
+     *
+     * @path PUT: /courier/delivery/{courier_id}/assign/{order_id}
+     * @param courierId Unique identifier of the courier (required)
+     * @param orderId Unique identifier of the delivery to be assigned (required)
+     * @param authorizationId Identification of the user who is making the request (required)
+     * @return ResponseEntity with appropriate status code
+     */
+    @Override
+    public ResponseEntity<Void> courierDeliveryCourierIdAssignOrderIdPut(Long courierId, Long orderId, Integer authorizationId) {
+        try {
+            courierService.assignCourierToSpecificOrder(courierId, orderId);
+            return ResponseEntity.ok().build();
+        } catch (OrderNotFoundException | CourierNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 }
