@@ -6,7 +6,7 @@ buildscript {
 		//maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
 	}
 	dependencies {
-		classpath 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.5.2'
+		classpath 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.15.0'
 		classpath "org.openapitools:openapi-generator-gradle-plugin:6.6.0"
 	}
 }
@@ -25,7 +25,7 @@ plugins {
 	id 'pmd'
 
 	// PITest
-	id 'info.solidsoft.pitest' version '1.5.2'
+	id 'info.solidsoft.pitest' version '1.15.0'
 
 	// OpenAPI
 	id 'org.openapi.generator' version '4.0.1'
@@ -139,10 +139,10 @@ pmd {
 apply plugin: 'info.solidsoft.pitest'
 pitest {
 	//adds dependency to org.pitest:pitest-junit5-plugin and sets "testPlugin" to "junit5"
-	junit5PluginVersion = '0.12'
+	junit5PluginVersion = '1.2.0'
 
 	targetClasses = ['nl.tudelft.sem.template.*']  //by default "${project.group}.*"
-	pitestVersion = '1.5.1' //not needed when a default PIT version should be used
+	pitestVersion = '1.15.0' //not needed when a default PIT version should be used
 	threads = 4
 	outputFormats = ['XML', 'HTML']
 	timestampedReports = false

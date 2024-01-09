@@ -3,12 +3,16 @@ package nl.tudelft.sem.template.example.controller;
 import static nl.tudelft.sem.template.model.Order.StatusEnum;
 
 import nl.tudelft.sem.template.api.DeliveryApi;
+import nl.tudelft.sem.template.example.authorization.AuthorizationService;
+import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
+import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.service.DeliveryService;
 import nl.tudelft.sem.template.example.service.OrderService;
 import nl.tudelft.sem.template.model.Delivery;
 import nl.tudelft.sem.template.model.DeliveryPostRequest;
+import nl.tudelft.sem.template.model.Issue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +28,8 @@ public class DeliveryController implements DeliveryApi {
 
     OrderService orderService;
 
+    AuthorizationService authorizationService;
+
     /**
      * Simple constructor that handles dependency injection of the service.
      *
@@ -32,9 +38,10 @@ public class DeliveryController implements DeliveryApi {
      */
 
     @Autowired
-    DeliveryController(DeliveryService deliveryService, OrderService orderService) {
+    DeliveryController(DeliveryService deliveryService, OrderService orderService, AuthorizationService authorizationService) {
         this.deliveryService = deliveryService;
         this.orderService = orderService;
+        this.authorizationService = authorizationService;
     }
 
     @Override
@@ -87,6 +94,33 @@ public class DeliveryController implements DeliveryApi {
             return ResponseEntity.ok(status.toString());
         } catch (OrderNotFoundException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @Override
+    public ResponseEntity<Void> deliveryOrderOrderIdIssuePut(Integer orderId, Integer authorizationId, Issue issue){
+        try{
+            if(!authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId),Long.valueOf(orderId)))
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            deliveryService.addIssueToDelivery(orderId, issue);
+            return ResponseEntity.ok().build();
+        } catch (MicroserviceCommunicationException | DeliveryNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
+    @Override
+    public ResponseEntity<Issue> deliveryOrderOrderIdIssueGet(Integer orderId, Integer authorizationId){
+        try{
+            if(!authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId),Long.valueOf(orderId)))
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            Issue issue = deliveryService.retrieveIssueOfDelivery(orderId);
+            if(issue == null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            return ResponseEntity.ok(issue);
+        } catch (MicroserviceCommunicationException | DeliveryNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
 }
