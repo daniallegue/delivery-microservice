@@ -73,7 +73,7 @@ public class DeliveryControllerTest {
         when(deliveryService.getDefaultDeliveryZone()).thenReturn(30L);
 
         ResponseEntity<Integer> defaultZone = deliveryController.deliveryDefaultDeliveryZoneGet(1);
-        assertEquals(defaultZone.getBody(), 30);
+        assertEquals(30, defaultZone.getBody());
     }
 
     @Test
@@ -81,7 +81,7 @@ public class DeliveryControllerTest {
         when(authorizationService.getUserRole(2L)).thenReturn(authorizationService.ADMIN);
         ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(25, 2);
 
-        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
@@ -89,7 +89,7 @@ public class DeliveryControllerTest {
         when(authorizationService.getUserRole(2L)).thenReturn(authorizationService.CUSTOMER);
 
         ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(25, 2);
-        assertEquals(response.getStatusCode(), HttpStatus.UNAUTHORIZED);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
     @Test
@@ -97,7 +97,7 @@ public class DeliveryControllerTest {
         when(authorizationService.getUserRole(5L)).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(25, 5);
-        assertEquals(response.getStatusCode(), HttpStatus.INTERNAL_SERVER_ERROR);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
 }

@@ -53,7 +53,7 @@ public class VendorControllerTest {
         when(vendorRepository.existsById(2L)).thenReturn(true);
 
         ResponseEntity<Integer> response = vendorController.vendorDeliveryVendorIdDeliveryZoneGet(2, 1);
-        assertEquals(response.getBody(), 5);
+        assertEquals(5, response.getBody());
     }
 
     @Test
@@ -63,7 +63,7 @@ public class VendorControllerTest {
         when(vendorRepository.existsById(2L)).thenReturn(false);
 
         ResponseEntity<Integer> response = vendorController.vendorDeliveryVendorIdDeliveryZoneGet(2, 1);
-        assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
 
@@ -77,9 +77,9 @@ public class VendorControllerTest {
         ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
         Vendor updatedVendor = response.getBody();
         assertEquals(vendor1.getId(), updatedVendor.getId());
-        assertEquals(updatedVendor.getDeliveryZone(), 10L);
-        assertEquals(updatedVendor.getAddress(), vendor1.getAddress());
-        assertEquals(updatedVendor.getCouriers(), vendor1.getCouriers());
+        assertEquals(10L, updatedVendor.getDeliveryZone());
+        assertEquals(vendor1.getAddress(), updatedVendor.getAddress());
+        assertEquals(vendor1.getCouriers(), updatedVendor.getCouriers());
     }
 
     @Test
@@ -90,7 +90,7 @@ public class VendorControllerTest {
         when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.CUSTOMER);
 
         ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
-        assertEquals(response.getStatusCode(), HttpStatus.UNAUTHORIZED);
+        assertEquals( HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
     @Test
@@ -100,7 +100,7 @@ public class VendorControllerTest {
         when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.ADMIN);
 
         ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
-        assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
+        assertEquals( HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
@@ -111,7 +111,7 @@ public class VendorControllerTest {
         when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.ADMIN);
 
         ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
-        assertEquals(response.getStatusCode(), HttpStatus.BAD_REQUEST);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
@@ -121,7 +121,7 @@ public class VendorControllerTest {
         when(authorizationService.getUserRole(1L)).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
-        assertEquals(response.getStatusCode(), HttpStatus.BAD_REQUEST);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
 
