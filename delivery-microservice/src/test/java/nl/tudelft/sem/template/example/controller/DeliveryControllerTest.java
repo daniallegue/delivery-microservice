@@ -1,4 +1,6 @@
 package nl.tudelft.sem.template.example.controller;
+import nl.tudelft.sem.template.example.authorization.AuthorizationService;
+import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.OrderAlreadyExistsException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.service.DeliveryService;
@@ -24,13 +26,16 @@ public class DeliveryControllerTest {
     private DeliveryService deliveryService;
 
     private OrderService orderService;
+
+    private AuthorizationService authorizationService;
+
     private DeliveryController deliveryController;
 
     private DeliveryPostRequest dummyDeliveryPostRequest;
 
 
     @BeforeEach
-    void setup(){
+    void setup() throws MicroserviceCommunicationException {
         dummyDeliveryPostRequest =  new DeliveryPostRequest();
         dummyDeliveryPostRequest.setVendorId(1);
         dummyDeliveryPostRequest.setOrderId(123);
@@ -39,7 +44,13 @@ public class DeliveryControllerTest {
 
         deliveryService = Mockito.mock(DeliveryService.class);
         orderService = Mockito.mock(OrderService.class);
-        deliveryController = new DeliveryController(deliveryService, orderService);
+        authorizationService = Mockito.mock(AuthorizationService.class);
+        deliveryController = new DeliveryController(deliveryService, orderService, authorizationService);
+
+        // Default authorization behavior
+        when(authorizationService.getUserRole(anyLong())).thenReturn("customer");
+        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenReturn(true);
+        when(authorizationService.canUpdateDeliveryDetails(anyLong(), anyLong())).thenReturn(true);
     }
 
     @Test

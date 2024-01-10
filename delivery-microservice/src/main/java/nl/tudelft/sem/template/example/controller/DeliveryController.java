@@ -3,7 +3,9 @@ package nl.tudelft.sem.template.example.controller;
 import static nl.tudelft.sem.template.model.Order.StatusEnum;
 
 import nl.tudelft.sem.template.api.DeliveryApi;
+import nl.tudelft.sem.template.example.authorization.AuthorizationService;
 import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
+import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.service.DeliveryService;
 import nl.tudelft.sem.template.example.service.OrderService;
@@ -26,6 +28,8 @@ public class DeliveryController implements DeliveryApi {
 
     OrderService orderService;
 
+    AuthorizationService authorizationService;
+
     /**
      * Simple constructor that handles dependency injection of the service.
      *
@@ -34,9 +38,10 @@ public class DeliveryController implements DeliveryApi {
      */
 
     @Autowired
-    DeliveryController(DeliveryService deliveryService, OrderService orderService) {
+    DeliveryController(DeliveryService deliveryService, OrderService orderService, AuthorizationService authorizationService) {
         this.deliveryService = deliveryService;
         this.orderService = orderService;
+        this.authorizationService = authorizationService;
     }
 
     @Override
@@ -63,15 +68,27 @@ public class DeliveryController implements DeliveryApi {
      */
     @Override
     public ResponseEntity<Void> deliveryOrderOrderIdStatusPut(Integer orderId, Integer authorizationId, String newStatus) {
-        //TODO(@mmadara): Handle authorization.
         try {
+            String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
+            boolean isAuthorized = authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+            if (!isAuthorized) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            // Update order status
             orderService.setOrderStatus(orderId, newStatus);
             return ResponseEntity.ok().build();
+
+        } catch (MicroserviceCommunicationException e) {
+            // Handle exceptions related to user role retrieval or authorization check
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
         } catch (OrderNotFoundException | IllegalOrderStatusException e) {
-            //TODO: Decide what to do with error message.
+            // Handle specific exceptions related to order processing
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
+
 
     /**
      * Returns a text format of the order's string.
@@ -83,141 +100,181 @@ public class DeliveryController implements DeliveryApi {
      */
     @Override
     public ResponseEntity<String> deliveryOrderOrderIdStatusGet(Integer orderId, Integer authorizationId) {
-        //TODO(@mmadara): Handle authorization.
         try {
+            String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
+            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+
+            if (!isAuthorized) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
             StatusEnum status = orderService.getOrderStatus(orderId);
             return ResponseEntity.ok(status.toString());
+
+        } catch (MicroserviceCommunicationException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
         } catch (OrderNotFoundException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
+
     @Override
     public ResponseEntity<OffsetDateTime> deliveryOrderOrderIdReadyTimeGet(Integer orderId, Integer authorizationId) {
-        // TODO: Implement authorization check based on 'authorizationId'
-
         try {
-            OffsetDateTime readyTime = deliveryService.getReadyTime(Long.valueOf(orderId));
+            String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
+            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
 
-            if (readyTime == null) {
-                // If there's no ready time set for the order
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            if (!isAuthorized) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
-            return ResponseEntity.ok(readyTime);
-        } catch (OrderNotFoundException e) {
-            // This exception should be thrown by your service layer when an order is not found
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (IllegalArgumentException e) {
-            // This exception should be thrown by your service layer for any invalid inputs
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        } catch (Exception e) {
-            // Handle other unexpected exceptions
+            OffsetDateTime readyTime = deliveryService.getReadyTime(Long.valueOf(orderId));
+            return readyTime == null ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(readyTime);
+
+        } catch (MicroserviceCommunicationException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
+        } catch (OrderNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
 
     @Override
     public ResponseEntity<Void> deliveryOrderOrderIdReadyTimePut(Integer orderId, Integer authorizationId, OffsetDateTime newReadyTime) {
-        // TODO: Implement authorization check based on 'authorizationId'
-
         try {
+            String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
+            boolean isAuthorized = authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+
+            if (!isAuthorized) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
             deliveryService.updateReadyTime(Long.valueOf(orderId), newReadyTime);
             return ResponseEntity.ok().build();
+
+        } catch (MicroserviceCommunicationException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
         } catch (OrderNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 
     @Override
     public ResponseEntity<OffsetDateTime> deliveryOrderOrderIdPickupTimeGet(Integer orderId, Integer authorizationId) {
-        // TODO: Implement authorization check based on 'authorizationId'
-
         try {
-            OffsetDateTime pickupTime = deliveryService.getPickupTime(Long.valueOf(orderId));
+            String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
+            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
 
-            if (pickupTime == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            if (!isAuthorized) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
-            return ResponseEntity.ok(pickupTime);
+            OffsetDateTime pickupTime = deliveryService.getPickupTime(Long.valueOf(orderId));
+            return pickupTime == null ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(pickupTime);
+
+        } catch (MicroserviceCommunicationException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
         } catch (OrderNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 
     @Override
     public ResponseEntity<Void> deliveryOrderOrderIdPickupTimePut(Integer orderId, Integer authorizationId, OffsetDateTime newPickupTime) {
-        // TODO: Implement authorization check based on 'authorizationId'
-
         try {
+            String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
+            boolean isAuthorized = authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+
+            if (!isAuthorized) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
             deliveryService.updatePickupTime(Long.valueOf(orderId), newPickupTime);
             return ResponseEntity.ok().build();
+
+        } catch (MicroserviceCommunicationException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
         } catch (OrderNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
+
     @Override
     public ResponseEntity<OffsetDateTime> deliveryOrderOrderIdTodGet(Integer orderId, Integer authorizationId) {
-        // TODO: Implement authorization check based on 'authorizationId'
-
         try {
-            OffsetDateTime deliveredTime = deliveryService.getDeliveredTime(Long.valueOf(orderId));
+            String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
+            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
 
-            if (deliveredTime == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            if (!isAuthorized) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
-            return ResponseEntity.ok(deliveredTime);
+            OffsetDateTime deliveredTime = deliveryService.getDeliveredTime(Long.valueOf(orderId));
+            return deliveredTime == null ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(deliveredTime);
+
+        } catch (MicroserviceCommunicationException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
         } catch (OrderNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @Override
     public ResponseEntity<Void> deliveryOrderOrderIdTodPut(Integer orderId, Integer authorizationId, OffsetDateTime newDeliveredTime) {
-        // TODO: Implement authorization check based on 'authorizationId'
-
         try {
+            String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
+            boolean isAuthorized = authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+
+            if (!isAuthorized) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
             deliveryService.updateDeliveredTime(Long.valueOf(orderId), newDeliveredTime);
             return ResponseEntity.ok().build();
+
+        } catch (MicroserviceCommunicationException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
         } catch (OrderNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @Override
     public ResponseEntity<OffsetDateTime> deliveryOrderOrderIdEtaGet(Integer orderId, Integer authorizationId) {
-        // TODO: Implement authorization check based on 'authorizationId'
-
         try {
-            OffsetDateTime eta = deliveryService.getEta(Long.valueOf(orderId));
+            String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
+            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
 
-            if (eta == null) {
-                // If there's no ETA set for the order
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            if (!isAuthorized) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
-            return ResponseEntity.ok(eta);
-        } catch (OrderNotFoundException e) {
-            // Handle case when order is not found
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (Exception e) {
-            // Handle other unexpected exceptions
+            OffsetDateTime eta = deliveryService.getEta(Long.valueOf(orderId));
+            return eta == null ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(eta);
+
+        } catch (MicroserviceCommunicationException | RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
+        } catch (OrderNotFoundException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
+
 }
