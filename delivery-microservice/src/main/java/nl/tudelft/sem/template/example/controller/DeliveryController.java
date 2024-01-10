@@ -199,42 +199,25 @@ public class DeliveryController implements DeliveryApi {
         }
     }
 
-//    @Override
-//    public ResponseEntity<OffsetDateTime> deliveryOrderOrderIdEtaGet(Integer orderId, Integer authorizationId) {
-//        // TODO: Implement authorization check based on 'authorizationId'
-//
-//        try {
-//            OffsetDateTime eta = deliveryService.getEta(Long.valueOf(orderId));
-//
-//            if (eta == null) {
-//                // If there's no ETA set for the order
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-//            }
-//
-//            return ResponseEntity.ok(eta);
-//        } catch (OrderNotFoundException e) {
-//            // Handle case when order is not found
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-//        } catch (Exception e) {
-//            // Handle other unexpected exceptions
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-//        }
-//    }
-//
-//    @Override
-//    public ResponseEntity<Void> deliveryOrderOrderIdEtaPut(Integer orderId, Integer authorizationId, OffsetDateTime eta) {
-//        // TODO: Implement authorization check based on 'authorizationId'
-//
-//        try {
-//            deliveryService.updateEta(Long.valueOf(orderId), eta);
-//            return ResponseEntity.ok().build();
-//        } catch (OrderNotFoundException e) {
-//            // Handle case when order is not found
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-//        } catch (Exception e) {
-//            // Handle other unexpected exceptions
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-//        }
-//    }
+    @Override
+    public ResponseEntity<OffsetDateTime> deliveryOrderOrderIdEtaGet(Integer orderId, Integer authorizationId) {
+        // TODO: Implement authorization check based on 'authorizationId'
 
+        try {
+            OffsetDateTime eta = deliveryService.getEta(Long.valueOf(orderId));
+
+            if (eta == null) {
+                // If there's no ETA set for the order
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+
+            return ResponseEntity.ok(eta);
+        } catch (OrderNotFoundException e) {
+            // Handle case when order is not found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            // Handle other unexpected exceptions
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

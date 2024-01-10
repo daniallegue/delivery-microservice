@@ -200,5 +200,38 @@ public class DeliveryControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
+    @Test
+    public void testDeliveryOrderOrderIdEtaGet_Success() throws Exception {
+        OffsetDateTime mockEta = OffsetDateTime.now();
 
+        when(deliveryService.getEta(123L)).thenReturn(mockEta);
+
+        ResponseEntity<OffsetDateTime> response = deliveryController.deliveryOrderOrderIdEtaGet(123,1 );
+
+        verify(deliveryService).getEta(123L);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(mockEta, response.getBody());
+    }
+
+    @Test
+    public void testDeliveryOrderOrderIdEtaGet_OrderNotFound() throws Exception {
+
+        when(deliveryService.getEta(123L)).thenThrow(new OrderNotFoundException("Order not found"));
+
+        ResponseEntity<OffsetDateTime> response = deliveryController.deliveryOrderOrderIdEtaGet(123, 1);
+
+        verify(deliveryService).getEta(123L);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    public void testDeliveryOrderOrderIdEtaGet_Exception() throws Exception {
+
+        when(deliveryService.getEta(123L)).thenThrow(new RuntimeException("Unexpected error"));
+
+        ResponseEntity<OffsetDateTime> response = deliveryController.deliveryOrderOrderIdEtaGet(123, 1);
+
+        verify(deliveryService).getEta(123L);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
 }

@@ -146,16 +146,26 @@ public class DeliveryService {
         deliveryRepository.save(delivery);
     }
 
-//    public OffsetDateTime getEta(Long orderId) throws OrderNotFoundException {
-//        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
-//        if (delivery == null) {
-//            throw new OrderNotFoundException("Order with ID: " + orderId + " not found.");
-//        }
-//
-//        Time time = delivery.getTime();
-//        return time != null ? time.getEta() : null; // Assuming Time class has getEta method
-//    }
-//
+    public OffsetDateTime getEta(Long orderId) throws OrderNotFoundException {
+        // Fetch the delivery using the repository
+        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
+        if (delivery == null) {
+            throw new OrderNotFoundException("Order with ID: " + orderId + " not found.");
+        }
+
+        OffsetDateTime eta = calculateEstimatedTime(delivery.getOrder().getVendor().getAddress(), delivery.getOrder().getDestination());
+
+        return eta;
+    }
+
+    private OffsetDateTime calculateEstimatedTime(Location vendorLocation, Location destination) {
+        // TODO: Implement specific computation of the estimated time of arrival.
+        long estimatedTravelDurationInMinutes = 30; // Example fixed duration
+        return OffsetDateTime.now().plusMinutes(estimatedTravelDurationInMinutes);
+    }
+
+
+
 
 
 }
