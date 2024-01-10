@@ -275,6 +275,4 @@ public class DeliveryController implements DeliveryApi {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
-
-
 }
