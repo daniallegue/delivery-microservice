@@ -77,9 +77,10 @@ public class CourierControllerTest {
     }
 
     @Test
-    void getAvailableOrdersTest() {
+    void getAvailableOrdersTest() throws MicroserviceCommunicationException {
         Mockito.when(courierService.getAvailableOrderIds(1L)).thenReturn(List.of(5L));
         Mockito.when(courierService.getAvailableOrderIds(18L)).thenReturn(List.of(9L));
+        when(authorizationService.getUserRole(1L)).thenReturn("admin");
 
         List<Long> orderIds = courierController.courierDeliveryCourierIdAvailableOrdersGet(1L, 1).getBody();
         List<Long> expectedResult = new ArrayList<>(List.of(5L));
