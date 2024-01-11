@@ -1,6 +1,8 @@
 package nl.tudelft.sem.template.example.service;
 
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
+import nl.tudelft.sem.template.example.exception.VendorHasNoCouriersException;
+import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.external.UsersMicroservice;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,6 +44,15 @@ public class VendorServiceTest {
         //TO DO: change address with the (mocked) one from other microservices
         Location address = new Location(0.0,0.0);
         vendor = new Vendor(1L, configurationProperties.getDefaultDeliveryZone(), address, new ArrayList<>());
+        Vendor vendor1 = new Vendor(1L, 5L, address, null);
+        List<Long> couriers = new ArrayList<>();
+        couriers.add(2L);
+        Vendor vendor2 = new Vendor(3L, 7L, address, couriers);
+        when(vendorRepository.findById(1L)).thenReturn(Optional.ofNullable(vendor1));
+        when(vendorRepository.findById(3L)).thenReturn(Optional.ofNullable(vendor2));
+        when(vendorRepository.existsById(1L)).thenReturn(true);
+        when(vendorRepository.existsById(3L)).thenReturn(true);
+        when(vendorRepository.existsById(2L)).thenReturn(false);
     }
 
     @Test
@@ -66,6 +78,44 @@ public class VendorServiceTest {
 
         verify(vendorRepository, times(1)).save(any());
         assertNotNull(resultingVendor);
+    }
+
+    @Test
+    void getDeliveryZoneCorrectTest() throws VendorNotFoundException {
+        Long vendorId = 1L;
+        Long result = 5L;
+        assertEquals(result, vendorService.getDeliveryZone(1L));
+        assertDoesNotThrow(() -> vendorService.getDeliveryZone(vendorId));
+
+    }
+
+    @Test
+    void getDeliveryZoneInvalidTest() throws VendorNotFoundException {
+        Long vendorId = 2L;
+        assertThrows(VendorNotFoundException.class, () -> vendorService.getDeliveryZone(vendorId));
+    }
+
+    @Test
+    void updateDeliveryZoneInvalidTest() throws VendorNotFoundException {
+        Long vendorId = 2L;
+        assertThrows(VendorNotFoundException.class, () -> vendorService.getDeliveryZone(vendorId));
+    }
+
+    @Test
+    void updateDeliveryZoneCorrectTest() throws VendorNotFoundException, VendorHasNoCouriersException {
+        Long newZone = 10L;
+        Location address = new Location(0.0,0.0);
+        Vendor newVendor = new Vendor(3L, 10L, address, new ArrayList<>());
+
+        Vendor updated = vendorService.updateDeliveryZone(3L, newZone);
+        assertEquals(newVendor.getDeliveryZone(), updated.getDeliveryZone());
+        assertEquals(address, updated.getAddress());
+    }
+
+    @Test
+    void updateDeliveryZoneNoCouriersTest() throws VendorNotFoundException, VendorHasNoCouriersException {
+        Long vendorId = 1L;
+        assertThrows(VendorHasNoCouriersException.class, () -> vendorService.updateDeliveryZone(vendorId, 30L));
     }
 
     @Test

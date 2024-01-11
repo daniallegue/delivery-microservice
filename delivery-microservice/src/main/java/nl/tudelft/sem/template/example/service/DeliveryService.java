@@ -1,12 +1,18 @@
 package nl.tudelft.sem.template.example.service;
 
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
+import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
 import nl.tudelft.sem.template.example.exception.OrderAlreadyExistsException;
 import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
-import nl.tudelft.sem.template.model.*;
+import nl.tudelft.sem.template.model.Delivery;
+import nl.tudelft.sem.template.model.DeliveryPostRequest;
+import nl.tudelft.sem.template.model.Location;
+import nl.tudelft.sem.template.model.Order;
+import nl.tudelft.sem.template.model.Issue;
+import nl.tudelft.sem.template.model.Vendor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +23,8 @@ public class DeliveryService {
     VendorRepository vendorRepository;
     VendorService vendorService;
 
+    ConfigurationProperties configurationProperties;
+
     /**
      * Constructor for the Delivery Service that allow dependency injection.
      *
@@ -24,14 +32,17 @@ public class DeliveryService {
      * @param orderRepository The repository where Order objects are saved in.
      * @param vendorRepository The repository where Vendor objects are saved in.
      * @param vendorService The service that handles the vendor interaction logic.
+     * @param configurationProperties The configuration properties of the whole microservice
      */
     @Autowired
     DeliveryService(DeliveryRepository deliveryRepository, OrderRepository orderRepository,
-                    VendorRepository vendorRepository, VendorService vendorService) {
+                    VendorRepository vendorRepository, VendorService vendorService,
+                    ConfigurationProperties configurationProperties) {
         this.deliveryRepository = deliveryRepository;
         this.orderRepository = orderRepository;
         this.vendorRepository = vendorRepository;
         this.vendorService = vendorService;
+        this.configurationProperties = configurationProperties;
     }
 
     /**
@@ -87,4 +98,22 @@ public class DeliveryService {
             throw new DeliveryNotFoundException("Delivery with order id " + orderId + " was not found");
         return delivery.getIssue();
     }
+
+    /**
+     * Updates the default delivery zone from Configuration Properties.
+     *
+     * @param newDeliveryZone the value to set the new delivery zone to
+     */
+    public void updateDefaultDeliveryZone(Integer newDeliveryZone) {
+        configurationProperties.setDefaultDeliveryZone(newDeliveryZone);
+    }
+
+    /**
+     * Retrieves the default delivery zone from Configuration Properties.
+     */
+    public Long getDefaultDeliveryZone() {
+        return configurationProperties.getDefaultDeliveryZone();
+    }
+
+
 }

@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 public class DeliveryControllerTest {
@@ -49,6 +50,7 @@ public class DeliveryControllerTest {
         dummyDeliveryPostRequest.setDestination(new Location(4.0, 5.0));
 
         deliveryService = Mockito.mock(DeliveryService.class);
+        authorizationService = Mockito.mock(AuthorizationService.class);
         orderService = Mockito.mock(OrderService.class);
         authorizationService = Mockito.mock(AuthorizationService.class);
         deliveryController = new DeliveryController(deliveryService, orderService, authorizationService);
@@ -97,6 +99,21 @@ public class DeliveryControllerTest {
         ResponseEntity<Void> response = deliveryController.deliveryOrderOrderIdIssuePut(1234, 4567, issue);
         verify(deliveryService, times(1)).addIssueToDelivery(any(), any());
         verify(authorizationService, times(1)).canUpdateDeliveryDetails(any(), any());
+    }
+
+    @Test
+    public void getDefaultDeliveryZoneTest() {
+        when(deliveryService.getDefaultDeliveryZone()).thenReturn(30L);
+
+        ResponseEntity<Integer> defaultZone = deliveryController.deliveryDefaultDeliveryZoneGet(1);
+        assertEquals(30, defaultZone.getBody());
+    }
+
+    @Test
+    public void updateDefaultDeliveryZoneSuccessfulTest() throws MicroserviceCommunicationException {
+        when(authorizationService.getUserRole(2L)).thenReturn(authorizationService.ADMIN);
+        ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(25, 2);
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -146,5 +163,21 @@ public class DeliveryControllerTest {
         assertEquals(403, response.getStatusCodeValue());
         verify(authorizationService, times(1)).canViewDeliveryDetails(any(), any());
         verify(deliveryService, never()).retrieveIssueOfDelivery(any());
+    }
+
+    @Test
+    public void updateDefaultDeliveryZoneUnauthorizedTest() throws MicroserviceCommunicationException {
+        when(authorizationService.getUserRole(2L)).thenReturn(authorizationService.CUSTOMER);
+
+        ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(25, 2);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    public void updateDefaultDeliveryZoneMiscommunicationTest() throws MicroserviceCommunicationException {
+        when(authorizationService.getUserRole(5L)).thenThrow(MicroserviceCommunicationException.class);
+
+        ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(25, 5);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 }
