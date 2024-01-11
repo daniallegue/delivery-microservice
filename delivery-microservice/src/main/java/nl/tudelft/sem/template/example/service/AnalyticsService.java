@@ -1,24 +1,28 @@
 package nl.tudelft.sem.template.example.service;
 
-import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
-import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
-import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
-import nl.tudelft.sem.template.example.exception.RatingNotFoundException;
+import nl.tudelft.sem.template.example.exception.*;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.model.Delivery;
 import nl.tudelft.sem.template.model.Order;
 import nl.tudelft.sem.template.model.Rating;
+import nl.tudelft.sem.template.model.Issue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
 public class AnalyticsService {
     private final DeliveryRepository deliveryRepository;
+    private final CourierService courierService;
 
     @Autowired
-    public AnalyticsService(DeliveryRepository deliveryRepository) {
+    public AnalyticsService(DeliveryRepository deliveryRepository, CourierService courierService) {
         this.deliveryRepository = deliveryRepository;
+        this.courierService = courierService;
     }
 
     /**
@@ -70,4 +74,73 @@ public class AnalyticsService {
         return rating;
     }
 
+    /**
+     * Calculates the average number of deliveries per day for a specified courier.
+     *
+     * @param courierId The unique identifier of the courier.
+     * @return An integer representing the average number of deliveries per day.
+     * @throws CourierNotFoundException If the courier with the given ID does not exist.
+     * @throws NoDeliveriesException If the courier has not made any deliveries yet.
+     */
+    public int getDeliveriesPerDay(Long courierId) throws CourierNotFoundException, NoDeliveriesException {
+        if (!courierService.doesCourierExist(courierId)) {
+            throw new CourierNotFoundException("Courier with id " + courierId + " does not exist.");
+        }
+        List<Delivery> deliveries = deliveryRepository.findByCourierId(courierId);
+        if (deliveries.isEmpty()) {
+            throw new NoDeliveriesException("Courier with id " + courierId + " has no deliveries yet.");
+        }
+
+        int averageDeliveries = (int) Math.round(deliveries.size()/7.0);
+        return averageDeliveries;
+    }
+
+    /**
+     * Calculates the average number of deliveries per day for a specified courier.
+     *
+     * @param courierId The unique identifier of the courier.
+     * @return An integer representing the average number of deliveries per day.
+     * @throws CourierNotFoundException If the courier with the given ID does not exist.
+     * @throws NoDeliveriesException If the courier has not made any deliveries yet.
+     */
+    public int getSuccessfulDeliveries(Long courierId) throws CourierNotFoundException, NoDeliveriesException {
+        if (!courierService.doesCourierExist(courierId)) {
+            throw new CourierNotFoundException("Courier with id " + courierId + " does not exist.");
+        }
+        List<Delivery> deliveries = deliveryRepository.findByCourierId(courierId);
+        if (deliveries.isEmpty()) {
+            throw new NoDeliveriesException("Courier with id " + courierId + " has no deliveries yet.");
+        }
+
+        int successfulDeliveries = (int) deliveries.stream()
+                .filter(delivery -> delivery.getOrder().getStatus() == Order.StatusEnum.DELIVERED)
+                .count();
+        return successfulDeliveries;
+    }
+
+    /**
+     * Retrieves a list of issue descriptions encountered by a specific courier during deliveries.
+     *
+     * @param courierId The unique identifier of the courier.
+     * @return A list of strings, each describing an issue encountered by the courier.
+     * @throws CourierNotFoundException If the courier with the given ID does not exist.
+     * @throws NoDeliveriesException If the courier has not made any deliveries yet.
+     */
+    public List<String> getCourierIssues(Long courierId) throws CourierNotFoundException, NoDeliveriesException {
+
+        if (!courierService.doesCourierExist(courierId)) {
+            throw new CourierNotFoundException("Courier with id " + courierId + " does not exist.");
+        }
+        List<Delivery> deliveries = deliveryRepository.findByCourierId(courierId);
+        if (deliveries.isEmpty()) {
+            throw new NoDeliveriesException("Courier with id " + courierId + " has no deliveries yet.");
+        }
+
+        List<String> issues = deliveries.stream()
+                .map(Delivery::getIssue)
+                .filter(Objects::nonNull)
+                .map(Issue::getDescription)
+                .collect(Collectors.toList());
+        return issues;
+    }
 }
