@@ -1,7 +1,5 @@
 package nl.tudelft.sem.template.example.service;
 
-import java.util.ArrayList;
-import java.util.Optional;
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.VendorHasNoCouriersException;
@@ -12,6 +10,10 @@ import nl.tudelft.sem.template.model.Location;
 import nl.tudelft.sem.template.model.Vendor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class VendorService {
@@ -99,5 +101,41 @@ public class VendorService {
         vendor.setDeliveryZone(deliveryZone);
         vendorRepository.save(vendor);
         return vendor;
+    }
+
+    /**
+     * Assigns courier to the given vendor.
+     *
+     * @param vendorId The id of the vendor.
+     * @param courierId the id of the courier
+     * @return the updated vendor
+     * @throws VendorNotFoundException throws exception if vendor does not exist
+     */
+    public Vendor assignCourierToVendor(Long vendorId, Long courierId) throws VendorNotFoundException {
+        if (!vendorRepository.existsById(vendorId)) {
+            throw new VendorNotFoundException("Vendor was not found");
+        }
+        Vendor vendor = vendorRepository.findById(vendorId).get();
+        List<Long> currentCouriers = vendor.getCouriers();
+        currentCouriers.add(courierId);
+        vendor.setCouriers(currentCouriers);
+        vendorRepository.save(vendor);
+        return vendor;
+
+    }
+
+    /**
+     * Gets a list of assigned courier ids to a given vendor.
+     *
+     * @param vendorId The id of the vendor
+     * @return list of assigned courier ids or empty list if vendor does not have couriers
+     * @throws VendorNotFoundException throws exception if vendor was not found
+     */
+    public List<Long> getAssignedCouriers(Long vendorId) throws VendorNotFoundException {
+        if (!vendorRepository.existsById(vendorId)) {
+            throw new VendorNotFoundException("Vendor was not found");
+        }
+        Vendor vendor = vendorRepository.findById(vendorId).get();
+        return vendor.getCouriers();
     }
 }

@@ -1,20 +1,20 @@
 package nl.tudelft.sem.template.example.controller;
 
-import java.util.List;
 import nl.tudelft.sem.template.api.CourierApi;
-import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
-import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
-import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
-import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
+import nl.tudelft.sem.template.example.authorization.AuthorizationService;
+import nl.tudelft.sem.template.example.exception.*;
 import nl.tudelft.sem.template.example.service.CourierService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 public class CourierController implements CourierApi {
     CourierService courierService;
+    AuthorizationService authorizationService;
 
     /**
      * Simple constructor that handles dependency injection of the service.
@@ -22,8 +22,9 @@ public class CourierController implements CourierApi {
      * @param courierService Instance of CourierService to handle the logic
      */
     @Autowired
-    public CourierController(CourierService courierService) {
+    public CourierController(CourierService courierService, AuthorizationService authorizationService) {
         this.courierService = courierService;
+        this.authorizationService = authorizationService;
     }
 
     /**
@@ -36,9 +37,17 @@ public class CourierController implements CourierApi {
      */
     @Override
     public ResponseEntity<List<Long>> courierDeliveryCourierIdAvailableOrdersGet(Long courierId, Integer authorizationId) {
-        //TODO: handle authorization
-        List<Long> availableOrderIds = courierService.getAvailableOrderIds(courierId);
-        return ResponseEntity.ok(availableOrderIds);
+        try {
+            if (!authorizationService.getUserRole((long) authorizationId).equals(authorizationService.COURIER)
+                    && !authorizationService.getUserRole((long) authorizationId).equals(authorizationService.ADMIN)) {
+                return new ResponseEntity<List<Long>>(HttpStatus.UNAUTHORIZED);
+            }
+            List<Long> availableOrderIds = courierService.getAvailableOrderIds(courierId);
+            return ResponseEntity.ok(availableOrderIds);
+        } catch (MicroserviceCommunicationException e) {
+            return new ResponseEntity<List<Long>>(HttpStatus.BAD_REQUEST);
+        }
+
     }
 
 
