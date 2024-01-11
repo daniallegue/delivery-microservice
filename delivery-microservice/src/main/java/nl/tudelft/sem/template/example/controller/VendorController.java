@@ -61,8 +61,9 @@ public class VendorController implements VendorApi {
     public ResponseEntity<Vendor> vendorDeliveryVendorIdDeliveryZonePut(Integer vendorId,
                                                                         Integer deliveryZone, Integer authorizationId) {
         try {
-            if (!authorizationService.getUserRole((long) authorizationId).equals(authorizationService.VENDOR)
-                    && !authorizationService.getUserRole((long) authorizationId).equals(authorizationService.ADMIN)) {
+//            !authorizationService.getUserRole((long) authorizationId).equals(authorizationService.VENDOR)
+//                                && !authorizationService.getUserRole((long) authorizationId).equals(authorizationService.ADMIN)
+            if (authorizationService.cannotUpdateVendorDeliveryZone((long) authorizationId)) {
                 return new ResponseEntity<Vendor>(HttpStatus.UNAUTHORIZED);
             }
             Vendor vendor = vendorService.updateDeliveryZone((long) vendorId, (long) deliveryZone);

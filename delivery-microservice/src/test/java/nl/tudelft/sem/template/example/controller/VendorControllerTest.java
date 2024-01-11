@@ -88,6 +88,7 @@ public class VendorControllerTest {
         when(vendorRepository.existsById(2L)).thenReturn(true);
         when(vendorService.updateDeliveryZone(2L, 10L)).thenReturn(updated);
         when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.CUSTOMER);
+        when(authorizationService.cannotUpdateVendorDeliveryZone(1L)).thenReturn(true);
 
         ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
         assertEquals( HttpStatus.UNAUTHORIZED, response.getStatusCode());
@@ -118,15 +119,9 @@ public class VendorControllerTest {
     void updateDeliveryZoneMiscommunicationTest() throws MicroserviceCommunicationException {
         when(vendorRepository.findById(2L)).thenReturn(Optional.ofNullable(vendor1));
         when(vendorRepository.existsById(2L)).thenReturn(true);
-        when(authorizationService.getUserRole(1L)).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.cannotUpdateVendorDeliveryZone(1L)).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
-
-
-
-
-
-
 }
