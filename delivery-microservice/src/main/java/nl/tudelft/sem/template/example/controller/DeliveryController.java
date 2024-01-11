@@ -52,7 +52,6 @@ public class DeliveryController implements DeliveryApi {
             Delivery delivery = deliveryService.createDelivery(deliveryPostRequest);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            System.out.println(e.toString());
             return ResponseEntity.badRequest().build();
         }
     }
@@ -99,10 +98,11 @@ public class DeliveryController implements DeliveryApi {
     }
 
     @Override
-    public ResponseEntity<Void> deliveryOrderOrderIdIssuePut(Integer orderId, Integer authorizationId, Issue issue){
-        try{
-            if(!authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId),Long.valueOf(orderId)))
+    public ResponseEntity<Void> deliveryOrderOrderIdIssuePut(Integer orderId, Integer authorizationId, Issue issue) {
+        try {
+            if (!authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId))) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
             deliveryService.addIssueToDelivery(orderId, issue);
             return ResponseEntity.ok().build();
         } catch (MicroserviceCommunicationException | DeliveryNotFoundException e) {
@@ -111,12 +111,13 @@ public class DeliveryController implements DeliveryApi {
     }
 
     @Override
-    public ResponseEntity<Issue> deliveryOrderOrderIdIssueGet(Integer orderId, Integer authorizationId){
-        try{
-            if(!authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId),Long.valueOf(orderId)))
+    public ResponseEntity<Issue> deliveryOrderOrderIdIssueGet(Integer orderId, Integer authorizationId) {
+        try {
+            if (!authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId))) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
             Issue issue = deliveryService.retrieveIssueOfDelivery(orderId);
-            if(issue == null){
+            if (issue == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
             return ResponseEntity.ok(issue);

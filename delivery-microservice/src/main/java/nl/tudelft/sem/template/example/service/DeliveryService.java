@@ -1,7 +1,7 @@
 package nl.tudelft.sem.template.example.service;
 
-import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
+import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.OrderAlreadyExistsException;
 import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
@@ -9,9 +9,9 @@ import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.model.Delivery;
 import nl.tudelft.sem.template.model.DeliveryPostRequest;
+import nl.tudelft.sem.template.model.Issue;
 import nl.tudelft.sem.template.model.Location;
 import nl.tudelft.sem.template.model.Order;
-import nl.tudelft.sem.template.model.Issue;
 import nl.tudelft.sem.template.model.Vendor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -78,7 +78,7 @@ public class DeliveryService {
     }
 
     /**
-     * Add an issue to a Delivery, for cases such as bad traffic conditions
+     * Add an issue to a Delivery, for cases such as bad traffic conditions.
      *
      * @param orderId The id of the order corresponding to the Delivery
      * @param issue   The issue to be added to the Delivery
@@ -86,16 +86,25 @@ public class DeliveryService {
      */
     public void addIssueToDelivery(Integer orderId, Issue issue) throws DeliveryNotFoundException {
         Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(Long.valueOf(orderId));
-        if(delivery == null)
+        if (delivery == null) {
             throw new DeliveryNotFoundException("Delivery with order id " + orderId + " was not found");
+        }
         delivery.setIssue(issue);
         deliveryRepository.save(delivery);
     }
 
+    /**
+     * Retrieves the issue related to a Delivery, if one is found.
+     *
+     * @param orderId The id of the order within the delivery.
+     * @return The issue of a delivery.
+     * @throws DeliveryNotFoundException If the delivery with that order was not found.
+     */
     public Issue retrieveIssueOfDelivery(Integer orderId) throws DeliveryNotFoundException {
         Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(Long.valueOf(orderId));
-        if(delivery == null)
+        if (delivery == null) {
             throw new DeliveryNotFoundException("Delivery with order id " + orderId + " was not found");
+        }
         return delivery.getIssue();
     }
 

@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.example.controller_integration;
+package nl.tudelft.sem.template.example.controller_mockmvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.tudelft.sem.template.example.Application;
@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;

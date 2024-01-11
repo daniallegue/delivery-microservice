@@ -97,6 +97,7 @@ public class DeliveryControllerTest {
     public void testPutIssueSuccess() throws Exception {
         Mockito.when(authorizationService.canUpdateDeliveryDetails(any(), any())).thenReturn(true);
         ResponseEntity<Void> response = deliveryController.deliveryOrderOrderIdIssuePut(1234, 4567, issue);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(deliveryService, times(1)).addIssueToDelivery(any(), any());
         verify(authorizationService, times(1)).canUpdateDeliveryDetails(any(), any());
     }
