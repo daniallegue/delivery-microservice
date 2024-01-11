@@ -41,6 +41,7 @@ public class DeliveryServiceTest {
     @BeforeEach
     void setup(){
         configurationProperties = new ConfigurationProperties();
+        configurationProperties.setDefaultDeliveryZone(10L);
 
         dummyDeliveryPostRequest =  new DeliveryPostRequest();
         dummyDeliveryPostRequest.setVendorId(1);
@@ -54,7 +55,7 @@ public class DeliveryServiceTest {
         vendorRepository = Mockito.mock(VendorRepository.class);
         orderRepository = Mockito.mock(OrderRepository.class);
         vendorService = Mockito.mock(VendorService.class);
-        this.deliveryService = new DeliveryService(deliveryRepository, orderRepository, vendorRepository, vendorService);
+        this.deliveryService = new DeliveryService(deliveryRepository, orderRepository, vendorRepository, vendorService, configurationProperties);
     }
 
     @Test
@@ -80,6 +81,22 @@ public class DeliveryServiceTest {
         Delivery result = deliveryService.createDelivery(dummyDeliveryPostRequest);
 
         assertNotNull(result);
+    }
+
+    @Test
+    void getDefaultDeliveryZone() {
+        Long defaultDeliveryZone = deliveryService.getDefaultDeliveryZone();
+        assertEquals(10L, defaultDeliveryZone);
+    }
+
+    @Test
+    void setDefaultDeliveryZone() {
+        Long defaultDeliveryZone = deliveryService.getDefaultDeliveryZone();
+        assertEquals(10L, defaultDeliveryZone);
+
+        Long newZone = 45L;
+        deliveryService.updateDefaultDeliveryZone(newZone.intValue());
+        assertEquals(newZone, deliveryService.getDefaultDeliveryZone());
     }
 
 
