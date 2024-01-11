@@ -1,10 +1,12 @@
 package nl.tudelft.sem.template.example.service;
 
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
+import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.exception.RatingNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.model.Delivery;
+import nl.tudelft.sem.template.model.Order;
 import nl.tudelft.sem.template.model.Rating;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,12 +31,15 @@ public class AnalyticsService {
      * @throws OrderNotFoundException If no order is found with the given ID.
      * @throws DeliveryNotFoundException If no delivery is found for the given order ID.
      */
-    public Rating saveRating(Rating rating, Long orderId) throws OrderNotFoundException {
+    public Rating saveRating(Rating rating, Long orderId) throws OrderNotFoundException, IllegalOrderStatusException {
         Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
         if (delivery == null) {
             throw new OrderNotFoundException("Order with id " + orderId + " was not found.");
         }
 
+        if (!delivery.getOrder().getStatus().equals(Order.StatusEnum.DELIVERED)) {
+            throw new IllegalOrderStatusException("Only delivered orders can be rated.");
+        }
 
         delivery.setRating(rating);
 

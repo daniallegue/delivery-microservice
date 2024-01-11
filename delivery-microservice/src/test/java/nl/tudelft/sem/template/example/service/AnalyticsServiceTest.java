@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.service;
 
 
+import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
@@ -34,13 +35,14 @@ public class AnalyticsServiceTest {
     }
 
     @Test
-    void testSaveRating() throws OrderNotFoundException, RatingNotFoundException {
+    void testSaveRating() throws OrderNotFoundException, RatingNotFoundException, IllegalOrderStatusException {
         Rating rating = new Rating();
         rating.setComment("Fine");
         rating.setGrade(3);
 
         Order order = new Order();
         order.setOrderId((long) 10);
+        order.setStatus(Order.StatusEnum.DELIVERED);
 
         Delivery delivery = new Delivery();
         delivery.setId((long) 20);
@@ -54,6 +56,27 @@ public class AnalyticsServiceTest {
         assertEquals(3, savedRating.getGrade());
         assertEquals("Fine", savedRating.getComment());
         assertEquals(analyticsService.getRatingByOrderId((long) 10), rating);
+    }
+
+    @Test
+    void testSaveRatingNotDelivered() throws OrderNotFoundException, RatingNotFoundException, IllegalOrderStatusException {
+        Rating rating = new Rating();
+        rating.setComment("Fine");
+        rating.setGrade(3);
+
+        Order order = new Order();
+        order.setOrderId((long) 10);
+        order.setStatus(Order.StatusEnum.ACCEPTED);
+
+        Delivery delivery = new Delivery();
+        delivery.setId((long) 20);
+        delivery.setOrder(order);
+
+        when(orderRepository.findById((long) 10)).thenReturn(Optional.of(order));
+        when(deliveryRepository.findDeliveryByOrder_OrderId((long) 10)).thenReturn(delivery);
+        when(deliveryRepository.findById((long) 20)).thenReturn(Optional.of(delivery));
+
+        assertThrows( IllegalOrderStatusException.class, () -> analyticsService.saveRating(rating, (long) 10));
     }
 
     @Test

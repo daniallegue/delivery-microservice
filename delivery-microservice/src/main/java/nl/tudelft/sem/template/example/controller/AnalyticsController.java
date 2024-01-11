@@ -1,6 +1,9 @@
 package nl.tudelft.sem.template.example.controller;
 
 import nl.tudelft.sem.template.api.AnalyticsApi;
+import nl.tudelft.sem.template.example.authorization.AuthorizationService;
+import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
+import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.exception.RatingNotFoundException;
 import nl.tudelft.sem.template.example.service.AnalyticsService;
@@ -13,10 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class AnalyticsController implements AnalyticsApi {
     AnalyticsService analyticsService;
+    AuthorizationService authorizationService;
 
     @Autowired
-    public AnalyticsController(AnalyticsService analyticsService) {
+    public AnalyticsController(AnalyticsService analyticsService, AuthorizationService authorizationService) {
         this.analyticsService = analyticsService;
+        this.authorizationService = authorizationService;
     }
 
     /**
@@ -29,10 +34,17 @@ public class AnalyticsController implements AnalyticsApi {
     @Override
     public ResponseEntity<Void> analyticsOrderOrderIdRatingPut(Integer orderId, Integer authorizationId, Rating rating) {
         try {
+            if (!authorizationService.canChangeOrderRating((long) authorizationId, (long) orderId)) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
             analyticsService.saveRating(rating, (long) orderId);
             return ResponseEntity.ok().build();
         } catch (OrderNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IllegalOrderStatusException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (MicroserviceCommunicationException e) {
+            return new ResponseEntity<Void>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
