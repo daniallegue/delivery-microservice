@@ -12,5 +12,12 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
      * @return A delivery.
      */
     Delivery findDeliveryByOrder_OrderId(Long orderId);
+
+    /**
+     * Finds a delivery based on the courierId of the order within the Delivery
+     *
+     * @param courierId - The courier id of a delivery
+     * @return A delivery
+     */
     List<Delivery> findByCourierId(Long courierId);
 }

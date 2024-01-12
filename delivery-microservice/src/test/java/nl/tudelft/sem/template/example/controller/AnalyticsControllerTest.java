@@ -3,6 +3,8 @@ package nl.tudelft.sem.template.example.controller;
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
 import nl.tudelft.sem.template.example.exception.*;
 import nl.tudelft.sem.template.example.service.AnalyticsService;
+import nl.tudelft.sem.template.model.Delivery;
+import nl.tudelft.sem.template.model.Order;
 import nl.tudelft.sem.template.model.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -93,7 +95,7 @@ public class AnalyticsControllerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
     @Test
-    void testGetRatingSuccess() throws Exception {
+    void testGetRatingSuccess() throws RatingNotFoundException, OrderNotFoundException {
         rating.setGrade(4);
         rating.setComment("Good");
         when(analyticsService.getRatingByOrderId(1L)).thenReturn(rating);
@@ -105,7 +107,16 @@ public class AnalyticsControllerTest {
     }
 
     @Test
-    void testGetRatingOrderNotFound() throws Exception {
+    void testGetRatingRatingNotFound() throws RatingNotFoundException, OrderNotFoundException {
+        Integer orderId = 5;
+        Integer authorizationId = 1;
+
+        when(analyticsService.getRatingByOrderId((long) orderId)).thenReturn(null);
+        ResponseEntity<Rating> response = analyticsController.analyticsOrderOrderIdRatingGet(orderId, authorizationId);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+    @Test
+    void testGetRatingOrderNotFound() throws RatingNotFoundException, OrderNotFoundException  {
         when(analyticsService.getRatingByOrderId((long) 1)).thenThrow(new OrderNotFoundException("Order not found"));
 
         ResponseEntity<Rating> response = analyticsController.analyticsOrderOrderIdRatingGet(1, 1);
@@ -113,7 +124,6 @@ public class AnalyticsControllerTest {
         assertEquals(404, response.getStatusCodeValue());
     }
 
-/////BURAYA TEST
     @Test
     void testGetDeliveriesPerDaySuccess() throws Exception {
         when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(true);
@@ -142,25 +152,11 @@ public class AnalyticsControllerTest {
     }
 
     @Test
-    public void testDeliveriesPerDayNoDeliveriesException() throws MicroserviceCommunicationException, NoDeliveriesException, CourierNotFoundException {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(true);
-        when(analyticsService.getDeliveriesPerDay((long) courierId)).thenThrow(new NoDeliveriesException("No deliveries for this courier."));
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            analyticsController.analyticsCourierCourierIdDeliveriesPerDayGet(courierId, authorizationId);
-        });
-        assertTrue(exception.getCause() instanceof NoDeliveriesException);
+    public void testDeliveriesPerDayMiscommunication() throws MicroserviceCommunicationException {
+        when(authorizationService.canViewCourierAnalytics(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        ResponseEntity<Integer> response = analyticsController.analyticsCourierCourierIdDeliveriesPerDayGet(anyInt(), anyInt());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
-
-    //@Test
-//public void testAnalyticsCourierCourierIdDeliveriesPerDayGetMicroserviceCommunicationException() throws MicroserviceCommunicationException, NoDeliveriesException, CourierNotFoundException {
-//    Integer courierId = 1;
-//    Integer authorizationId = 1;
-//    when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(true);
-//    when(analyticsService.getDeliveriesPerDay((long) courierId)).thenThrow(new MicroserviceCommunicationException(""));
-//
-//    ResponseEntity<Integer> response = analyticsController.analyticsCourierCourierIdDeliveriesPerDayGet(courierId, authorizationId);
-//    assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-//}
 
     @Test
     void testGetSuccessfulDeliveriesSuccess() throws Exception {
@@ -180,18 +176,7 @@ public class AnalyticsControllerTest {
     }
 
     @Test
-    public void testAnalyticsCourierCourierIdSuccessfulDeliveriesGetNoDeliveries() throws MicroserviceCommunicationException, NoDeliveriesException, CourierNotFoundException {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(true);
-        when(analyticsService.getSuccessfulDeliveries((long) courierId)).thenThrow(new NoDeliveriesException("Courier has no deliveries"));
-
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            analyticsController.analyticsCourierCourierIdSuccessfulDeliveriesGet(courierId, authorizationId);
-        });
-        assertTrue(exception.getCause() instanceof NoDeliveriesException);
-    }
-
-    @Test
-    public void testAnalyticsCourierCourierIdSuccessfulDeliveriesGetCourierNotFound() throws MicroserviceCommunicationException, NoDeliveriesException, CourierNotFoundException {
+    public void testAnalyticsCourierCourierIdSuccessfulDeliveriesGetCourierNotFound() throws MicroserviceCommunicationException, CourierNotFoundException {
         when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(true);
         when(analyticsService.getSuccessfulDeliveries((long) courierId)).thenThrow(new CourierNotFoundException("Courier not found"));
 
@@ -199,6 +184,12 @@ public class AnalyticsControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
+    @Test
+    public void testSuccessfulDeliveriesMiscommunication() throws MicroserviceCommunicationException {
+        when(authorizationService.canViewCourierAnalytics(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        ResponseEntity<Integer> response = analyticsController.analyticsCourierCourierIdSuccessfulDeliveriesGet(anyInt(), anyInt());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
 
     @Test
     void testGetCourierIssuesSuccess() throws Exception {
@@ -212,24 +203,12 @@ public class AnalyticsControllerTest {
     }
 
     @Test
-    public void testAnalyticsCourierCourierIdCourierIssuesGetCourierNotFound() throws MicroserviceCommunicationException, NoDeliveriesException, CourierNotFoundException {
+    public void testAnalyticsCourierCourierIdCourierIssuesGetCourierNotFound() throws MicroserviceCommunicationException, CourierNotFoundException {
         when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(true);
         when(analyticsService.getCourierIssues((long) courierId)).thenThrow(new CourierNotFoundException("Courier not found"));
 
         ResponseEntity<List<String>> response = analyticsController.analyticsCourierCourierIdCourierIssuesGet(courierId, authorizationId);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-    }
-
-    @Test
-    public void testAnalyticsCourierCourierIdCourierIssuesGetNoDeliveries() throws MicroserviceCommunicationException, NoDeliveriesException, CourierNotFoundException {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(true);
-        when(analyticsService.getCourierIssues((long) courierId)).thenThrow(new NoDeliveriesException("Courier has no deliveries"));
-
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            analyticsController.analyticsCourierCourierIdCourierIssuesGet(courierId, authorizationId);
-        });
-
-        assertTrue(exception.getCause() instanceof NoDeliveriesException);
     }
 
     @Test
@@ -240,5 +219,10 @@ public class AnalyticsControllerTest {
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
-
+    @Test
+    public void testCourierIssuesMiscommunication() throws MicroserviceCommunicationException {
+        when(authorizationService.canViewCourierAnalytics(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        ResponseEntity<List<String>> response = analyticsController.analyticsCourierCourierIdCourierIssuesGet(anyInt(), anyInt());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
 }

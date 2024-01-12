@@ -90,8 +90,6 @@ public class AnalyticsController implements AnalyticsApi {
             return ResponseEntity.ok(deliveriesPerDay);
         } catch (CourierNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (NoDeliveriesException e) {
-            throw new RuntimeException(e);
         } catch (MicroserviceCommunicationException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -120,8 +118,6 @@ public class AnalyticsController implements AnalyticsApi {
             return ResponseEntity.ok(successfulDeliveries);
         } catch (CourierNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (NoDeliveriesException e) {
-            throw new RuntimeException(e);
         } catch (MicroserviceCommunicationException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -149,8 +145,6 @@ public class AnalyticsController implements AnalyticsApi {
             return ResponseEntity.ok(courierIssues);
         } catch (CourierNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (NoDeliveriesException e) {
-            throw new RuntimeException(e);
         } catch (MicroserviceCommunicationException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }

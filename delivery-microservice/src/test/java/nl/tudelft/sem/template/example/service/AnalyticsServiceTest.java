@@ -129,13 +129,13 @@ public class AnalyticsServiceTest {
     }
 
     @Test
-    void testGetDeliveriesPerDaySuccess() throws CourierNotFoundException, NoDeliveriesException {
+    void testGetDeliveriesPerDaySuccess() throws CourierNotFoundException {
         Long courierId = 1L;
         when(courierService.doesCourierExist(courierId)).thenReturn(true);
         when(deliveryRepository.findByCourierId(courierId)).thenReturn(mockDeliveries);
 
         int result = analyticsService.getDeliveriesPerDay(courierId);
-        assertEquals(1, result); // the number comes from my implementation of mockDeliveries inn setup() 5/7 = 1
+        assertEquals(1, result); // the number comes from my implementation of mockDeliveries in setup() 5/7 = 1
     }
 
     @Test
@@ -147,22 +147,13 @@ public class AnalyticsServiceTest {
     }
 
     @Test
-    void testGetDeliveriesPerDayNoDeliveries() {
-        Long courierId = 1L;
-        when(courierService.doesCourierExist(courierId)).thenReturn(true);
-        when(deliveryRepository.findByCourierId(courierId)).thenReturn(new ArrayList<>());
-
-        assertThrows(NoDeliveriesException.class, () -> analyticsService.getDeliveriesPerDay(courierId));
-    }
-
-    @Test
-    void testGetSuccessfulDeliveriesSuccess() throws CourierNotFoundException, NoDeliveriesException {
+    void testGetSuccessfulDeliveriesSuccess() throws CourierNotFoundException {
         Long courierId = 1L;
         when(courierService.doesCourierExist(courierId)).thenReturn(true);
         when(deliveryRepository.findByCourierId(courierId)).thenReturn(mockDeliveries);
 
         int result = analyticsService.getSuccessfulDeliveries(courierId);
-        assertEquals(3, result); //the number comes from my implementation of mockDeliveries inn setup()
+        assertEquals(3, result); //the number comes from my implementation of mockDeliveries in setup()
     }
 
     @Test
@@ -173,14 +164,7 @@ public class AnalyticsServiceTest {
     }
 
     @Test
-    void testGetSuccessfulDeliveriesNoDeliveries() {
-        Long courierId = 1L;
-        when(courierService.doesCourierExist(courierId)).thenReturn(true);
-        when(deliveryRepository.findByCourierId(courierId)).thenReturn(List.of());
-        assertThrows(NoDeliveriesException.class, () -> analyticsService.getSuccessfulDeliveries(courierId));
-    }
-    @Test
-    void testGetCourierIssuesSuccess() throws CourierNotFoundException, NoDeliveriesException {
+    void testGetCourierIssuesSuccess() throws CourierNotFoundException {
         Long courierId = 1L;
         when(courierService.doesCourierExist(courierId)).thenReturn(true);
         when(deliveryRepository.findByCourierId(courierId)).thenReturn(mockDeliveries);
@@ -194,13 +178,5 @@ public class AnalyticsServiceTest {
         Long courierId = 1L;
         when(courierService.doesCourierExist(courierId)).thenReturn(false);
         assertThrows(CourierNotFoundException.class, () -> analyticsService.getCourierIssues(courierId));
-    }
-
-    @Test
-    void testGetCourierIssuesNoDeliveries() {
-        Long courierId = 1L;
-        when(courierService.doesCourierExist(courierId)).thenReturn(true);
-        when(deliveryRepository.findByCourierId(courierId)).thenReturn(List.of());
-        assertThrows(NoDeliveriesException.class, () -> analyticsService.getCourierIssues(courierId));
     }
 }
