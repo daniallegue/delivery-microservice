@@ -38,8 +38,7 @@ public class CourierController implements CourierApi {
     @Override
     public ResponseEntity<List<Long>> courierDeliveryCourierIdAvailableOrdersGet(Long courierId, Integer authorizationId) {
         try {
-            if (!authorizationService.getUserRole((long) authorizationId).equals(authorizationService.COURIER)
-                    && !authorizationService.getUserRole((long) authorizationId).equals(authorizationService.ADMIN)) {
+            if (!authorizationService.canViewCourierAnalytics((long) authorizationId, courierId)) {
                 return new ResponseEntity<List<Long>>(HttpStatus.UNAUTHORIZED);
             }
             List<Long> availableOrderIds = courierService.getAvailableOrderIds(courierId);

@@ -80,7 +80,9 @@ public class CourierControllerTest {
     void getAvailableOrdersTest() throws MicroserviceCommunicationException {
         Mockito.when(courierService.getAvailableOrderIds(1L)).thenReturn(List.of(5L));
         Mockito.when(courierService.getAvailableOrderIds(18L)).thenReturn(List.of(9L));
-        when(authorizationService.getUserRole(1L)).thenReturn("admin");
+        when(authorizationService.canViewCourierAnalytics(1L, 1L)).thenReturn(true);
+        when(authorizationService.canViewCourierAnalytics(1L, 18L)).thenReturn(true);
+
 
         List<Long> orderIds = courierController.courierDeliveryCourierIdAvailableOrdersGet(1L, 1).getBody();
         List<Long> expectedResult = new ArrayList<>(List.of(5L));
@@ -135,7 +137,7 @@ public class CourierControllerTest {
 
     @Test
     void getAvailableOrdersMiscommunicationTest() throws MicroserviceCommunicationException {
-        when(authorizationService.getUserRole(10L)).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canViewCourierAnalytics(10L, 2L)).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<List<Long>> response = courierController.courierDeliveryCourierIdAvailableOrdersGet(2L, 10);
         Assertions.assertEquals(response.getStatusCode(), HttpStatus.BAD_REQUEST);
