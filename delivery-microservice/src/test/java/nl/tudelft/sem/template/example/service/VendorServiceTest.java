@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.service;
 
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.VendorHasNoCouriersException;
 import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
@@ -30,6 +31,7 @@ public class VendorServiceTest {
     private UsersMicroservice usersMicroservice;
 
     private VendorService vendorService;
+    private CourierService courierService;
 
 
     Vendor vendor;
@@ -39,7 +41,8 @@ public class VendorServiceTest {
         vendorRepository = Mockito.mock(VendorRepository.class);
         configurationProperties = new ConfigurationProperties();
         usersMicroservice = Mockito.mock(UsersMicroservice.class);
-        vendorService = new VendorService(vendorRepository, configurationProperties, usersMicroservice);
+        courierService = Mockito.mock(CourierService.class);
+        vendorService = new VendorService(vendorRepository, configurationProperties, usersMicroservice, courierService);
 
         //TO DO: change address with the (mocked) one from other microservices
         Location address = new Location(0.0,0.0);
@@ -134,8 +137,10 @@ public class VendorServiceTest {
     }
 
     @Test
-    void assignCourierTest() throws VendorNotFoundException {
+    void assignCourierTest() throws VendorNotFoundException, CourierNotFoundException {
         Long vendorId = 3L;
+        when(courierService.doesCourierExist(2L)).thenReturn(true);
+        when(courierService.doesCourierExist(6L)).thenReturn(true);
         Vendor updated = vendorService.assignCourierToVendor(3L, 6L);
         List<Long> couriers = new ArrayList<>();
         couriers.add(2L);

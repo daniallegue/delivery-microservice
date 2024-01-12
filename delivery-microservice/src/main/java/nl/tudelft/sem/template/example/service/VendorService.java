@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.service;
 
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.VendorHasNoCouriersException;
 import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
@@ -22,6 +23,7 @@ public class VendorService {
     ConfigurationProperties configurationProperties;
 
     UsersMicroservice usersMicroservice;
+    CourierService courierService;
 
     /**
      * Constructor for the Service allowing dependency injection.
@@ -31,10 +33,11 @@ public class VendorService {
      */
     @Autowired
     VendorService(VendorRepository vendorRepository, ConfigurationProperties configurationProperties,
-                  UsersMicroservice usersMicroservice) {
+                  UsersMicroservice usersMicroservice, CourierService courierService) {
         this.vendorRepository = vendorRepository;
         this.configurationProperties = configurationProperties;
         this.usersMicroservice = usersMicroservice;
+        this.courierService = courierService;
     }
 
     /**
@@ -111,9 +114,12 @@ public class VendorService {
      * @return the updated vendor
      * @throws VendorNotFoundException throws exception if vendor does not exist
      */
-    public Vendor assignCourierToVendor(Long vendorId, Long courierId) throws VendorNotFoundException {
+    public Vendor assignCourierToVendor(Long vendorId, Long courierId) throws VendorNotFoundException, CourierNotFoundException {
         if (!vendorRepository.existsById(vendorId)) {
             throw new VendorNotFoundException("Vendor was not found");
+        }
+        if (!courierService.doesCourierExist(courierId)) {
+            throw new CourierNotFoundException("Courier was not found");
         }
         Vendor vendor = vendorRepository.findById(vendorId).get();
         List<Long> currentCouriers = vendor.getCouriers();

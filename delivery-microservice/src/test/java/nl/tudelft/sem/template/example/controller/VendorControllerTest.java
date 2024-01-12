@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.example.controller;
 
 
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.VendorHasNoCouriersException;
 import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
@@ -126,7 +127,7 @@ public class VendorControllerTest {
     }
 
     @Test
-    void assignCourierVendorDoesNotExistTest() throws VendorNotFoundException, MicroserviceCommunicationException {
+    void assignCourierVendorDoesNotExistTest() throws VendorNotFoundException, MicroserviceCommunicationException, CourierNotFoundException {
         when(vendorService.assignCourierToVendor(2L, 10L)).thenThrow(VendorNotFoundException.class);
         when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.ADMIN);
 
@@ -142,7 +143,7 @@ public class VendorControllerTest {
     }
 
     @Test
-    void assignCourierTest() throws MicroserviceCommunicationException, VendorNotFoundException {
+    void assignCourierTest() throws MicroserviceCommunicationException, VendorNotFoundException, CourierNotFoundException {
         when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.ADMIN);
         when(vendorService.assignCourierToVendor(2L, 5L)).thenReturn(vendor1);
         ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdAssignCourierIdPut(2, 5, 1);

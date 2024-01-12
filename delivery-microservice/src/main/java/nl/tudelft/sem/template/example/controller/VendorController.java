@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.example.controller;
 
 import nl.tudelft.sem.template.api.VendorApi;
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.VendorHasNoCouriersException;
 import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
@@ -96,9 +97,11 @@ public class VendorController implements VendorApi {
             }
             Vendor vendor = vendorService.assignCourierToVendor((long) vendorId, (long) courierId);
             return ResponseEntity.ok(vendor);
-        } catch (VendorNotFoundException | MicroserviceCommunicationException e) {
+        } catch (VendorNotFoundException | MicroserviceCommunicationException | CourierNotFoundException e) {
             if (e instanceof VendorNotFoundException) {
                 return new ResponseEntity<Vendor>(HttpStatus.NOT_FOUND);
+            } else if (e instanceof MicroserviceCommunicationException) {
+                return new ResponseEntity<Vendor>(HttpStatus.BAD_REQUEST);
             } else {
                 return new ResponseEntity<Vendor>(HttpStatus.BAD_REQUEST);
             }
