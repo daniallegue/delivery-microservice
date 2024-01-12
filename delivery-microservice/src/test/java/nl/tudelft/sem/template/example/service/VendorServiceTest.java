@@ -109,8 +109,8 @@ public class VendorServiceTest {
         Vendor newVendor = new Vendor(3L, 10L, address, new ArrayList<>());
 
         Vendor updated = vendorService.updateDeliveryZone(3L, newZone);
-        assertEquals(updated.getDeliveryZone(), newVendor.getDeliveryZone());
-        assertEquals(updated.getAddress(), address);
+        assertEquals(newVendor.getDeliveryZone(), updated.getDeliveryZone());
+        assertEquals(address, updated.getAddress());
     }
 
     @Test

@@ -138,4 +138,16 @@ public class AuthorizationService {
         String role = getUserRole(authorizationId);
         return role.equals(CUSTOMER) && isInvolvedInOrder(authorizationId, role, orderId);
     }
+
+    /**
+     * @param authorizationId The id of the user for whom the permission is checked.
+     * @return {@code true} if the user is allowed to change the delviery zone; otherwise, {@code false}.
+     * @throws MicroserviceCommunicationException If communication with the user microservice fails
+     *            or if the user type could not be found.
+     */
+    public Boolean cannotUpdateVendorDeliveryZone(Long authorizationId) throws MicroserviceCommunicationException {
+        String role = getUserRole(authorizationId);
+        return !role.equals(ADMIN) && !role.equals(VENDOR);
+    }
+
 }
