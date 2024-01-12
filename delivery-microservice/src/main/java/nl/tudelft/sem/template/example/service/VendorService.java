@@ -32,7 +32,7 @@ public class VendorService {
      * @param configurationProperties The configurations holding the delivery zone.
      */
     @Autowired
-    VendorService(VendorRepository vendorRepository, ConfigurationProperties configurationProperties,
+    public VendorService(VendorRepository vendorRepository, ConfigurationProperties configurationProperties,
                   UsersMicroservice usersMicroservice, CourierService courierService) {
         this.vendorRepository = vendorRepository;
         this.configurationProperties = configurationProperties;
@@ -107,6 +107,7 @@ public class VendorService {
     }
 
     /**
+<<<<<<< HEAD
      * Assigns courier to the given vendor.
      *
      * @param vendorId The id of the vendor.
@@ -143,5 +144,28 @@ public class VendorService {
         }
         Vendor vendor = vendorRepository.findById(vendorId).get();
         return vendor.getCouriers();
+    }
+
+    /**
+     * Method that retrieves a Vendor's address.
+     *
+     * @param vendorId The id of the Vendor we want to get the address of.
+     * @return The address of the Vendor.
+     * @throws VendorNotFoundException If the Vendor with the specified id does not exist.
+     * @throws MicroserviceCommunicationException If the Vendor does not have an address saved, it
+     *     means that there was a problem with retrieving it from the Users Microservice.
+     */
+    public Location getVendorLocation(Integer vendorId) throws VendorNotFoundException,
+            MicroserviceCommunicationException {
+        Optional<Vendor> vendor =  vendorRepository.findById(Long.valueOf(vendorId));
+        if (vendor.isEmpty()) {
+            throw new VendorNotFoundException("Vendor with id: " + vendorId + " was not found!");
+        }
+        Location location = vendor.get().getAddress();
+        if (location == null) {
+            throw new MicroserviceCommunicationException("The vendor address was never saved");
+        }
+
+        return location;
     }
 }

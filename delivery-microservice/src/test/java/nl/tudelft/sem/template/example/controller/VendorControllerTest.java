@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 
@@ -190,5 +192,29 @@ public class VendorControllerTest {
 
         ResponseEntity<List<Long>> response = vendorController.vendorDeliveryVendorIdCouriersGet(2, 1);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void getVendorAddressTestSuccess() throws VendorNotFoundException, MicroserviceCommunicationException {
+        when(vendorService.getVendorLocation(any())).thenReturn(new Location(0.0, 0.0));
+        ResponseEntity<Location> response = vendorController.vendorDeliveryVendorIdVendorAddressGet(1, 5);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(new Location(0.0,0.0), response.getBody());
+    }
+
+    @Test
+    void getVendorAddressTestBadRequest() throws VendorNotFoundException, MicroserviceCommunicationException {
+        when(vendorService.getVendorLocation(any())).thenThrow(VendorNotFoundException.class);
+        ResponseEntity<Location> response = vendorController.vendorDeliveryVendorIdVendorAddressGet(1, 5);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNull(response.getBody());
+    }
+
+    @Test
+    void getVendorAddressTestNotFound() throws VendorNotFoundException, MicroserviceCommunicationException {
+        when(vendorService.getVendorLocation(any())).thenThrow(MicroserviceCommunicationException.class);
+        ResponseEntity<Location> response = vendorController.vendorDeliveryVendorIdVendorAddressGet(1, 5);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
     }
 }

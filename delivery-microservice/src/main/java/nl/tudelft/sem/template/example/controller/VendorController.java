@@ -7,6 +7,7 @@ import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationExcept
 import nl.tudelft.sem.template.example.exception.VendorHasNoCouriersException;
 import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
 import nl.tudelft.sem.template.example.service.VendorService;
+import nl.tudelft.sem.template.model.Location;
 import nl.tudelft.sem.template.model.Vendor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -64,8 +65,6 @@ public class VendorController implements VendorApi {
     public ResponseEntity<Vendor> vendorDeliveryVendorIdDeliveryZonePut(Integer vendorId,
                                                                         Integer deliveryZone, Integer authorizationId) {
         try {
-//            !authorizationService.getUserRole((long) authorizationId).equals(authorizationService.VENDOR)
-//                                && !authorizationService.getUserRole((long) authorizationId).equals(authorizationService.ADMIN)
             if (authorizationService.cannotUpdateVendorDeliveryZone((long) authorizationId)) {
                 return new ResponseEntity<Vendor>(HttpStatus.UNAUTHORIZED);
             }
@@ -134,4 +133,15 @@ public class VendorController implements VendorApi {
         }
     }
 
+    @Override
+    public ResponseEntity<Location> vendorDeliveryVendorIdVendorAddressGet(Integer vendorId, Integer authorizationId) {
+        try {
+            Location location = vendorService.getVendorLocation(vendorId);
+            return ResponseEntity.ok(location);
+        } catch (VendorNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (MicroserviceCommunicationException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 }
