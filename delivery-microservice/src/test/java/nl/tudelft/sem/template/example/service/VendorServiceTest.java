@@ -41,7 +41,6 @@ public class VendorServiceTest {
         usersMicroservice = Mockito.mock(UsersMicroservice.class);
         vendorService = new VendorService(vendorRepository, configurationProperties, usersMicroservice);
 
-        //TO DO: change address with the (mocked) one from other microservices
         Location address = new Location(0.0,0.0);
         vendor = new Vendor(1L, configurationProperties.getDefaultDeliveryZone(), address, new ArrayList<>());
         Vendor vendor1 = new Vendor(1L, 5L, address, null);
@@ -130,5 +129,27 @@ public class VendorServiceTest {
                 .isInstanceOf(MicroserviceCommunicationException.class);
 
         verify(vendorRepository, never()).save(any());
+    }
+
+    @Test
+    void testFindVendorAddressWorks() throws VendorNotFoundException, MicroserviceCommunicationException {
+        when(vendorRepository.findById(any())).thenReturn(Optional.of(vendor));
+        Location address = vendorService.getVendorLocation(1);
+        assertEquals(new Location(0.0,0.0), address);
+    }
+
+    @Test
+    void testFindVendorAddressVendorIsNotFound() {
+        when(vendorRepository.findById(any())).thenReturn(Optional.empty());
+        Assertions.assertThatThrownBy(() -> vendorService.getVendorLocation(6))
+                .isInstanceOf(VendorNotFoundException.class);
+    }
+
+    @Test
+    void testFindVendorAddressLocationIsEmpty() {
+        Vendor vendorNoAddress = new Vendor(1L, 5L, null, null);
+        when(vendorRepository.findById(any())).thenReturn(Optional.of(vendorNoAddress));
+        Assertions.assertThatThrownBy(() -> vendorService.getVendorLocation(6))
+                .isInstanceOf(MicroserviceCommunicationException.class);
     }
 }
