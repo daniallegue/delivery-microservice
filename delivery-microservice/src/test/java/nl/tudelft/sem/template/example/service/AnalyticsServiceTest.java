@@ -4,16 +4,15 @@ package nl.tudelft.sem.template.example.service;
 import nl.tudelft.sem.template.example.exception.*;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
-import nl.tudelft.sem.template.model.Delivery;
-import nl.tudelft.sem.template.model.Issue;
-import nl.tudelft.sem.template.model.Order;
-import nl.tudelft.sem.template.model.Rating;
+import nl.tudelft.sem.template.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,13 +52,25 @@ public class AnalyticsServiceTest {
         delivery.setRating(rating);
 
         mockDeliveries = new ArrayList<>();
+        OffsetDateTime[] deliveryTimes = new OffsetDateTime[] {
+                OffsetDateTime.parse("2024-01-01T10:00:00Z"), // 1st of January
+                OffsetDateTime.parse("2024-01-01T12:00:00Z"), // 1st of January
+                OffsetDateTime.parse("2024-01-02T11:00:00Z"), // 2nd of January
+                OffsetDateTime.parse("2024-01-03T15:00:00Z"), // 3rd of January
+                OffsetDateTime.parse("2024-02-03T15:00:00Z") // 3rd of February
+        };
+
+
         for (int i = 0; i < 5; i++) {
             Delivery delivery = new Delivery();
             delivery.setId((long) i);
-
             Order order = new Order();
             order.setOrderId((long) i + 10);
             order.setStatus(i % 2 == 0 ? Order.StatusEnum.DELIVERED : Order.StatusEnum.ON_TRANSIT);
+
+            Time time = new Time();
+            time.setDeliveredTime(deliveryTimes[i % deliveryTimes.length]);
+            delivery.setTime(time);
 
             Issue issue = null;
             if (i % 2 == 0) {
@@ -68,6 +79,8 @@ public class AnalyticsServiceTest {
             }
             delivery.setOrder(order);
             delivery.setIssue(issue);
+            delivery.setCourierId(1L);
+
             mockDeliveries.add(delivery);
         }
     }
@@ -134,8 +147,9 @@ public class AnalyticsServiceTest {
         when(courierService.doesCourierExist(courierId)).thenReturn(true);
         when(deliveryRepository.findByCourierId(courierId)).thenReturn(mockDeliveries);
 
-        int result = analyticsService.getDeliveriesPerDay(courierId);
-        assertEquals(1, result); // the number comes from my implementation of mockDeliveries in setup() 5/7 = 1
+        double result = analyticsService.getDeliveriesPerDay(courierId);
+        double expectedAverage =  Math.round((2.0+1.0+1.0+1.0) / 4.0); //num of deliveries each day summed up divided by the number of days
+        assertEquals(expectedAverage, result);
     }
 
     @Test

@@ -9,8 +9,11 @@ import nl.tudelft.sem.template.model.Issue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -87,9 +90,25 @@ public class AnalyticsService {
         }
         List<Delivery> deliveries = deliveryRepository.findByCourierId(courierId);
 
-        int averageDeliveries = (int) Math.round(deliveries.size()/7.0);
-        return averageDeliveries;
+        deliveries = deliveries.stream()
+                .filter(d -> d.getOrder() != null && d.getOrder().getStatus() == Order.StatusEnum.DELIVERED)
+                .collect(Collectors.toList());
+
+        List<LocalDate> deliveredDates = deliveries.stream()
+                .map(delivery -> delivery.getTime().getDeliveredTime().toLocalDate())
+                .collect(Collectors.toList());
+
+        Map<LocalDate, Long> deliveriesPerDay = deliveredDates.stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+        double averageDeliveries = deliveriesPerDay.values().stream()
+                .mapToLong(Long::longValue)
+                .average()
+                .orElse(0.0);
+
+        return (int) Math.round(averageDeliveries);
     }
+
 
     /**
      * Calculates the average number of deliveries per day for a specified courier.
