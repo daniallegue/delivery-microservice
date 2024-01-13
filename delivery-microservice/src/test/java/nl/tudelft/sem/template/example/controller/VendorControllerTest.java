@@ -153,6 +153,15 @@ public class VendorControllerTest {
     }
 
     @Test
+    void assignCourierCourierNotFoundTest() throws CourierNotFoundException, MicroserviceCommunicationException, VendorNotFoundException {
+        when(authorizationService.getUserRole((long) 1)).thenReturn(authorizationService.ADMIN);
+        when(vendorService.assignCourierToVendor((long) 2, (long) 5)).thenThrow(CourierNotFoundException.class);
+
+        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdAssignCourierIdPut(2, 5, 1);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
     void assignCourierMiscommunicationTest() throws MicroserviceCommunicationException {
         when(authorizationService.getUserRole(1L)).thenThrow(MicroserviceCommunicationException.class);
 

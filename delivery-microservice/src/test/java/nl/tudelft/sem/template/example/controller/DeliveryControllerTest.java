@@ -149,6 +149,18 @@ public class DeliveryControllerTest {
     }
 
     @Test
+    public void testGetIssueNotFound() throws Exception {
+        Mockito.when(authorizationService.canViewDeliveryDetails(any(), any())).thenReturn(true);
+        Mockito.when(deliveryService.retrieveIssueOfDelivery(any())).thenReturn(null);
+
+        ResponseEntity<Issue> response = deliveryController.deliveryOrderOrderIdIssueGet(1234, 4567);
+
+        verify(deliveryService,times(1)).retrieveIssueOfDelivery(any());
+        verify(authorizationService, times(1)).canViewDeliveryDetails(any(), any());
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
     public void testGetIssueBadMicroserviceCommunication() throws Exception {
         Mockito.when(authorizationService.canViewDeliveryDetails(any(), any())).thenThrow(MicroserviceCommunicationException.class);
         ResponseEntity<Issue> response = deliveryController.deliveryOrderOrderIdIssueGet(1234, 4567);
