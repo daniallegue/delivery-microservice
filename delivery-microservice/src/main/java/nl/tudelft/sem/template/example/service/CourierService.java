@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
-import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
@@ -142,7 +142,7 @@ public class CourierService {
     }
 
     /**
-     * Checks whether a courier exists
+     * Checks whether a courier exists.
      *
      * @param courierId Unique identifier of the courier (required)
      * @return returns true if a courier with the specified ID exists in our database

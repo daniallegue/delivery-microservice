@@ -4,10 +4,7 @@ import static nl.tudelft.sem.template.model.Order.StatusEnum;
 
 import nl.tudelft.sem.template.api.DeliveryApi;
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
-import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
-import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
-import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
-import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
+import nl.tudelft.sem.template.example.exception.*;
 import nl.tudelft.sem.template.example.service.DeliveryService;
 import nl.tudelft.sem.template.example.service.OrderService;
 import nl.tudelft.sem.template.model.Delivery;
@@ -139,6 +136,13 @@ public class DeliveryController implements DeliveryApi {
         return ResponseEntity.ok(defaultDeliveryZone);
     }
 
+    /**
+     * Updates the default delivery zone.
+     *
+     * @param newDeliveryZone Identification of the user who is making the request (required)
+     * @param authorizationId Default delivery zone radius (required)
+     * @path GET: /delivery/default-delivery-zone
+     */
     @Override
     public ResponseEntity<Void> deliveryDefaultDeliveryZonePut(Integer newDeliveryZone, Integer authorizationId) {
         try {
@@ -153,4 +157,20 @@ public class DeliveryController implements DeliveryApi {
         }
     }
 
+    /**
+     * Returns the courier assigned to an order.
+     *
+     * @param orderId         Unique identifier of the order (required)
+     * @param authorizationId Identification of the user who is making the request (required)
+     * @path GET: /delivery/order/{order_id}/courier
+     */
+    @Override
+    public ResponseEntity<Integer> deliveryOrderOrderIdCourierGet(Integer orderId, Integer authorizationId) {
+        try {
+            Integer courierId = Math.toIntExact(deliveryService.getCourierFromOrder(orderId));
+            return ResponseEntity.ok(courierId);
+        } catch (OrderNotFoundException | CourierNotFoundException e) {
+            return new ResponseEntity<Integer>(HttpStatus.BAD_REQUEST);
+        }
+    }
 }

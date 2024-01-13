@@ -1,7 +1,7 @@
 package nl.tudelft.sem.template.example.authorization;
 
-import java.util.Optional;
 import java.util.Objects;
+import java.util.Optional;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.external.UsersMicroservice;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
@@ -95,7 +95,8 @@ public class AuthorizationService {
     }
 
     /**
-     * Checks whether the user with the specified authorization id has permission to update delivery details for the given order.
+     * Checks whether the user with the specified authorization id
+     * has permission to update delivery details for the given order.
      *
      * @param authorizationId The id of the user for whom the permission is checked.
      * @param orderId The id of the order for which the permission is checked.
@@ -140,6 +141,8 @@ public class AuthorizationService {
     }
 
     /**
+     * Checks whether the user can update the default delivery zone.
+     *
      * @param authorizationId The id of the user for whom the permission is checked.
      * @return {@code true} if the user is allowed to change the delviery zone; otherwise, {@code false}.
      * @throws MicroserviceCommunicationException If communication with the user microservice fails
