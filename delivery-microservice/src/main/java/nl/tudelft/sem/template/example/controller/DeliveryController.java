@@ -4,6 +4,7 @@ import static nl.tudelft.sem.template.model.Order.StatusEnum;
 
 import nl.tudelft.sem.template.api.DeliveryApi;
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
+import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
@@ -11,6 +12,7 @@ import nl.tudelft.sem.template.example.service.DeliveryService;
 import nl.tudelft.sem.template.example.service.OrderService;
 import nl.tudelft.sem.template.model.Delivery;
 import nl.tudelft.sem.template.model.DeliveryPostRequest;
+import nl.tudelft.sem.template.model.Issue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +40,8 @@ public class DeliveryController implements DeliveryApi {
      */
 
     @Autowired
-    DeliveryController(DeliveryService deliveryService, OrderService orderService, AuthorizationService authorizationService) {
+    DeliveryController(DeliveryService deliveryService,
+                       OrderService orderService, AuthorizationService authorizationService) {
         this.deliveryService = deliveryService;
         this.orderService = orderService;
         this.authorizationService = authorizationService;
@@ -51,7 +54,6 @@ public class DeliveryController implements DeliveryApi {
             Delivery delivery = deliveryService.createDelivery(deliveryPostRequest);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            System.out.println(e.toString());
             return ResponseEntity.badRequest().build();
         }
     }
@@ -119,7 +121,6 @@ public class DeliveryController implements DeliveryApi {
         }
     }
 
-
     @Override
     public ResponseEntity<OffsetDateTime> deliveryOrderOrderIdReadyTimeGet(Integer orderId, Integer authorizationId) {
         try {
@@ -140,6 +141,19 @@ public class DeliveryController implements DeliveryApi {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
+    @Override
+    public ResponseEntity<Void> deliveryOrderOrderIdIssuePut(Integer orderId, Integer authorizationId, Issue issue) {
+        try {
+            if (!authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId))) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            deliveryService.addIssueToDelivery(orderId, issue);
+            return ResponseEntity.ok().build();
+        } catch (MicroserviceCommunicationException | DeliveryNotFoundException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
@@ -168,6 +182,20 @@ public class DeliveryController implements DeliveryApi {
         }
     }
 
+    public ResponseEntity<Issue> deliveryOrderOrderIdIssueGet(Integer orderId, Integer authorizationId) {
+        try {
+            if (!authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId))) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            Issue issue = deliveryService.retrieveIssueOfDelivery(orderId);
+            if (issue == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            return ResponseEntity.ok(issue);
+        } catch (MicroserviceCommunicationException | DeliveryNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
 
     @Override
     public ResponseEntity<OffsetDateTime> deliveryOrderOrderIdPickupTimeGet(Integer orderId, Integer authorizationId) {
@@ -273,6 +301,33 @@ public class DeliveryController implements DeliveryApi {
 
         } catch (OrderNotFoundException e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    /**
+     * Returns the default delivery zone.
+     *
+     * @param authorizationId Identification of the user who is making the request (required)
+     * @return Default delivery zone
+     * @path GET: /delivery/default-delivery-zone
+     */
+    @Override
+    public ResponseEntity<Integer> deliveryDefaultDeliveryZoneGet(Integer authorizationId) {
+        Integer defaultDeliveryZone = Math.toIntExact(deliveryService.getDefaultDeliveryZone());
+        return ResponseEntity.ok(defaultDeliveryZone);
+    }
+
+    @Override
+    public ResponseEntity<Void> deliveryDefaultDeliveryZonePut(Integer newDeliveryZone, Integer authorizationId) {
+        try {
+            if (!authorizationService.getUserRole((long) authorizationId).equals(authorizationService.ADMIN)) {
+                ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+                return response;
+            }
+            deliveryService.updateDefaultDeliveryZone(newDeliveryZone);
+            return new ResponseEntity<Void>(HttpStatus.OK);
+        } catch (MicroserviceCommunicationException e) {
+            return new ResponseEntity<Void>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

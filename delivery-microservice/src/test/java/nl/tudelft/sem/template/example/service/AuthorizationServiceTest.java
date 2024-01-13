@@ -267,6 +267,24 @@ public class AuthorizationServiceTest {
                 .isInstanceOf(MicroserviceCommunicationException.class);
     }
 
+    @Test
+    void testCanChangeVendorDeliveryZoneTrue() throws MicroserviceCommunicationException {
+        when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("vendor"));
+        boolean result = authorizationService.cannotUpdateVendorDeliveryZone(1L);
+        assertThat(result).isFalse();
+
+        when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("admin"));
+        boolean result2 = authorizationService.cannotUpdateVendorDeliveryZone(1L);
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void testCanChangeVendorDeliveryZoneFalse() throws MicroserviceCommunicationException {
+        when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("customer"));
+        boolean result = authorizationService.cannotUpdateVendorDeliveryZone(1L);
+        assertThat(result).isTrue();
+    }
+
 
 
 }

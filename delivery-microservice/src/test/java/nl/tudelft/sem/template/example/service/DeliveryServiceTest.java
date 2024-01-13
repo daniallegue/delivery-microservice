@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.service;
 
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
+import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.OrderAlreadyExistsException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
@@ -9,6 +10,7 @@ import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.model.*;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -47,6 +49,7 @@ public class DeliveryServiceTest {
     @BeforeEach
     void setup(){
         configurationProperties = new ConfigurationProperties();
+        configurationProperties.setDefaultDeliveryZone(10L);
 
         dummyDeliveryPostRequest =  new DeliveryPostRequest();
         dummyDeliveryPostRequest.setVendorId(1);
@@ -61,7 +64,8 @@ public class DeliveryServiceTest {
         orderRepository = Mockito.mock(OrderRepository.class);
         vendorService = Mockito.mock(VendorService.class);
 
-        deliveryService = new DeliveryService(deliveryRepository, orderRepository, vendorRepository, vendorService);
+        this.deliveryService = new DeliveryService(deliveryRepository, orderRepository, vendorRepository, vendorService, configurationProperties);
+
 
         orderId = 123L;
         mockTime = new Time();
@@ -105,6 +109,39 @@ public class DeliveryServiceTest {
         OffsetDateTime result = deliveryService.getReadyTime(orderId);
 
         assertEquals(readyTime, result);
+    }
+
+    void getDefaultDeliveryZone() {
+        Long defaultDeliveryZone = deliveryService.getDefaultDeliveryZone();
+        assertEquals(10L, defaultDeliveryZone);
+    }
+
+    @Test
+    void setDefaultDeliveryZone() {
+        Long defaultDeliveryZone = deliveryService.getDefaultDeliveryZone();
+        assertEquals(10L, defaultDeliveryZone);
+
+        Long newZone = 45L;
+        deliveryService.updateDefaultDeliveryZone(newZone.intValue());
+        assertEquals(newZone, deliveryService.getDefaultDeliveryZone());
+    }
+
+    @Test
+    void retrieveIssueOfDeliveryWorks() throws DeliveryNotFoundException {
+        Issue deliveryIssue = new Issue("traffic", "There was an accident on the way, so the order will be delivered later");
+        Delivery delivery = new Delivery();
+        delivery.setId(1L);
+        delivery.setIssue(deliveryIssue);
+        Mockito.when(deliveryRepository.findDeliveryByOrder_OrderId(anyLong())).thenReturn(delivery);
+        Issue issue = deliveryService.retrieveIssueOfDelivery(1);
+        assertNotNull(issue);
+    }
+
+    @Test
+    void retrieveIssueOfDeliveryThrowsException() {
+        Mockito.when(deliveryRepository.findDeliveryByOrder_OrderId(any())).thenReturn(null);
+        Assertions.assertThatThrownBy(() -> deliveryService.retrieveIssueOfDelivery(6))
+                .isInstanceOf(DeliveryNotFoundException.class);
     }
 
     @Test
