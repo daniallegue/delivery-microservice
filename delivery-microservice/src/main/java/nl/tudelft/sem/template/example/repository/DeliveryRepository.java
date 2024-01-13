@@ -20,4 +20,6 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
      * @return A delivery
      */
     List<Delivery> findByCourierId(Long courierId);
+
+
 }
