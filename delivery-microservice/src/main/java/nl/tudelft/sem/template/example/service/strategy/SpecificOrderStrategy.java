@@ -19,12 +19,21 @@ public class SpecificOrderStrategy implements AssignOrderStrategy{
     public SpecificOrderStrategy(DeliveryRepository deliveryRepository) {
         this.deliveryRepository = deliveryRepository;
     }
+
+    /**
+     * Assigns specific order to courier and saves to repository.
+     *
+     * @param courierId ID of courier
+     * @param orderId ID of order
+     * @param availableOrders List of available orders for the courier
+     * @throws DeliveryNotFoundException No delivery with id `orderId`
+     */
     @Override
-    public void assignOrder(Long courierId, Long orderId, List<Long> availableOrders) throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException {
+    public void assignOrder(Long courierId, Long orderId, List<Long> availableOrders) throws DeliveryNotFoundException{
         Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
 
         if (delivery == null) {
-            throw new OrderNotFoundException("Order with id " + orderId + " was not found.");
+            throw new DeliveryNotFoundException("Delivery with order id " + orderId + " was not found.");
         }
 
         delivery.setCourierId(courierId);

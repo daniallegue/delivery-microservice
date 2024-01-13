@@ -21,8 +21,18 @@ public class RandomOrderStrategy implements AssignOrderStrategy{
     public RandomOrderStrategy(DeliveryRepository deliveryRepository) {
         this.deliveryRepository = deliveryRepository;
     }
+
+    /**
+     * Assigns a random order to the courier and saves it in the repository.
+     *
+     * @param courierId ID of courier
+     * @param orderId ID of order
+     * @param availableOrders List of available orders for the courier
+     * @throws DeliveryNotFoundException No delivery with id `orderId`
+     * @throws NoAvailableOrdersException No available orders for courier with id `courierId`
+     */
     @Override
-    public void assignOrder(Long courierId, Long orderId, List<Long> availableOrders) throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException {
+    public void assignOrder(Long courierId, Long orderId, List<Long> availableOrders) throws DeliveryNotFoundException, NoAvailableOrdersException {
         if (availableOrders.isEmpty()) {
             throw new NoAvailableOrdersException("No orders available for courier with id: " + courierId);
         }
