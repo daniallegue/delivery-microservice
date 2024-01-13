@@ -3,6 +3,8 @@ package nl.tudelft.sem.template.example.controller;
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
 import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
+import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
+import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
@@ -22,6 +24,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 
 public class CourierControllerTest {
 
@@ -93,13 +97,43 @@ public class CourierControllerTest {
         assertThat(orderIds).isEqualTo(expectedResult);
     }
 
+    @Test
+    void testAssignCourierToRandomOrderSuccess() throws DeliveryNotFoundException, NoAvailableOrdersException {
+        Long courierId = 1L;
+        Integer authorizationId = 1;
+        doNothing().when(courierService).assignCourierToRandomOrder(courierId);
+
+        ResponseEntity<Void> response = courierController.courierDeliveryCourierIdAssignAnyOrderPut(courierId, authorizationId);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void testAssignCourierToRandomOrderNoAvailableOrders() throws DeliveryNotFoundException, NoAvailableOrdersException {
+        Long courierId = 1L;
+        Integer authorizationId = 1;
+        doThrow(new NoAvailableOrdersException("No available orders")).when(courierService).assignCourierToRandomOrder(courierId);
+
+        ResponseEntity<Void> response = courierController.courierDeliveryCourierIdAssignAnyOrderPut(courierId, authorizationId);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void testAssignCourierToRandomOrderDeliveryNotFound() throws DeliveryNotFoundException, NoAvailableOrdersException {
+        Long courierId = 1L;
+        Integer authorizationId = 1;
+        doThrow(new DeliveryNotFoundException("Delivery not found")).when(courierService).assignCourierToRandomOrder(courierId);
+
+        ResponseEntity<Void> response = courierController.courierDeliveryCourierIdAssignAnyOrderPut(courierId, authorizationId);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
 
     @Test
     void assignCourierToSpecificOrderSuccessTest() throws OrderNotFoundException, CourierNotFoundException {
         Long courierId = 1L;
         Long orderId = 5L;
 
-        Mockito.doNothing().when(courierService).assignCourierToSpecificOrder(courierId, orderId);
+        doNothing().when(courierService).assignCourierToSpecificOrder(courierId, orderId);
 
         ResponseEntity<Void> response = courierController.courierDeliveryCourierIdAssignOrderIdPut(courierId, orderId, 1);
         Mockito.verify(courierService).assignCourierToSpecificOrder(courierId, orderId);
@@ -112,7 +146,7 @@ public class CourierControllerTest {
         Long nonExistentCourierId = 999L;
         Long orderId = 5L;
 
-        Mockito.doThrow(new CourierNotFoundException("Courier not found"))
+        doThrow(new CourierNotFoundException("Courier not found"))
                 .when(courierService).assignCourierToSpecificOrder(nonExistentCourierId, orderId);
 
         ResponseEntity<Void> response = courierController.courierDeliveryCourierIdAssignOrderIdPut(nonExistentCourierId, orderId, 1);
@@ -126,7 +160,7 @@ public class CourierControllerTest {
         Long courierId = 1L;
         Long nonExistentOrderId = 999L;
 
-        Mockito.doThrow(new OrderNotFoundException("Order not found"))
+        doThrow(new OrderNotFoundException("Order not found"))
                 .when(courierService).assignCourierToSpecificOrder(courierId, nonExistentOrderId);
 
         ResponseEntity<Void> response = courierController.courierDeliveryCourierIdAssignOrderIdPut(courierId, nonExistentOrderId, 1);
