@@ -9,5 +9,5 @@ import nl.tudelft.sem.template.example.service.CourierService;
 import java.util.List;
 
 public interface AssignOrderStrategy {
-    void assignOrder(Long courierId, Long orderId) throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException;
+    void assignOrder(Long courierId, Long orderId, List<Long> availableOrders) throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException;
 }

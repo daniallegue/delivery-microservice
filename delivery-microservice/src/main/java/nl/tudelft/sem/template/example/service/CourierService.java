@@ -28,7 +28,7 @@ public class CourierService {
     @Getter
     DeliveryRepository deliveryRepository;
     VendorRepository vendorRepository;
-    private final List<Long> courierList = new ArrayList<>();
+    private List<Long> courierList = new ArrayList<>();
     AssignOrderContext assignOrderContext = new AssignOrderContext();
 
     /**
@@ -137,8 +137,11 @@ public class CourierService {
      */
     public void assignCourierToSpecificOrder(Long courierId, Long orderId)
             throws OrderNotFoundException, CourierNotFoundException, DeliveryNotFoundException, NoAvailableOrdersException {
-        assignOrderContext.setAssignOrderStrategy(new SpecificOrderStrategy(this));
-        assignOrderContext.assignOrder(courierId, orderId);
+        if (!doesCourierExist(courierId)) {
+            throw new CourierNotFoundException("Courier with id " + courierId + " not found.");
+        }
+        assignOrderContext.setAssignOrderStrategy(new SpecificOrderStrategy(this.deliveryRepository));
+        assignOrderContext.assignOrder(courierId, orderId, getAvailableOrderIds(courierId));
     }
 
 
@@ -148,8 +151,11 @@ public class CourierService {
      * @param courierId Unique identifier of the courier (required)
      */
     public void assignCourierToRandomOrder(Long courierId) throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException {
-        assignOrderContext.setAssignOrderStrategy(new RandomOrderStrategy(this));
-        assignOrderContext.assignOrder(courierId, null);
+        if (!doesCourierExist(courierId)) {
+            throw new CourierNotFoundException("Courier with id " + courierId + " not found.");
+        }
+        assignOrderContext.setAssignOrderStrategy(new RandomOrderStrategy(this.deliveryRepository));
+        assignOrderContext.assignOrder(courierId, null, getAvailableOrderIds(courierId));
     }
 
 }

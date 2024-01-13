@@ -5,6 +5,8 @@ import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 
+import java.util.List;
+
 public class AssignOrderContext {
     private AssignOrderStrategy assignOrderStrategy;
 
@@ -12,7 +14,7 @@ public class AssignOrderContext {
         this.assignOrderStrategy = assignOrderStrategy;
     }
 
-    public void assignOrder(Long courierId, Long orderId) throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException {
-        assignOrderStrategy.assignOrder(courierId, orderId);
+    public void assignOrder(Long courierId, Long orderId, List<Long> availableOrders) throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException {
+        assignOrderStrategy.assignOrder(courierId, orderId, availableOrders);
     }
 }
