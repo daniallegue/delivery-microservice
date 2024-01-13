@@ -25,7 +25,7 @@ import java.util.Random;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
         import static org.junit.jupiter.api.Assertions.assertThrows;
 
-        @SpringBootTest
+@SpringBootTest
 public class CourierServiceTest {
 
     private final DeliveryRepository deliveryRepository = Mockito.mock(DeliveryRepository.class);
