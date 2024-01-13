@@ -12,6 +12,7 @@ public class UsersMicroservice {
 
     //TODO: to change after with the actual microservice server number,
     //this is for testing purposes with postman
+//    private final String usersBaseUrl = "localhost:8082";
     private final String usersBaseUrl = "https://5d9855d1-4c2c-4318-b1d6-9a2e8ba40b95.mock.pstmn.io";
 
     public UsersMicroservice() {
