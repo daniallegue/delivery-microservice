@@ -35,5 +35,3 @@ gradle-app.setting
 
 ### MacOS ###
 *.DS_Store
-
-delivery-microservice/build.gradle
