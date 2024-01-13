@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CourierService {
-    @Getter
     DeliveryRepository deliveryRepository;
     VendorRepository vendorRepository;
     private List<Long> courierList = new ArrayList<>();

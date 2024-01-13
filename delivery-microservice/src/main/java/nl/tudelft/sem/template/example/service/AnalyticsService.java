@@ -1,22 +1,31 @@
 package nl.tudelft.sem.template.example.service;
 
-import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
-import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
-import nl.tudelft.sem.template.example.exception.RatingNotFoundException;
+import nl.tudelft.sem.template.example.exception.*;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.model.Delivery;
+import nl.tudelft.sem.template.model.Order;
 import nl.tudelft.sem.template.model.Rating;
+import nl.tudelft.sem.template.model.Issue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 @Service
 public class AnalyticsService {
     private final DeliveryRepository deliveryRepository;
+    private final CourierService courierService;
 
     @Autowired
-    public AnalyticsService(DeliveryRepository deliveryRepository) {
+    public AnalyticsService(DeliveryRepository deliveryRepository, CourierService courierService) {
         this.deliveryRepository = deliveryRepository;
+        this.courierService = courierService;
     }
 
     /**
@@ -29,12 +38,15 @@ public class AnalyticsService {
      * @throws OrderNotFoundException If no order is found with the given ID.
      * @throws DeliveryNotFoundException If no delivery is found for the given order ID.
      */
-    public Rating saveRating(Rating rating, Long orderId) throws OrderNotFoundException {
+    public Rating saveRating(Rating rating, Long orderId) throws OrderNotFoundException, IllegalOrderStatusException {
         Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
         if (delivery == null) {
             throw new OrderNotFoundException("Order with id " + orderId + " was not found.");
         }
 
+        if (!delivery.getOrder().getStatus().equals(Order.StatusEnum.DELIVERED)) {
+            throw new IllegalOrderStatusException("Only delivered orders can be rated.");
+        }
 
         delivery.setRating(rating);
 
@@ -65,4 +77,77 @@ public class AnalyticsService {
         return rating;
     }
 
+    /**
+     * Calculates the average number of deliveries per day for a specified courier.
+     *
+     * @param courierId The unique identifier of the courier.
+     * @return An integer representing the average number of deliveries per day.
+     * @throws CourierNotFoundException If the courier with the given ID does not exist.
+     */
+    public int getDeliveriesPerDay(Long courierId) throws CourierNotFoundException {
+        if (!courierService.doesCourierExist(courierId)) {
+            throw new CourierNotFoundException("Courier with id " + courierId + " does not exist.");
+        }
+        List<Delivery> deliveries = deliveryRepository.findByCourierId(courierId);
+
+        deliveries = deliveries.stream()
+                .filter(d -> d.getOrder() != null && d.getOrder().getStatus() == Order.StatusEnum.DELIVERED)
+                .collect(Collectors.toList());
+
+        List<LocalDate> deliveredDates = deliveries.stream()
+                .map(delivery -> delivery.getTime().getDeliveredTime().toLocalDate())
+                .collect(Collectors.toList());
+
+        Map<LocalDate, Long> deliveriesPerDay = deliveredDates.stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+        double averageDeliveries = deliveriesPerDay.values().stream()
+                .mapToLong(Long::longValue)
+                .average()
+                .orElse(0.0);
+
+        return (int) Math.round(averageDeliveries);
+    }
+
+
+    /**
+     * Calculates the average number of deliveries per day for a specified courier.
+     *
+     * @param courierId The unique identifier of the courier.
+     * @return An integer representing the average number of deliveries per day.
+     * @throws CourierNotFoundException If the courier with the given ID does not exist.
+     */
+    public int getSuccessfulDeliveries(Long courierId) throws CourierNotFoundException {
+        if (!courierService.doesCourierExist(courierId)) {
+            throw new CourierNotFoundException("Courier with id " + courierId + " does not exist.");
+        }
+        List<Delivery> deliveries = deliveryRepository.findByCourierId(courierId);
+
+        int successfulDeliveries = (int) deliveries.stream()
+                .filter(delivery -> delivery.getOrder().getStatus() == Order.StatusEnum.DELIVERED)
+                .count();
+        return successfulDeliveries;
+    }
+
+    /**
+     * Retrieves a list of issue descriptions encountered by a specific courier during deliveries.
+     *
+     * @param courierId The unique identifier of the courier.
+     * @return A list of strings, each describing an issue encountered by the courier.
+     * @throws CourierNotFoundException If the courier with the given ID does not exist.
+     */
+    public List<String> getCourierIssues(Long courierId) throws CourierNotFoundException {
+
+        if (!courierService.doesCourierExist(courierId)) {
+            throw new CourierNotFoundException("Courier with id " + courierId + " does not exist.");
+        }
+        List<Delivery> deliveries = deliveryRepository.findByCourierId(courierId);
+
+        List<String> issues = deliveries.stream()
+                .map(Delivery::getIssue)
+                .filter(Objects::nonNull)
+                .map(Issue::getDescription)
+                .collect(Collectors.toList());
+        return issues;
+    }
 }

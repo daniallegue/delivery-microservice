@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.example.controller;
 
 
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.VendorHasNoCouriersException;
 import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
@@ -12,15 +13,16 @@ import nl.tudelft.sem.template.model.Vendor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 
@@ -35,11 +37,12 @@ public class VendorControllerTest {
     public Vendor vendor1;
     public Vendor vendor2;
     public Vendor updated;
+    public List<Long> couriers;
 
     @BeforeEach
     void setup() throws VendorNotFoundException {
         Location address = new Location(0.0,0.0);
-        List<Long> couriers = new ArrayList<>();
+        couriers = new ArrayList<>();
         couriers.add(1L);
         vendor1 = new Vendor(2L, 5L, address, couriers);
         vendor2 = new Vendor(3L, 7L, address, couriers);
@@ -123,5 +126,95 @@ public class VendorControllerTest {
 
         ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void assignCourierVendorDoesNotExistTest() throws VendorNotFoundException, MicroserviceCommunicationException, CourierNotFoundException {
+        when(vendorService.assignCourierToVendor(2L, 10L)).thenThrow(VendorNotFoundException.class);
+        when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.ADMIN);
+
+        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdAssignCourierIdPut(2, 10, 1);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+    @Test
+    void assignCourierUnauthorizedTest() throws MicroserviceCommunicationException {
+        when(authorizationService.getUserRole(1L)).thenReturn("customer");
+
+        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdAssignCourierIdPut(2, 10, 1);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    void assignCourierTest() throws MicroserviceCommunicationException, VendorNotFoundException, CourierNotFoundException {
+        when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.ADMIN);
+        when(vendorService.assignCourierToVendor(2L, 5L)).thenReturn(vendor1);
+        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdAssignCourierIdPut(2, 5, 1);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void assignCourierMiscommunicationTest() throws MicroserviceCommunicationException {
+        when(authorizationService.getUserRole(1L)).thenThrow(MicroserviceCommunicationException.class);
+
+        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdAssignCourierIdPut(2, 10, 1);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void getCouriersVendorDoesNotExistTest() throws VendorNotFoundException, MicroserviceCommunicationException {
+        when(vendorService.getAssignedCouriers(2L)).thenThrow(VendorNotFoundException.class);
+        when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.ADMIN);
+
+        ResponseEntity<List<Long>> response = vendorController.vendorDeliveryVendorIdCouriersGet(2, 1);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void getCouriersUnauthorizedTest() throws MicroserviceCommunicationException {
+        when(authorizationService.getUserRole(1L)).thenReturn("customer");
+
+        ResponseEntity<List<Long>> response = vendorController.vendorDeliveryVendorIdCouriersGet(2, 1);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    void getCouriersTest() throws MicroserviceCommunicationException, VendorNotFoundException {
+        when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.VENDOR);
+        when(vendorService.getAssignedCouriers(2L)).thenReturn(couriers);
+
+        ResponseEntity<List<Long>> response = vendorController.vendorDeliveryVendorIdCouriersGet(2, 1);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void getCouriersMiscommunicationTest() throws MicroserviceCommunicationException {
+        when(authorizationService.getUserRole(1L)).thenThrow(MicroserviceCommunicationException.class);
+
+        ResponseEntity<List<Long>> response = vendorController.vendorDeliveryVendorIdCouriersGet(2, 1);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void getVendorAddressTestSuccess() throws VendorNotFoundException, MicroserviceCommunicationException {
+        when(vendorService.getVendorLocation(any())).thenReturn(new Location(0.0, 0.0));
+        ResponseEntity<Location> response = vendorController.vendorDeliveryVendorIdVendorAddressGet(1, 5);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(new Location(0.0,0.0), response.getBody());
+    }
+
+    @Test
+    void getVendorAddressTestBadRequest() throws VendorNotFoundException, MicroserviceCommunicationException {
+        when(vendorService.getVendorLocation(any())).thenThrow(VendorNotFoundException.class);
+        ResponseEntity<Location> response = vendorController.vendorDeliveryVendorIdVendorAddressGet(1, 5);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNull(response.getBody());
+    }
+
+    @Test
+    void getVendorAddressTestNotFound() throws VendorNotFoundException, MicroserviceCommunicationException {
+        when(vendorService.getVendorLocation(any())).thenThrow(MicroserviceCommunicationException.class);
+        ResponseEntity<Location> response = vendorController.vendorDeliveryVendorIdVendorAddressGet(1, 5);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
     }
 }
