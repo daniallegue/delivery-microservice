@@ -5,7 +5,6 @@ import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.external.UsersMicroservice;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
-import nl.tudelft.sem.template.example.service.VendorService;
 import nl.tudelft.sem.template.model.Location;
 import nl.tudelft.sem.template.model.Vendor;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,15 +31,17 @@ public class VendorServiceTestRealRepository {
     private final VendorRepository vendorRepository;
 
     private final VendorService vendorService;
+    private final CourierService courierService;
 
     private final ConfigurationProperties configurationProperties;
 
     @Autowired
-    public VendorServiceTestRealRepository(VendorRepository vendorRepository, ConfigurationProperties configurationProperties){
+    public VendorServiceTestRealRepository(VendorRepository vendorRepository, ConfigurationProperties configurationProperties, CourierService courierService){
         this.vendorRepository = vendorRepository;
         this.usersMicroservice = Mockito.mock(UsersMicroservice.class);
         this.configurationProperties = configurationProperties;
-        this.vendorService = new VendorService(vendorRepository, configurationProperties, usersMicroservice);
+        this.courierService = courierService;
+        this.vendorService = new VendorService(vendorRepository, configurationProperties, usersMicroservice, courierService);
     }
 
     @BeforeEach
