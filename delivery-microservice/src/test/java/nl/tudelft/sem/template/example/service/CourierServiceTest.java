@@ -147,11 +147,11 @@ public class CourierServiceTest {
         Long existingCourierId = 1L;
         Long nonExistentOrderId = 999L;
 
-        Throwable exception = assertThrows(OrderNotFoundException.class, () -> {
+        Throwable exception = assertThrows(DeliveryNotFoundException.class, () -> {
             courierService.assignCourierToSpecificOrder(existingCourierId, nonExistentOrderId);
         });
 
-        assertThat(exception.getMessage()).isEqualTo("Order with id " + nonExistentOrderId + " was not found.");
+        assertThat(exception.getMessage()).isEqualTo("Delivery with order id " + nonExistentOrderId + " was not found.");
     }
 
 }
