@@ -8,12 +8,15 @@ import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
+import nl.tudelft.sem.template.example.external.UsersMicroservice;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.model.Delivery;
 import nl.tudelft.sem.template.model.Order;
 import nl.tudelft.sem.template.model.Vendor;
+import org.h2.engine.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 
@@ -22,6 +25,8 @@ import org.springframework.stereotype.Service;
 public class CourierService {
     DeliveryRepository deliveryRepository;
     VendorRepository vendorRepository;
+
+    UsersMicroservice usersMicroservice;
     private List<Long> courierList = new ArrayList<>();
 
     /**
@@ -29,11 +34,14 @@ public class CourierService {
      *
      * @param deliveryRepository JPA repository holding the deliveries
      * @param vendorRepository JPA repository holding the vendors
+     * @param usersMicroservice External communication to Users microservice
      */
     @Autowired
-    public CourierService(DeliveryRepository deliveryRepository, VendorRepository vendorRepository) {
+    public CourierService(DeliveryRepository deliveryRepository, VendorRepository vendorRepository
+        , UsersMicroservice usersMicroservice) {
         this.deliveryRepository = deliveryRepository;
         this.vendorRepository = vendorRepository;
+        this.usersMicroservice = usersMicroservice;
     }
 
     /**
@@ -174,4 +182,22 @@ public class CourierService {
         delivery.setCourierId(courierId);
         deliveryRepository.save(delivery);
     }
+
+    /**
+     * Retrieves all the couriers from UsersMicroservice.
+     *
+     * This function runs periodically to retrieve continuously all the couriers
+     */
+    @Scheduled(fixedDelay = 5000)
+    public void populateAllCouriers() {
+        List<Long> couriers = usersMicroservice.getCourierIds().get();
+        if(couriers.size() > 0){
+            for(Long courier : couriers){
+                if (!doesCourierExist(courier)){
+                    addCourier(courier);
+                }
+            }
+        }
+    }
+
 }

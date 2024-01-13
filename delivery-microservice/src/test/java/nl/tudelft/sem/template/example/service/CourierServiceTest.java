@@ -4,6 +4,7 @@ import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
+import nl.tudelft.sem.template.example.external.UsersMicroservice;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
@@ -23,15 +24,19 @@ import java.util.Optional;
 import java.util.Random;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-        import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-        @SpringBootTest
+@SpringBootTest
 public class CourierServiceTest {
 
     private final DeliveryRepository deliveryRepository = Mockito.mock(DeliveryRepository.class);
     private final VendorRepository vendorRepository = Mockito.mock(VendorRepository.class);
 
-    private final CourierService courierService = new CourierService(deliveryRepository, vendorRepository);
+    private final UsersMicroservice usersMicroservice = Mockito.mock(UsersMicroservice.class);
+
+    private final CourierService courierService = new CourierService(deliveryRepository, vendorRepository, usersMicroservice);
 
     private final OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
     @BeforeEach
@@ -72,13 +77,13 @@ public class CourierServiceTest {
         courierService.addCourier(1L);
         courierService.addCourier(5L);
 
-        Mockito.when(deliveryRepository.findById(2L)).thenReturn(Optional.of(deliveryAssigning));
-        Mockito.when(deliveryRepository.findAll()).thenReturn(deliveryList);
-        Mockito.when(deliveryRepository.findDeliveryByOrder_OrderId(5L)).thenReturn(deliveryAssigning);
-        Mockito.when(vendorRepository.findAll()).thenReturn(vendors);
+        when(deliveryRepository.findById(2L)).thenReturn(Optional.of(deliveryAssigning));
+        when(deliveryRepository.findAll()).thenReturn(deliveryList);
+        when(deliveryRepository.findDeliveryByOrder_OrderId(5L)).thenReturn(deliveryAssigning);
+        when(vendorRepository.findAll()).thenReturn(vendors);
 
-        Mockito.when(deliveryRepository.findDeliveryByOrder_OrderId(9L)).thenReturn(delivery);
-        Mockito.when(deliveryRepository.findById(2L)).thenReturn(Optional.of(delivery));
+        when(deliveryRepository.findDeliveryByOrder_OrderId(9L)).thenReturn(delivery);
+        when(deliveryRepository.findById(2L)).thenReturn(Optional.of(delivery));
     }
 
     @Test
@@ -153,5 +158,6 @@ public class CourierServiceTest {
 
         assertThat(exception.getMessage()).isEqualTo("Order with id " + nonExistentOrderId + " was not found.");
     }
+
 
 }

@@ -68,11 +68,8 @@ public class VendorController implements VendorApi {
             Vendor vendor = vendorService.updateDeliveryZone((long) vendorId, (long) deliveryZone);
             return ResponseEntity.ok(vendor);
         } catch (VendorNotFoundException | VendorHasNoCouriersException | MicroserviceCommunicationException e) {
-            if (e instanceof VendorNotFoundException) {
-                return new ResponseEntity<Vendor>(HttpStatus.NOT_FOUND);
-            } else {
-                return new ResponseEntity<Vendor>(HttpStatus.BAD_REQUEST);
-            }
+            if (e instanceof VendorNotFoundException) return new ResponseEntity<Vendor>(HttpStatus.NOT_FOUND);
+            else return new ResponseEntity<Vendor>(HttpStatus.BAD_REQUEST);
         }
     }
 
