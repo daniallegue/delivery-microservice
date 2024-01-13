@@ -158,7 +158,7 @@ pitest {
 	threads = 4
 	outputFormats = ['XML', 'HTML']
 	timestampedReports = false
-	excludedClasses = ['nl.tudelft.segm.template.api.*', 'nl.tudelft.sem.template.model.*']
+	excludedClasses = ['nl.tudelft.sem.template.api.*', 'nl.tudelft.sem.template.model.*']
 }
 
 apply plugin: 'org.openapi.generator'
