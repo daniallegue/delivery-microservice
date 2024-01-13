@@ -2,6 +2,8 @@ package nl.tudelft.sem.template.example.controller;
 
 import nl.tudelft.sem.template.example.controller.CourierController;
 import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
+import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
+import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
@@ -87,7 +89,7 @@ public class CourierControllerTest {
 
 
     @Test
-    void assignCourierToSpecificOrderSuccessTest() throws OrderNotFoundException, CourierNotFoundException {
+    void assignCourierToSpecificOrderSuccessTest() throws OrderNotFoundException, CourierNotFoundException, DeliveryNotFoundException, NoAvailableOrdersException {
         Long courierId = 1L;
         Long orderId = 5L;
 
@@ -100,7 +102,7 @@ public class CourierControllerTest {
     }
 
     @Test
-    void assignNonExistentCourierToOrderTest() throws OrderNotFoundException, CourierNotFoundException {
+    void assignNonExistentCourierToOrderTest() throws OrderNotFoundException, CourierNotFoundException, DeliveryNotFoundException, NoAvailableOrdersException {
         Long nonExistentCourierId = 999L;
         Long orderId = 5L;
 
@@ -114,7 +116,7 @@ public class CourierControllerTest {
     }
 
     @Test
-    void assignCourierToNonExistentOrderTest() throws OrderNotFoundException, CourierNotFoundException {
+    void assignCourierToNonExistentOrderTest() throws OrderNotFoundException, CourierNotFoundException, DeliveryNotFoundException, NoAvailableOrdersException {
         Long courierId = 1L;
         Long nonExistentOrderId = 999L;
 

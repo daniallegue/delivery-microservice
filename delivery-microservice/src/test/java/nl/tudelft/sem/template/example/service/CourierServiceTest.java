@@ -115,7 +115,7 @@ public class CourierServiceTest {
 
 
     @Test
-    void assignCourierToRandomOrderTest() throws DeliveryNotFoundException, NoAvailableOrdersException {
+    void assignCourierToRandomOrderTest() throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException {
         courierService.assignCourierToRandomOrder(1L);
 
         Long actual = deliveryRepository.findById(2L).get().getCourierId();
@@ -123,7 +123,7 @@ public class CourierServiceTest {
     }
 
     @Test
-    void assignCourierToSpecificOrderTest() throws DeliveryNotFoundException, OrderNotFoundException, CourierNotFoundException {
+    void assignCourierToSpecificOrderTest() throws DeliveryNotFoundException, OrderNotFoundException, CourierNotFoundException, NoAvailableOrdersException {
         courierService.assignCourierToSpecificOrder(5L, 9L);
 
         Long actualCourier = deliveryRepository.findById(2L).get().getCourierId();
