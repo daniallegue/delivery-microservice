@@ -115,6 +115,7 @@ public class DeliveryControllerTest {
         when(authorizationService.getUserRole(2L)).thenReturn(authorizationService.ADMIN);
         ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(25, 2);
 
+        verify(deliveryService).updateDefaultDeliveryZone(25);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 

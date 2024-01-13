@@ -99,8 +99,6 @@ public class VendorController implements VendorApi {
         } catch (VendorNotFoundException | MicroserviceCommunicationException | CourierNotFoundException e) {
             if (e instanceof VendorNotFoundException) {
                 return new ResponseEntity<Vendor>(HttpStatus.NOT_FOUND);
-            } else if (e instanceof MicroserviceCommunicationException) {
-                return new ResponseEntity<Vendor>(HttpStatus.BAD_REQUEST);
             } else {
                 return new ResponseEntity<Vendor>(HttpStatus.BAD_REQUEST);
             }

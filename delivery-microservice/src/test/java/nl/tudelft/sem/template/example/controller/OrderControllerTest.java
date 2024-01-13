@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
@@ -14,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -115,88 +118,101 @@ public class OrderControllerTest {
     @Test
     void putOrderStatusPendingToPendingTest() {
         String newStatus = "Pending";
-        orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
 
         assertThat(status).isEqualTo("Pending");
+        assertEquals(400, response.getStatusCodeValue());
     }
 
     @Test
     void putOrderStatusPendingToAcceptedTest() {
         String newStatus = "Accepted";
-        orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
 
         assertThat(status).isEqualTo("Accepted");
+        assertEquals(200, response.getStatusCodeValue());
     }
 
     @Test
     void putOrderStatusPendingToRejectedTest() {
         String newStatus = "Rejected";
-        orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
 
         assertThat(status).isEqualTo("Rejected");
+        assertEquals(200, response.getStatusCodeValue());
     }
 
     @Test
     void putOrderStatusAcceptedToPreparingTest() {
         String newStatus = "Preparing";
-        orderController.deliveryOrderOrderIdStatusPut(2, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(2, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(2, 1).getBody();
 
         assertThat(status).isEqualTo("Preparing");
+        assertEquals(200, response.getStatusCodeValue());
     }
 
     @Test
     void putOrderStatusPreparingToGivenToCourierTest() {
         String newStatus = "Given_To_Courier";
-        orderController.deliveryOrderOrderIdStatusPut(4, 1, newStatus);
+        ResponseEntity<Void> response =  orderController.deliveryOrderOrderIdStatusPut(4, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(4, 1).getBody();
+
         assertThat(status).isEqualTo("Given_To_Courier");
+        assertEquals(200, response.getStatusCodeValue());
     }
 
     @Test
     void putOrderStatusGivenToCourierToOnTransitTest() {
         String newStatus = "On_Transit";
-        orderController.deliveryOrderOrderIdStatusPut(5, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(5, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(5, 1).getBody();
+
         assertThat(status).isEqualTo("On_Transit");
+        assertEquals(200, response.getStatusCodeValue());
     }
 
     @Test
     void putOrderStatusOnTransitToDeliveredTest() {
         String newStatus = "Delivered";
-        orderController.deliveryOrderOrderIdStatusPut(6, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(6, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(6, 1).getBody();
+
         assertThat(status).isEqualTo("Delivered");
+        assertEquals(200, response.getStatusCodeValue());
     }
 
     @Test
     void putOrderStatusPendingToPreparingTest() {
         String newStatus = "Preparing";
-        orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
 
         assertThat(status).isEqualTo("Pending");
+        assertEquals(400, response.getStatusCodeValue());
     }
 
     @Test
     void putOrderStatusRejectedToPreparingTest() {
         String newStatus = "Preparing";
-        orderController.deliveryOrderOrderIdStatusPut(3, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(3, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(3, 1).getBody();
 
         assertThat(status).isEqualTo("Rejected");
+        assertEquals(400, response.getStatusCodeValue());
     }
 
     @Test
     void putOrderStatusAcceptedToElseTest() {
         String newStatus = "Pending";
-        orderController.deliveryOrderOrderIdStatusPut(2, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(2, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(2, 1).getBody();
 
         assertThat(status).isEqualTo("Accepted");
+        assertEquals(400, response.getStatusCodeValue());
     }
 
     @Test

@@ -22,7 +22,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 
@@ -162,10 +162,13 @@ public class VendorControllerTest {
     }
 
     @Test
-    void assignCourierMiscommunicationTest() throws MicroserviceCommunicationException {
-        when(authorizationService.getUserRole(1L)).thenThrow(MicroserviceCommunicationException.class);
+    void assignCourierMiscommunicationTest() throws MicroserviceCommunicationException, VendorNotFoundException, CourierNotFoundException {
+        when(vendorRepository.findById((long) 2)).thenReturn(Optional.ofNullable(vendor1));
+        when(vendorRepository.existsById((long) 2)).thenReturn(true);
+        MicroserviceCommunicationException exception = new MicroserviceCommunicationException("");
+        when(authorizationService.getUserRole((long) 1)).thenThrow(exception);
 
-        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdAssignCourierIdPut(2, 10, 1);
+        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdAssignCourierIdPut(2, 5, 1);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
