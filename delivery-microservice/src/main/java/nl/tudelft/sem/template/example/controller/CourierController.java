@@ -55,7 +55,7 @@ public class CourierController implements CourierApi {
         try {
             courierService.assignCourierToRandomOrder(courierId);
         } catch (DeliveryNotFoundException | NoAvailableOrdersException e) {
-            return (ResponseEntity<Void>) ResponseEntity.status(HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.ok().build();
     }
