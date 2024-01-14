@@ -13,7 +13,7 @@ public class OrdersMicroserviceTest {
     private RestTemplate restTemplate;
 
     private OrdersMicroservice ordersMicroservice;
-    private final String usersBaseUrl = "localhost:8081";
+    private final String usersBaseUrl = "localhost:8082";
 
     @BeforeEach
     public void setup() {
@@ -25,7 +25,7 @@ public class OrdersMicroserviceTest {
     public void testPutOrderStatusWorks() {
         Mockito.doNothing().when(restTemplate).put(Mockito.anyString(), Mockito.any());
         assertThat(ordersMicroservice.putOrderStatus(1L, 1L, "Delivered")).isTrue();
-        Mockito.verify(restTemplate).put("localhost:8082/order/1/status/1", "Delivered");
+        Mockito.verify(restTemplate).put(usersBaseUrl + "/order/1/status/1?status=Delivered", null);
     }
 
     @Test
@@ -34,7 +34,7 @@ public class OrdersMicroserviceTest {
                 .put(Mockito.anyString(), Mockito.any());
 
         assertThat(ordersMicroservice.putOrderStatus(1L, 1L, "Delivered")).isFalse();
-        Mockito.verify(restTemplate).put("localhost:8082/order/1/status/1", "Delivered");
+        Mockito.verify(restTemplate).put(usersBaseUrl + "/order/1/status/1?status=Delivered", null);
     }
 
 }

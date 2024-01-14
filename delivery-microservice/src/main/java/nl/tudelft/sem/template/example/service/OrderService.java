@@ -4,7 +4,9 @@ import static nl.tudelft.sem.template.model.Order.StatusEnum;
 
 import java.util.Optional;
 import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
+import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
+import nl.tudelft.sem.template.example.external.OrdersMicroservice;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.model.Order;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,14 +17,17 @@ public class OrderService {
 
     OrderRepository orderRepository;
 
+    OrdersMicroservice ordersMicroservice;
+
     /**
      * Simple constructor handling dependency injection.
      *
      * @param orderRepository JPA repository holding the orders
      */
     @Autowired
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository,  OrdersMicroservice ordersMicroservice) {
         this.orderRepository = orderRepository;
+        this.ordersMicroservice = ordersMicroservice;
     }
 
     /**
@@ -46,16 +51,20 @@ public class OrderService {
      * If not, it throws an exception.
      *
      * @param orderId Unique identifier of the order (required)
+     * @param authorizationId Unique identifier of the user making the request.
      * @param orderStatusString String format of the new status
      * @throws IllegalOrderStatusException if status doesn't respect the flow
      *     or status string is not available
      * @throws OrderNotFoundException if order was not found
      */
-    public void setOrderStatus(Integer orderId, String orderStatusString)
-            throws IllegalOrderStatusException, OrderNotFoundException {
+    public void setOrderStatus(Integer orderId, Integer authorizationId, String orderStatusString)
+            throws IllegalOrderStatusException, OrderNotFoundException, MicroserviceCommunicationException {
         Optional<Order> orderOptional = orderRepository.findById(Long.valueOf(orderId));
         if (orderOptional.isEmpty()) {
             throw new OrderNotFoundException("Order id not found");
+        }
+        if (!ordersMicroservice.putOrderStatus((long) orderId, (long) authorizationId, orderStatusString)) {
+            throw new MicroserviceCommunicationException("Order status could not be updated");
         }
         Order order = orderOptional.get();
         StatusEnum newStatus = StatusEnum.fromValue(orderStatusString);
