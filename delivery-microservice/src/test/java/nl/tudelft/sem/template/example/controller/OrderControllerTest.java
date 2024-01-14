@@ -1,9 +1,13 @@
 package nl.tudelft.sem.template.example.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
+import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
+
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.example.service.DeliveryService;
 import nl.tudelft.sem.template.example.service.OrderService;
@@ -32,7 +36,7 @@ public class OrderControllerTest {
     private final DeliveryController orderController = new DeliveryController(deliveryService, orderService, authorizationService);
 
     @BeforeEach
-    void setup() {
+    void setup() throws MicroserviceCommunicationException {
         Location location = new Location(5.0,1.0);
         Vendor vendor = new Vendor(3L, 9L, location, new ArrayList<>());
         Order order = new Order(1L, 3L, vendor, Order.StatusEnum.PENDING,  location);
@@ -67,6 +71,10 @@ public class OrderControllerTest {
         vendor = new Vendor(10L, 6L, location, new ArrayList<>());
         order = new Order(7L, 4L, vendor, Order.StatusEnum.DELIVERED,  location);
         Mockito.when(orderRepository.findById(7L)).thenReturn(Optional.of(order));
+
+        when(authorizationService.getUserRole(anyLong())).thenReturn("customer");
+        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenReturn(true);
+        when(authorizationService.canUpdateDeliveryDetails(anyLong(), anyLong())).thenReturn(true);
     }
 
     @Test
