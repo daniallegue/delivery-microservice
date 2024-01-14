@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.service;
 
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
+import nl.tudelft.sem.template.example.exception.*;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.OrderAlreadyExistsException;
@@ -142,6 +143,38 @@ public class DeliveryServiceTest {
         Mockito.when(deliveryRepository.findDeliveryByOrder_OrderId(any())).thenReturn(null);
         Assertions.assertThatThrownBy(() -> deliveryService.retrieveIssueOfDelivery(6))
                 .isInstanceOf(DeliveryNotFoundException.class);
+    }
+
+    @Test
+    void getCourierFromOrderSuccessfulTest() throws OrderNotFoundException, CourierNotFoundException {
+        Vendor vendor1 = new Vendor(5L, 30L, null, new ArrayList<>());
+        Order order1 = new Order(1L, 4567L, vendor1, Order.StatusEnum.PENDING, new Location(2.0, 3.0));
+        Delivery delivery = new Delivery();
+        delivery.setOrder(order1);
+        delivery.setCourierId(2L);
+        when(orderRepository.existsById(1L)).thenReturn(true);
+        when(deliveryRepository.findDeliveryByOrder_OrderId((1L))).thenReturn(delivery);
+
+        Long id = deliveryService.getCourierFromOrder(Math.toIntExact(1L));
+        assertEquals(2L, id);
+    }
+
+    @Test
+    void getCourierFromOrderNotFoundTest() throws OrderNotFoundException, CourierNotFoundException {
+        when(orderRepository.existsById(1L)).thenReturn(false);
+        assertThrows(OrderNotFoundException.class, () -> deliveryService.getCourierFromOrder((int) 1));
+    }
+
+    @Test
+    void getCourierFromOrderNoCourierTest() throws OrderNotFoundException, CourierNotFoundException {
+        Vendor vendor1 = new Vendor(5L, 30L, null, new ArrayList<>());
+        Order order1 = new Order(1L, 4567L, vendor1, Order.StatusEnum.PENDING, new Location(2.0, 3.0));
+        Delivery delivery = new Delivery();
+        delivery.setOrder(order1);
+        when(orderRepository.existsById(1L)).thenReturn(true);
+        when(deliveryRepository.findDeliveryByOrder_OrderId((1L))).thenReturn(delivery);
+
+        assertThrows(CourierNotFoundException.class, () -> deliveryService.getCourierFromOrder((int) 1L));
     }
 
     @Test

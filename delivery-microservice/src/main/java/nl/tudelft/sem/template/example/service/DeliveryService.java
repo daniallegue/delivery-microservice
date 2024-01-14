@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.service;
 
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.OrderAlreadyExistsException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
@@ -218,4 +219,20 @@ public class DeliveryService {
         return configurationProperties.getDefaultDeliveryZone();
     }
 
+    /**
+     * Returns the courier assigned to an order with id: orderId.
+     *
+     * @param orderId The id of the order within the delivery.
+     * @return id of the courier assigned to the order
+     */
+    public Long getCourierFromOrder(Integer orderId) throws OrderNotFoundException, CourierNotFoundException {
+        if (!orderRepository.existsById((long) orderId)) {
+            throw new OrderNotFoundException("Order not found");
+        }
+        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId((long) orderId);
+        if (delivery.getCourierId() == null) {
+            throw new CourierNotFoundException("No courier assigned");
+        }
+        return delivery.getCourierId();
+    }
 }

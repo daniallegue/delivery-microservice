@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.example.controller;
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.OrderAlreadyExistsException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
@@ -358,4 +359,29 @@ public class DeliveryControllerTest {
         
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
+
+    @Test
+    public void deliveryOrderOrderIdCourierGetSuccessfulTest() throws OrderNotFoundException, CourierNotFoundException {
+        when(deliveryService.getCourierFromOrder(1)).thenReturn(2L);
+
+        ResponseEntity<Integer> response = deliveryController.deliveryOrderOrderIdCourierGet(1, 1);
+        assertEquals(2, response.getBody());
+    }
+
+    @Test
+    public void deliveryOrderOrderIdCourierGetOrderNotFoundTest() throws OrderNotFoundException, CourierNotFoundException {
+        when(deliveryService.getCourierFromOrder(1)).thenThrow(OrderNotFoundException.class);
+
+        ResponseEntity<Integer> response = deliveryController.deliveryOrderOrderIdCourierGet(1, 1);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    public void deliveryOrderOrderIdCourierGetNoCourierTest() throws OrderNotFoundException, CourierNotFoundException {
+        when(deliveryService.getCourierFromOrder(1)).thenThrow(CourierNotFoundException.class);
+
+        ResponseEntity<Integer> response = deliveryController.deliveryOrderOrderIdCourierGet(1, 1);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
 }
