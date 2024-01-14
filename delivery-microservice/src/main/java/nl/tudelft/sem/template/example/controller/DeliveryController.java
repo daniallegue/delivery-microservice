@@ -71,14 +71,14 @@ public class DeliveryController implements DeliveryApi {
     @Override
     public ResponseEntity<Void> deliveryOrderOrderIdStatusPut(Integer orderId, Integer authorizationId, String newStatus) {
         try {
-            String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
-            boolean isAuthorized = authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+            boolean isAuthorized = authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId),
+                    Long.valueOf(orderId));
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
             // Update order status
-            orderService.setOrderStatus(orderId, newStatus);
+            orderService.setOrderStatus(orderId, authorizationId, newStatus.replaceAll("\"", ""));
             return ResponseEntity.ok().build();
 
         } catch (MicroserviceCommunicationException e) {
@@ -104,7 +104,8 @@ public class DeliveryController implements DeliveryApi {
     public ResponseEntity<String> deliveryOrderOrderIdStatusGet(Integer orderId, Integer authorizationId) {
         try {
             String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
-            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId),
+                    Long.valueOf(orderId));
 
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -159,10 +160,12 @@ public class DeliveryController implements DeliveryApi {
     }
 
     @Override
-    public ResponseEntity<Void> deliveryOrderOrderIdReadyTimePut(Integer orderId, Integer authorizationId, OffsetDateTime newReadyTime) {
+    public ResponseEntity<Void> deliveryOrderOrderIdReadyTimePut(Integer orderId, Integer authorizationId,
+                                                                 OffsetDateTime newReadyTime) {
         try {
             String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
-            boolean isAuthorized = authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+            boolean isAuthorized = authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId),
+                    Long.valueOf(orderId));
 
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -263,7 +266,8 @@ public class DeliveryController implements DeliveryApi {
     }
 
     @Override
-    public ResponseEntity<Void> deliveryOrderOrderIdTodPut(Integer orderId, Integer authorizationId, OffsetDateTime newDeliveredTime) {
+    public ResponseEntity<Void> deliveryOrderOrderIdTodPut(Integer orderId, Integer authorizationId,
+                                                           OffsetDateTime newDeliveredTime) {
         try {
             String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
             boolean isAuthorized = authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
