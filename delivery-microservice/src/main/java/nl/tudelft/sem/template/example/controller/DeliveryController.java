@@ -336,6 +336,13 @@ public class DeliveryController implements DeliveryApi {
         }
     }
 
+    /**
+     * GET /delivery/order/{order_id}/location
+     *
+     * @param orderId The unique identifier of the order. (required)
+     * @param authorizationId Identification of the user who is making the request. (required)
+     * @return Retrieve the current location for an order.
+     */
     @Override
     public ResponseEntity<Location> deliveryOrderOrderIdLocationGet(Integer orderId, Integer authorizationId) {
         try {
