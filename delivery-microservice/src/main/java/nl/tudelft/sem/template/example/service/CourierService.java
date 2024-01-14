@@ -187,7 +187,6 @@ public class CourierService {
      * Retrieves all the couriers from UsersMicroservice.
      * This function runs periodically to retrieve continuously all the couriers
      */
-    @Scheduled(fixedDelay = 5000)
     public void populateAllCouriers() {
         List<Long> couriers = usersMicroservice.getCourierIds().get();
         if (couriers.size() > 0) {
