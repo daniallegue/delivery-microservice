@@ -1,15 +1,18 @@
 package nl.tudelft.sem.template.example.external;
 
+
 import nl.tudelft.sem.template.model.Location;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 public class UsersMicroserviceTest {
@@ -51,5 +54,21 @@ public class UsersMicroserviceTest {
         when(restTemplate.getForObject(usersBaseUrl + "/vendor/" + 1 + "/location", Location.class))
                 .thenThrow(HttpClientErrorException.class);
         assertThat(usersMicroservice.getVendorLocation(1L)).isEqualTo(Optional.empty());
+    }
+
+    @Test
+    void getCourierIdsSuccessfulTest() {
+        List<Long> couriers = Arrays.asList(1L, 2L, 3L);
+        when(restTemplate.getForObject(usersBaseUrl + "/courier", List.class)).thenReturn(couriers);
+
+        assertEquals(Optional.of(couriers), usersMicroservice.getCourierIds());
+    }
+
+    @Test
+    void getCourierIdsEmptyTest() {
+        List<Long> couriers = new ArrayList<>();
+        when(restTemplate.getForObject(usersBaseUrl + "/courier", List.class)).thenReturn(couriers);
+
+        assertEquals(Optional.of(couriers), usersMicroservice.getCourierIds());
     }
 }

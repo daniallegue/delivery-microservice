@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.example.controller;
 
+import java.util.List;
 import nl.tudelft.sem.template.api.VendorApi;
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
 import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
@@ -14,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 
 
 @RestController
@@ -89,7 +89,8 @@ public class VendorController implements VendorApi {
      * @path PUT: /vendor/delivery/{vendor_id}/assign/{courier_id}:
      */
     @Override
-    public ResponseEntity<Vendor> vendorDeliveryVendorIdAssignCourierIdPut(Integer vendorId, Integer courierId, Integer authorizationId) {
+    public ResponseEntity<Vendor> vendorDeliveryVendorIdAssignCourierIdPut(Integer vendorId,
+                                                                           Integer courierId, Integer authorizationId) {
         try {
             if (!authorizationService.getUserRole((long) authorizationId).equals(authorizationService.ADMIN)) {
                 return new ResponseEntity<Vendor>(HttpStatus.UNAUTHORIZED);

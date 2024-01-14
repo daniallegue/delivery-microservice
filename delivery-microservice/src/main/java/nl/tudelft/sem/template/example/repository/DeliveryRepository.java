@@ -1,8 +1,8 @@
 package nl.tudelft.sem.template.example.repository;
 
+import java.util.List;
 import nl.tudelft.sem.template.model.Delivery;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.List;
 
 public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     /**
@@ -14,7 +14,7 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     Delivery findDeliveryByOrder_OrderId(Long orderId);
 
     /**
-     * Finds a delivery based on the courierId of the order within the Delivery
+     * Finds a delivery based on the courierId of the order within the Delivery.
      *
      * @param courierId - The courier id of a delivery
      * @return A delivery

@@ -1,15 +1,19 @@
 package nl.tudelft.sem.template.example.controller;
 
+import java.util.List;
 import nl.tudelft.sem.template.api.CourierApi;
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
-import nl.tudelft.sem.template.example.exception.*;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
+import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
+import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
+import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
+import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.service.CourierService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 
 @RestController
 public class CourierController implements CourierApi {
