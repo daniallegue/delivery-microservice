@@ -2,11 +2,6 @@ package nl.tudelft.sem.template.example.service;
 
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
 import nl.tudelft.sem.template.example.exception.*;
-import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
-import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
-import nl.tudelft.sem.template.example.exception.OrderAlreadyExistsException;
-import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
-import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
@@ -14,7 +9,6 @@ import nl.tudelft.sem.template.model.*;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.mockito.Mockito;
 
 import java.time.OffsetDateTime;
@@ -95,7 +89,6 @@ public class DeliveryServiceTest {
         Mockito.when(vendorRepository.save(vendor)).thenReturn(vendor);
         Mockito.when(deliveryRepository.save(any())).thenReturn(new Delivery());
         Delivery result = deliveryService.createDelivery(dummyDeliveryPostRequest);
-
         assertNotNull(result);
     }
 
@@ -112,6 +105,7 @@ public class DeliveryServiceTest {
         assertEquals(readyTime, result);
     }
 
+    @Test
     void getDefaultDeliveryZone() {
         Long defaultDeliveryZone = deliveryService.getDefaultDeliveryZone();
         assertEquals(10L, defaultDeliveryZone);
@@ -195,6 +189,59 @@ public class DeliveryServiceTest {
 
         verify(deliveryRepository).save(mockDelivery);
         assertEquals(newReadyTime, mockDelivery.getTime().getReadyTime());
+    }
+    @Test
+    void testUpdateReadyTimeSuccessTimeIsNull() throws OrderNotFoundException {
+        OffsetDateTime newReadyTime = OffsetDateTime.now();
+
+        Delivery mockDelivery = new Delivery();
+        mockDelivery.setId(1L);
+        mockDelivery.setOrder(new Order());
+
+        when(deliveryRepository.findDeliveryByOrder_OrderId(anyLong())).thenReturn(mockDelivery);
+        when(deliveryRepository.save(any())).thenReturn(mockDelivery);
+
+        deliveryService.updateReadyTime(1L, newReadyTime);
+
+        verify(deliveryRepository).save(any());
+
+        assertEquals(newReadyTime, mockDelivery.getTime().getReadyTime());
+    }
+
+    @Test
+    void testPickUpTimeSuccessTimeIsNull() throws OrderNotFoundException {
+        OffsetDateTime newPickUpTime = OffsetDateTime.now();
+
+        Delivery mockDelivery = new Delivery();
+        mockDelivery.setId(1L);
+        mockDelivery.setOrder(new Order());
+
+        when(deliveryRepository.findDeliveryByOrder_OrderId(anyLong())).thenReturn(mockDelivery);
+        when(deliveryRepository.save(any())).thenReturn(mockDelivery);
+
+        deliveryService.updatePickupTime(1L, newPickUpTime);
+
+        verify(deliveryRepository).save(any());
+
+        assertEquals(newPickUpTime, mockDelivery.getTime().getPickUpTime());
+    }
+
+    @Test
+    void testDeliveredTimeSuccessTimeIsNull() throws OrderNotFoundException {
+        OffsetDateTime newDeliveredTime = OffsetDateTime.now();
+
+        Delivery mockDelivery = new Delivery();
+        mockDelivery.setId(1L);
+        mockDelivery.setOrder(new Order());
+
+        when(deliveryRepository.findDeliveryByOrder_OrderId(anyLong())).thenReturn(mockDelivery);
+        when(deliveryRepository.save(any())).thenReturn(mockDelivery);
+
+        deliveryService.updateDeliveredTime(1L, newDeliveredTime);
+
+        verify(deliveryRepository).save(any());
+
+        assertEquals(newDeliveredTime, mockDelivery.getTime().getDeliveredTime());
     }
 
     @Test
@@ -288,6 +335,38 @@ public class DeliveryServiceTest {
         when(deliveryRepository.findDeliveryByOrder_OrderId(orderId)).thenReturn(null);
 
         assertThrows(OrderNotFoundException.class, () -> deliveryService.updateDeliveredTime(orderId, newDeliveredTime));
+    }
+    @Test
+    void testAddIssueToDeliverySuccess() throws DeliveryNotFoundException {
+        Integer orderId = 123;
+        Issue issue = new Issue("type", "description");
+
+        Delivery mockDelivery = new Delivery();
+        mockDelivery.setId(1L); // Set ID or any necessary fields
+        mockDelivery.setOrder(new Order()); // Set Order or any necessary fields
+
+        when(deliveryRepository.findDeliveryByOrder_OrderId(anyLong())).thenReturn(mockDelivery);
+
+        assertDoesNotThrow(() -> deliveryService.addIssueToDelivery(orderId, issue));
+
+        Mockito.verify(deliveryRepository).findDeliveryByOrder_OrderId(Long.valueOf(orderId));
+        assertEquals(issue, mockDelivery.getIssue());
+        Mockito.verify(deliveryRepository).save(mockDelivery);
+    }
+
+    @Test
+    void testAddIssueToDeliveryDeliveryNotFound() {
+        Integer orderId = 123;
+        Issue issue = new Issue("type", "description");
+
+        when(deliveryRepository.findDeliveryByOrder_OrderId(anyLong())).thenReturn(null);
+        DeliveryNotFoundException exception = assertThrows(DeliveryNotFoundException.class,
+                () -> deliveryService.addIssueToDelivery(orderId, issue));
+
+        Mockito.verify(deliveryRepository).findDeliveryByOrder_OrderId(Long.valueOf(orderId));
+
+        assertEquals("Delivery with order id " + orderId + " was not found", exception.getMessage());
+        Mockito.verifyNoMoreInteractions(deliveryRepository);
     }
 
 }
