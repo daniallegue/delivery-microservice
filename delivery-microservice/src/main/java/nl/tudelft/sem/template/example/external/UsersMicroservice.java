@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.example.external;
 
 import java.util.Optional;
 import nl.tudelft.sem.template.model.Location;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -10,13 +11,15 @@ import org.springframework.web.client.RestTemplate;
 public class UsersMicroservice {
     private final RestTemplate restTemplate;
 
-    //TODO: to change after with the actual microservice server number,
-    //this is for testing purposes with postman
-//    private final String usersBaseUrl = "localhost:8082";
-    private final String usersBaseUrl = "https://5d9855d1-4c2c-4318-b1d6-9a2e8ba40b95.mock.pstmn.io";
 
-    public UsersMicroservice() {
-        this.restTemplate = new RestTemplate();
+    private final String usersBaseUrl = "localhost:8081";
+
+    //this is for mock-testing purposes with postman
+//    private final String usersBaseUrl = "https://03712635-fc3b-4210-a27e-8f0eb602e07b.mock.pstmn.io";
+
+    @Autowired
+    public UsersMicroservice(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
     /**

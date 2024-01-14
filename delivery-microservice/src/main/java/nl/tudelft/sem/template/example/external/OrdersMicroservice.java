@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.external;
 
 import nl.tudelft.sem.template.model.Location;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -13,8 +14,9 @@ public class OrdersMicroservice {
 
     private final String usersBaseUrl = "localhost:8082";
 
-    public OrdersMicroservice() {
-        this.restTemplate = new RestTemplate();
+    @Autowired
+    public OrdersMicroservice(RestTemplate restTemplate){
+        this.restTemplate = restTemplate;
     }
 
     /**
