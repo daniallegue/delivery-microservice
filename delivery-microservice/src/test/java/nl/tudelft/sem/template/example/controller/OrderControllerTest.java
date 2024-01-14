@@ -2,11 +2,13 @@ package nl.tudelft.sem.template.example.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 
+import nl.tudelft.sem.template.example.external.OrdersMicroservice;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.example.service.DeliveryService;
 import nl.tudelft.sem.template.example.service.OrderService;
@@ -18,13 +20,17 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 import java.util.ArrayList;
 import java.util.Optional;
 
 public class OrderControllerTest {
     private final OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
 
-    private final OrderService orderService = new OrderService(orderRepository);
+    private final OrdersMicroservice ordersMicroservice = Mockito.mock(OrdersMicroservice.class);
+
+    private final OrderService orderService = new OrderService(orderRepository, ordersMicroservice);
 
     private final DeliveryService deliveryService = Mockito.mock(DeliveryService.class);
 
@@ -122,6 +128,7 @@ public class OrderControllerTest {
 
     @Test
     void putOrderStatusPendingToPendingTest() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Pending";
         orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
@@ -131,6 +138,7 @@ public class OrderControllerTest {
 
     @Test
     void putOrderStatusPendingToAcceptedTest() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Accepted";
         orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
@@ -140,6 +148,7 @@ public class OrderControllerTest {
 
     @Test
     void putOrderStatusPendingToRejectedTest() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Rejected";
         orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
@@ -149,6 +158,7 @@ public class OrderControllerTest {
 
     @Test
     void putOrderStatusAcceptedToPreparingTest() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Preparing";
         orderController.deliveryOrderOrderIdStatusPut(2, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(2, 1).getBody();
@@ -158,6 +168,7 @@ public class OrderControllerTest {
 
     @Test
     void putOrderStatusPreparingToGivenToCourierTest() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Given_To_Courier";
         orderController.deliveryOrderOrderIdStatusPut(4, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(4, 1).getBody();
@@ -166,6 +177,7 @@ public class OrderControllerTest {
 
     @Test
     void putOrderStatusGivenToCourierToOnTransitTest() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "On_Transit";
         orderController.deliveryOrderOrderIdStatusPut(5, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(5, 1).getBody();
@@ -174,6 +186,7 @@ public class OrderControllerTest {
 
     @Test
     void putOrderStatusOnTransitToDeliveredTest() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Delivered";
         orderController.deliveryOrderOrderIdStatusPut(6, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(6, 1).getBody();
@@ -182,6 +195,7 @@ public class OrderControllerTest {
 
     @Test
     void putOrderStatusPendingToPreparingTest() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Preparing";
         orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
@@ -191,6 +205,7 @@ public class OrderControllerTest {
 
     @Test
     void putOrderStatusRejectedToPreparingTest() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Preparing";
         orderController.deliveryOrderOrderIdStatusPut(3, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(3, 1).getBody();
@@ -200,6 +215,7 @@ public class OrderControllerTest {
 
     @Test
     void putOrderStatusAcceptedToElseTest() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Pending";
         orderController.deliveryOrderOrderIdStatusPut(2, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(2, 1).getBody();
@@ -213,6 +229,7 @@ public class OrderControllerTest {
     }
     @Test
     void putOrderStatusPreparingToOnTransitTest() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "On_Transit";
         orderController.deliveryOrderOrderIdStatusPut(4, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(4, 1).getBody();
@@ -221,6 +238,7 @@ public class OrderControllerTest {
 
     @Test
     void putOrderStatusGivenToCourierToDeliveredTest() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Delivered";
         orderController.deliveryOrderOrderIdStatusPut(5, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(5, 1).getBody();
@@ -228,6 +246,7 @@ public class OrderControllerTest {
     }
     @Test
     void putOrderStatusOnTransitToGivenToCourierTest() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Given_To_Courier";
         orderController.deliveryOrderOrderIdStatusPut(6, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(6, 1).getBody();
@@ -236,10 +255,19 @@ public class OrderControllerTest {
 
     @Test
     void putOrderStatusDeliveredToOnTransitTest() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "On_Transit";
         orderController.deliveryOrderOrderIdStatusPut(7, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(7, 1).getBody();
         assertThat(status).isEqualTo("Delivered");
         assertThat(orderController.deliveryOrderOrderIdStatusPut(5, 1, "Accepted").getStatusCode()).isEqualTo(HttpStatus.valueOf(400));
+    }
+
+    @Test
+    void putOrderStatusBadMicroserviceCommunication() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(false);
+        String newStatus = "Delivered";
+        ResponseEntity<Void> result = orderController.deliveryOrderOrderIdStatusPut(6, 1, newStatus);
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.valueOf(500));
     }
 }

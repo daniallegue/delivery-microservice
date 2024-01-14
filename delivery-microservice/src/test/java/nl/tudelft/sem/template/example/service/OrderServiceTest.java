@@ -9,7 +9,9 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
+import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
+import nl.tudelft.sem.template.example.external.OrdersMicroservice;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.model.Location;
 import nl.tudelft.sem.template.model.Order;
@@ -27,7 +29,9 @@ public class OrderServiceTest {
 
     private final OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
 
-    private final OrderService orderService = new OrderService(orderRepository);
+    private final OrdersMicroservice ordersMicroservice = Mockito.mock(OrdersMicroservice.class);
+
+    private final OrderService orderService = new OrderService(orderRepository, ordersMicroservice);
 
     Order order1, order2, order3, order4, order5, order6, order7;
 
@@ -86,7 +90,8 @@ public class OrderServiceTest {
 
     @Test
     public void setOrderStatus_pendingToAccepted_validTransition() throws Exception {
-        orderService.setOrderStatus(1, "Accepted");
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
+        orderService.setOrderStatus(1, 11,"Accepted");
 
         assertThat(order1.getStatus()).isEqualTo(Order.StatusEnum.ACCEPTED);
         verify(orderRepository).save(order1);
@@ -94,7 +99,8 @@ public class OrderServiceTest {
 
     @Test
     public void setOrderStatus_pendingToRejected_validTransition() throws Exception {
-        orderService.setOrderStatus(1, "Rejected");
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
+        orderService.setOrderStatus(1, 11,"Rejected");
 
         assertThat(order1.getStatus()).isEqualTo(Order.StatusEnum.REJECTED);
         verify(orderRepository).save(order1);
@@ -102,7 +108,8 @@ public class OrderServiceTest {
 
     @Test
     public void setOrderStatus_acceptedToPreparing_validTransition() throws Exception {
-        orderService.setOrderStatus(2, "Preparing");
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
+        orderService.setOrderStatus(2, 12,"Preparing");
 
         assertThat(order2.getStatus()).isEqualTo(Order.StatusEnum.PREPARING);
         verify(orderRepository).save(order2);
@@ -110,7 +117,8 @@ public class OrderServiceTest {
 
     @Test
     public void setOrderStatus_preparingToGivenToCourier_validTransition() throws Exception {
-        orderService.setOrderStatus(4, "Given_To_Courier");
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
+        orderService.setOrderStatus(4, 14,"Given_To_Courier");
 
         assertThat(order4.getStatus()).isEqualTo(Order.StatusEnum.GIVEN_TO_COURIER);
         verify(orderRepository).save(order4);
@@ -118,7 +126,8 @@ public class OrderServiceTest {
 
     @Test
     public void setOrderStatus_givenToCourierToOnTransit_validTransition() throws Exception {
-        orderService.setOrderStatus(5, "On_Transit");
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
+        orderService.setOrderStatus(5, 15,"On_Transit");
 
         assertThat(order5.getStatus()).isEqualTo(Order.StatusEnum.ON_TRANSIT);
         verify(orderRepository).save(order5);
@@ -126,7 +135,8 @@ public class OrderServiceTest {
 
     @Test
     public void setOrderStatus_onTransitToDelivered_validTransition() throws Exception {
-        orderService.setOrderStatus(6, "Delivered");
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
+        orderService.setOrderStatus(6, 15,"Delivered");
 
         assertThat(order6.getStatus()).isEqualTo(Order.StatusEnum.DELIVERED);
         verify(orderRepository).save(order6);
@@ -134,10 +144,17 @@ public class OrderServiceTest {
 
     @Test
     public void setOrderStatus_invalidTransition_throwsException() {
-        assertThatThrownBy(() -> orderService.setOrderStatus(1, "Preparing"))
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
+        assertThatThrownBy(() -> orderService.setOrderStatus(1, 6, "Preparing"))
                 .isInstanceOf(IllegalOrderStatusException.class)
                 .hasMessageContaining("Error! Order status cant go from PENDING to PREPARING.");
     }
 
-
+    @Test
+    public void setOrderStatusBadMicroserviceCommunication() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(false);
+        assertThatThrownBy(() -> orderService.setOrderStatus(1, 6, "Preparing"))
+                .isInstanceOf(MicroserviceCommunicationException.class)
+                .hasMessageContaining("Order status could not be updated");
+    }
 }
