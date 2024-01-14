@@ -98,7 +98,7 @@ public class CourierControllerTest {
     }
 
     @Test
-    void testAssignCourierToRandomOrderSuccess() throws DeliveryNotFoundException, NoAvailableOrdersException {
+    void testAssignCourierToRandomOrderSuccess() throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException {
         Long courierId = 1L;
         Integer authorizationId = 1;
         doNothing().when(courierService).assignCourierToRandomOrder(courierId);
@@ -108,7 +108,7 @@ public class CourierControllerTest {
     }
 
     @Test
-    void testAssignCourierToRandomOrderNoAvailableOrders() throws DeliveryNotFoundException, NoAvailableOrdersException {
+    void testAssignCourierToRandomOrderNoAvailableOrders() throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException {
         Long courierId = 1L;
         Integer authorizationId = 1;
         doThrow(new NoAvailableOrdersException("No available orders")).when(courierService).assignCourierToRandomOrder(courierId);
@@ -118,7 +118,7 @@ public class CourierControllerTest {
     }
 
     @Test
-    void testAssignCourierToRandomOrderDeliveryNotFound() throws DeliveryNotFoundException, NoAvailableOrdersException {
+    void testAssignCourierToRandomOrderDeliveryNotFound() throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException {
         Long courierId = 1L;
         Integer authorizationId = 1;
         doThrow(new DeliveryNotFoundException("Delivery not found")).when(courierService).assignCourierToRandomOrder(courierId);
@@ -129,7 +129,7 @@ public class CourierControllerTest {
 
 
     @Test
-    void assignCourierToSpecificOrderSuccessTest() throws OrderNotFoundException, CourierNotFoundException {
+    void assignCourierToSpecificOrderSuccessTest() throws OrderNotFoundException, CourierNotFoundException, DeliveryNotFoundException, NoAvailableOrdersException {
         Long courierId = 1L;
         Long orderId = 5L;
 
@@ -142,7 +142,7 @@ public class CourierControllerTest {
     }
 
     @Test
-    void assignNonExistentCourierToOrderTest() throws OrderNotFoundException, CourierNotFoundException {
+    void assignNonExistentCourierToOrderTest() throws OrderNotFoundException, CourierNotFoundException, DeliveryNotFoundException, NoAvailableOrdersException {
         Long nonExistentCourierId = 999L;
         Long orderId = 5L;
 
@@ -156,7 +156,7 @@ public class CourierControllerTest {
     }
 
     @Test
-    void assignCourierToNonExistentOrderTest() throws OrderNotFoundException, CourierNotFoundException {
+    void assignCourierToNonExistentOrderTest() throws OrderNotFoundException, CourierNotFoundException, DeliveryNotFoundException, NoAvailableOrdersException {
         Long courierId = 1L;
         Long nonExistentOrderId = 999L;
 
