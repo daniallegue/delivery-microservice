@@ -22,10 +22,11 @@ public class OrderService {
     /**
      * Simple constructor handling dependency injection.
      *
+     * @param ordersMicroservice microservice responsible for handling orders
      * @param orderRepository JPA repository holding the orders
      */
     @Autowired
-    public OrderService(OrderRepository orderRepository,  OrdersMicroservice ordersMicroservice) {
+    public OrderService(OrderRepository orderRepository, OrdersMicroservice ordersMicroservice) {
         this.orderRepository = orderRepository;
         this.ordersMicroservice = ordersMicroservice;
     }

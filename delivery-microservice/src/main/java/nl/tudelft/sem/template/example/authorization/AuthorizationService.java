@@ -45,7 +45,7 @@ public class AuthorizationService {
      */
     public Boolean isInvolvedInOrder(Long authorizationId, String role, Long orderId) {
         Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
-        if (role.equals("admin")) {
+        if (role.equals(ADMIN)) {
             return true;
         }
         switch (role) {
