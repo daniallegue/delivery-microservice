@@ -153,12 +153,14 @@ public class OrderControllerTest {
 
     @Test
     void putOrderStatusPendingToAcceptedNoChangeTest() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Accepted";
+        orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
 
         assertThat(status).isEqualTo("Accepted");
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(400, response.getStatusCodeValue());
     }
     @Test
     void putOrderStatusPendingToRejectedTest() {
