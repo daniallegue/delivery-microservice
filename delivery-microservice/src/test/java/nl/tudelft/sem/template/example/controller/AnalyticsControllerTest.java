@@ -281,7 +281,7 @@ public class AnalyticsControllerTest {
     @Test
     void testGetVendorAverageCourierNotFound() throws Exception {
         when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) vendorId)).thenReturn(true);
-        when(analyticsService.getVendorAverage((long) vendorId)).thenThrow(new CourierNotFoundException("Courier not found"));
+        when(analyticsService.getVendorAverage((long) vendorId)).thenThrow(new VendorNotFoundException("Vendor not found"));
 
         ResponseEntity<Integer> response = analyticsController.analyticsVendorVendorIdVendorAverageGet(vendorId, authorizationId);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
