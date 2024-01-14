@@ -18,10 +18,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,7 +33,7 @@ public class CourierServiceTest {
 
     private final UsersMicroservice usersMicroservice = Mockito.mock(UsersMicroservice.class);
 
-    private final CourierService courierService = new CourierService(deliveryRepository, vendorRepository, usersMicroservice);
+    private final CourierService courierService = Mockito.spy(new CourierService(deliveryRepository, vendorRepository, usersMicroservice));
 
     private final OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
     @BeforeEach
@@ -157,6 +154,18 @@ public class CourierServiceTest {
         });
 
         assertThat(exception.getMessage()).isEqualTo("Order with id " + nonExistentOrderId + " was not found.");
+    }
+
+    @Test
+    void populateAllCouriers() {
+        List<Long> newCouriers = Arrays.asList(1L, 2L, 3L);
+        Mockito.when(usersMicroservice.getCourierIds()).thenReturn(Optional.of(newCouriers));
+
+        courierService.populateAllCouriers();
+
+        for (Long newCourier : newCouriers) {
+            Mockito.verify(courierService, Mockito.times(1)).addCourier(newCourier);
+        }
     }
 
 

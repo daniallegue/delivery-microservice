@@ -37,8 +37,8 @@ public class CourierService {
      * @param usersMicroservice External communication to Users microservice
      */
     @Autowired
-    public CourierService(DeliveryRepository deliveryRepository, VendorRepository vendorRepository
-        , UsersMicroservice usersMicroservice) {
+    public CourierService(DeliveryRepository deliveryRepository, VendorRepository vendorRepository,
+                          UsersMicroservice usersMicroservice) {
         this.deliveryRepository = deliveryRepository;
         this.vendorRepository = vendorRepository;
         this.usersMicroservice = usersMicroservice;
@@ -185,15 +185,14 @@ public class CourierService {
 
     /**
      * Retrieves all the couriers from UsersMicroservice.
-     *
      * This function runs periodically to retrieve continuously all the couriers
      */
     @Scheduled(fixedDelay = 5000)
     public void populateAllCouriers() {
         List<Long> couriers = usersMicroservice.getCourierIds().get();
-        if(couriers.size() > 0){
-            for(Long courier : couriers){
-                if (!doesCourierExist(courier)){
+        if (couriers.size() > 0) {
+            for (Long courier : couriers) {
+                if (!doesCourierExist(courier)) {
                     addCourier(courier);
                 }
             }
