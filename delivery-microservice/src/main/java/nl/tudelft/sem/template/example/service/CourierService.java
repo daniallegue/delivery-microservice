@@ -11,6 +11,9 @@ import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.external.UsersMicroservice;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
+import nl.tudelft.sem.template.example.service.strategy.AssignOrderContext;
+import nl.tudelft.sem.template.example.service.strategy.RandomOrderStrategy;
+import nl.tudelft.sem.template.example.service.strategy.SpecificOrderStrategy;
 import nl.tudelft.sem.template.model.Delivery;
 import nl.tudelft.sem.template.model.Order;
 import nl.tudelft.sem.template.model.Vendor;
@@ -28,6 +31,7 @@ public class CourierService {
 
     UsersMicroservice usersMicroservice;
     private List<Long> courierList = new ArrayList<>();
+    AssignOrderContext assignOrderContext = new AssignOrderContext();
 
     /**
      * Constructor for handling dependency injection.
@@ -107,37 +111,6 @@ public class CourierService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Assigns a courier to a random available order.
-     *
-     * @param courierId Unique identifier of the courier (required)
-     */
-    public void assignCourierToRandomOrder(Long courierId) throws DeliveryNotFoundException, NoAvailableOrdersException {
-        List<Long> availableOrders = getAvailableOrderIds(courierId);
-
-        if (availableOrders.size() <= 0) {
-            throw new NoAvailableOrdersException("No orders available for courier with id: " + courierId);
-        }
-
-        //Assign first order available for now, in the future this
-        // will eventually change to a more effective method of choosing random orders
-        Long orderId = availableOrders.get(0);
-
-        //Find delivery with required orderId
-        Delivery deliveryToUpdate = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
-
-
-        Optional<Delivery> deliveryOptional = deliveryRepository.findById(deliveryToUpdate.getId());
-        if (deliveryOptional.isEmpty()) {
-            throw new DeliveryNotFoundException("Delivery id not found");
-        }
-
-        Delivery delivery = deliveryOptional.get();
-        delivery.setCourierId(courierId);
-        deliveryRepository.save(delivery);
-
-    }
-
     /** Adds a courier with a specific ID to our database.
      *
      * @param courierId Unique identifier of the courier (required)
@@ -168,19 +141,12 @@ public class CourierService {
      * @throws CourierNotFoundException if the courier is not found
      */
     public void assignCourierToSpecificOrder(Long courierId, Long orderId)
-            throws OrderNotFoundException, CourierNotFoundException {
-
-        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
-        if (delivery == null) {
-            throw new OrderNotFoundException("Order with id " + orderId + " was not found.");
-        }
-
-        if (!this.doesCourierExist(courierId)) {
+            throws OrderNotFoundException, CourierNotFoundException, DeliveryNotFoundException, NoAvailableOrdersException {
+        if (!doesCourierExist(courierId)) {
             throw new CourierNotFoundException("Courier with id " + courierId + " not found.");
         }
-
-        delivery.setCourierId(courierId);
-        deliveryRepository.save(delivery);
+        assignOrderContext.setAssignOrderStrategy(new SpecificOrderStrategy(this.deliveryRepository));
+        assignOrderContext.assignOrder(courierId, orderId, getAvailableOrderIds(courierId));
     }
 
     /**
@@ -196,6 +162,21 @@ public class CourierService {
                 }
             }
         }
+    }
+
+
+    /**
+     * Assigns a courier to a random available order.
+     *
+     * @param courierId Unique identifier of the courier (required)
+     */
+    public void assignCourierToRandomOrder(Long courierId) throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException {
+        if (!doesCourierExist(courierId)) {
+            throw new CourierNotFoundException("Courier with id " + courierId + " not found.");
+        }
+        assignOrderContext.setAssignOrderStrategy(new RandomOrderStrategy(this.deliveryRepository));
+        assignOrderContext.assignOrder(courierId, null, getAvailableOrderIds(courierId));
+
     }
 
 }

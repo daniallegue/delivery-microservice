@@ -9,6 +9,8 @@ import nl.tudelft.sem.template.model.Delivery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import static java.util.Collections.replaceAll;
+
 @Service
 public class AuthorizationService {
     private final UsersMicroservice usersMicroservice;
@@ -43,7 +45,6 @@ public class AuthorizationService {
      */
     public Boolean isInvolvedInOrder(Long authorizationId, String role, Long orderId) {
         Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
-
         if (role.equals(ADMIN)) {
             return true;
         }
@@ -77,7 +78,7 @@ public class AuthorizationService {
         if (userType.isEmpty()) {
             throw new MicroserviceCommunicationException("User type could not be found");
         }
-        return userType.get();
+        return userType.get().replaceAll("\"", "");
     }
 
     /**

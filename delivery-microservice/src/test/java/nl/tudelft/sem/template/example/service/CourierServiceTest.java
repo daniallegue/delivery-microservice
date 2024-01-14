@@ -117,7 +117,7 @@ public class CourierServiceTest {
 
 
     @Test
-    void assignCourierToRandomOrderTest() throws DeliveryNotFoundException, NoAvailableOrdersException {
+    void assignCourierToRandomOrderTest() throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException {
         courierService.assignCourierToRandomOrder(1L);
 
         Long actual = deliveryRepository.findById(2L).get().getCourierId();
@@ -125,7 +125,7 @@ public class CourierServiceTest {
     }
 
     @Test
-    void assignCourierToSpecificOrderTest() throws DeliveryNotFoundException, OrderNotFoundException, CourierNotFoundException {
+    void assignCourierToSpecificOrderTest() throws DeliveryNotFoundException, OrderNotFoundException, CourierNotFoundException, NoAvailableOrdersException {
         courierService.assignCourierToSpecificOrder(5L, 9L);
 
         Long actualCourier = deliveryRepository.findById(2L).get().getCourierId();
@@ -149,11 +149,11 @@ public class CourierServiceTest {
         Long existingCourierId = 1L;
         Long nonExistentOrderId = 999L;
 
-        Throwable exception = assertThrows(OrderNotFoundException.class, () -> {
+        Throwable exception = assertThrows(DeliveryNotFoundException.class, () -> {
             courierService.assignCourierToSpecificOrder(existingCourierId, nonExistentOrderId);
         });
 
-        assertThat(exception.getMessage()).isEqualTo("Order with id " + nonExistentOrderId + " was not found.");
+        assertThat(exception.getMessage()).isEqualTo("Delivery with order id " + nonExistentOrderId + " was not found.");
     }
 
     @Test
