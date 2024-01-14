@@ -71,6 +71,9 @@ public class DeliveryServiceTest {
         mockTime = new Time();
         mockDelivery = new Delivery();
         mockDelivery.setTime(mockTime);
+        mockDelivery.setId(1L); // Set a non-null ID for the mock delivery
+        mockDelivery.setTime(mockTime);
+        mockDelivery.setOrder(new Order());
     }
 
     @Test
@@ -255,6 +258,67 @@ public class DeliveryServiceTest {
         when(deliveryRepository.findDeliveryByOrder_OrderId(orderId)).thenReturn(null);
 
         assertThrows(OrderNotFoundException.class, () -> deliveryService.updateDeliveredTime(orderId, newDeliveredTime));
+    }
+
+    @Test
+    void testCalculateLiveLocationOrderNotFound() {
+        when(deliveryRepository.findDeliveryByOrder_OrderId(anyLong())).thenReturn(null);
+
+        assertThrows(OrderNotFoundException.class, () -> deliveryService.calculateLiveLocation(orderId));
+    }
+
+    @Test
+    void testGetDeliveryIdByOrderIdSuccess() throws OrderNotFoundException {
+        when(deliveryRepository.findDeliveryByOrder_OrderId(anyLong())).thenReturn(mockDelivery);
+
+        Long result = deliveryService.getDeliveryIdByOrderId(orderId);
+
+        assertNotNull(result);
+        assertEquals(mockDelivery.getId(), result); // This should now pass
+    }
+
+
+    @Test
+    void testGetDeliveryIdByOrderIdNotFound() {
+        when(deliveryRepository.findDeliveryByOrder_OrderId(anyLong())).thenReturn(null);
+
+        assertThrows(OrderNotFoundException.class, () -> deliveryService.getDeliveryIdByOrderId(orderId));
+    }
+
+    @Test
+    void testLinearInterpolation() {
+        double start = 0;
+        double end = 10;
+        double fraction = 0.5;
+
+        double result = deliveryService.linearInterpolation(start, end, fraction);
+        assertEquals(5.0, result, "Linear interpolation should be halfway between start and end");
+    }
+
+    @Test
+    void testEstimatePositionBeforePickup() {
+        Location start = new Location(0.0, 0.0);
+        Location end = new Location(10.0, 10.0);
+        OffsetDateTime pickupTime = OffsetDateTime.now().plusHours(1);
+        OffsetDateTime currentTime = OffsetDateTime.now();
+
+        Location result = deliveryService.estimatePosition(start, end, pickupTime, currentTime);
+
+        assertEquals(start.getLatitude(), result.getLatitude(), "Latitude should be start latitude");
+        assertEquals(start.getLongitude(), result.getLongitude(), "Longitude should be start longitude");
+    }
+
+    @Test
+    void testEstimatePositionMidway() {
+        Location start = new Location(0.0, 0.0);
+        Location end = new Location(0.0, 3600.0); // 3600 meters away
+        OffsetDateTime pickupTime = OffsetDateTime.now().minusMinutes(30); // 30 minutes ago
+        OffsetDateTime currentTime = OffsetDateTime.now();
+
+        Location result = deliveryService.estimatePosition(start, end, pickupTime, currentTime);
+
+        assertEquals(0.0, result.getLatitude());
+        assertEquals(1800.0, result.getLongitude());
     }
 
 }

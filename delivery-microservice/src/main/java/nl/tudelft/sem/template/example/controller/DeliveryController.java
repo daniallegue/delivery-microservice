@@ -13,6 +13,7 @@ import nl.tudelft.sem.template.example.service.OrderService;
 import nl.tudelft.sem.template.model.Delivery;
 import nl.tudelft.sem.template.model.DeliveryPostRequest;
 import nl.tudelft.sem.template.model.Issue;
+import nl.tudelft.sem.template.model.Location;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -334,4 +335,27 @@ public class DeliveryController implements DeliveryApi {
             return new ResponseEntity<Void>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @Override
+    public ResponseEntity<Location> deliveryOrderOrderIdLocationGet(Integer orderId, Integer authorizationId) {
+        try {
+            String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
+            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+            if (!isAuthorized) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            Long deliveryId = deliveryService.getDeliveryIdByOrderId(orderId.longValue());
+            Location liveLocation = deliveryService.calculateLiveLocation(deliveryId);
+
+            return ResponseEntity.ok(liveLocation);
+
+        } catch (MicroserviceCommunicationException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
+        } catch (OrderNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
 }
+

@@ -12,6 +12,7 @@ import nl.tudelft.sem.template.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
@@ -216,6 +217,63 @@ public class DeliveryService {
      */
     public Long getDefaultDeliveryZone() {
         return configurationProperties.getDefaultDeliveryZone();
+    }
+
+
+    private double calculateDistance(Location start, Location end) {
+        double latDifference = end.getLatitude() - start.getLatitude();
+        double lonDifference = end.getLongitude() - start.getLongitude();
+        return Math.sqrt(latDifference * latDifference + lonDifference * lonDifference);
+    }
+
+    private static final double COURIER_SPEED = 1; // meter per second
+
+    public Location estimatePosition(Location start, Location end, OffsetDateTime pickupTime, OffsetDateTime currentTime) {
+        if (pickupTime == null || pickupTime.isAfter(currentTime)) {
+            return start; // Courier hasn't started the delivery yet
+        }
+
+        double distance = calculateDistance(start, end);
+        long elapsedTimeInSeconds = Duration.between(pickupTime, currentTime).getSeconds();
+
+        double totalTravelTimeInSeconds = distance / COURIER_SPEED;
+
+        elapsedTimeInSeconds = Math.min(elapsedTimeInSeconds, (long) totalTravelTimeInSeconds);
+
+        double journeyFraction = elapsedTimeInSeconds / totalTravelTimeInSeconds;
+
+        double estimatedLatitude = linearInterpolation(start.getLatitude(), end.getLatitude(), journeyFraction);
+        double estimatedLongitude = linearInterpolation(start.getLongitude(), end.getLongitude(), journeyFraction);
+
+        return new Location(estimatedLatitude, estimatedLongitude);
+    }
+
+    public double linearInterpolation(double start, double end, double fraction) {
+        return start + (end - start) * fraction;
+    }
+
+    public Location calculateLiveLocation(Long deliveryId) throws OrderNotFoundException {
+        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(deliveryId);
+        if (delivery == null) {
+            throw new OrderNotFoundException("Delivery with ID: " + deliveryId + " not found.");
+        }
+
+        Order order = delivery.getOrder();
+        Location vendorLocation = order.getVendor().getAddress();
+        Location destination = order.getDestination();
+        OffsetDateTime pickupTime = delivery.getTime().getPickUpTime();
+        OffsetDateTime currentTime = OffsetDateTime.now();
+
+        return estimatePosition(vendorLocation, destination, pickupTime, currentTime);
+    }
+
+    public Long getDeliveryIdByOrderId(Long orderId) throws OrderNotFoundException {
+        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
+        if (delivery != null) {
+            return delivery.getId();
+        } else {
+            throw new OrderNotFoundException("Order with ID: " + orderId + " not found.");
+        }
     }
 
 }
