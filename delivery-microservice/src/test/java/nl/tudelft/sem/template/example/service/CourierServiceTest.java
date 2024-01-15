@@ -8,21 +8,21 @@ import nl.tudelft.sem.template.example.external.UsersMicroservice;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
-import nl.tudelft.sem.template.example.service.CourierService;
 import nl.tudelft.sem.template.model.*;
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -102,9 +102,6 @@ public class CourierServiceTest {
         Long vendorId = courierService.checkIfCourierIsAssignedToVendor(8L);
         assertThat(vendorId).isEqualTo(3L);
 
-//        vendorId = courierService.checkIfCourierIsAssignedToVendor(5L);
-//        Assertions.assertThatThrownBy(courierService.checkIfCourierIsAssignedToVendor(5L)).isInstanceOf(CourierNotFoundException.class);
-
     }
 
     @Test
@@ -122,6 +119,18 @@ public class CourierServiceTest {
 
         Long actual = deliveryRepository.findById(2L).get().getCourierId();
         Assertions.assertThat(actual).isEqualTo(1L);
+    }
+
+    @Test
+    void assignCourierToRandomOrderCourierNotFoundTest() throws CourierNotFoundException {
+
+        Long nonExistentCourierId = 999L;
+        Throwable exception = assertThrows(CourierNotFoundException.class, () -> {
+            courierService.assignCourierToRandomOrder(nonExistentCourierId);
+        });
+
+        assertThat(exception.getMessage()).isEqualTo("Courier with id " + nonExistentCourierId + " not found.");
+
     }
 
     @Test
@@ -166,6 +175,14 @@ public class CourierServiceTest {
         for (Long newCourier : newCouriers) {
             Mockito.verify(courierService, Mockito.times(1)).addCourier(newCourier);
         }
+    }
+
+    @Test
+    void addExistingCourierTest() {
+        List<Long> couriers = new ArrayList<>();
+        couriers.add(5L);
+        courierService.addCourier(5L);
+        assertEquals(Arrays.asList(5L), couriers);
     }
 
 

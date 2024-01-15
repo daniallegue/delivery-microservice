@@ -369,4 +369,33 @@ public class DeliveryServiceTest {
         Mockito.verifyNoMoreInteractions(deliveryRepository);
     }
 
+    @Test
+    void testGetEtaSuccess() throws OrderNotFoundException {
+        Long orderId = 1L;
+        Delivery delivery1 = new Delivery();
+        delivery1.setId(1L);
+        Order order1 = new Order();
+        order1.setOrderId(1L);
+        Vendor vendor1 = new Vendor();
+        vendor1.setAddress(new Location(0.0, 0.0));
+        order1.setVendor(vendor1);
+        Location destination1 = new Location(5.0, 6.0);
+        order1.setDestination(destination1);
+        delivery1.setOrder(order1);
+
+        when(deliveryRepository.findDeliveryByOrder_OrderId(orderId)).thenReturn(delivery1);
+
+        OffsetDateTime eta = deliveryService.getEta(orderId);
+        assertEquals(OffsetDateTime.now().plusMinutes(30), eta);
+    }
+
+    @Test
+    void testGetEtaOrderNotFound() {
+        Long orderId = 456L;
+        when(deliveryRepository.findDeliveryByOrder_OrderId(orderId)).thenReturn(null);
+
+        OrderNotFoundException exception = assertThrows(OrderNotFoundException.class,
+                () -> deliveryService.getEta(orderId));
+        assertEquals("Order with ID: " + orderId + " not found.", exception.getMessage());
+    }
 }

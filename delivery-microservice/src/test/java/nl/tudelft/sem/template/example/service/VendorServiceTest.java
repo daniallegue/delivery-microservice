@@ -50,11 +50,15 @@ public class VendorServiceTest {
         List<Long> couriers = new ArrayList<>();
         couriers.add(2L);
         Vendor vendor2 = new Vendor(3L, 7L, address, couriers);
+        Vendor vendor3 = new Vendor(11L, 7L, address, new ArrayList<>());
         when(vendorRepository.findById(1L)).thenReturn(Optional.of(vendor1));
         when(vendorRepository.findById(3L)).thenReturn(Optional.of(vendor2));
+        when(vendorRepository.findById(11L)).thenReturn(Optional.of(vendor3));
         when(vendorRepository.existsById(1L)).thenReturn(true);
         when(vendorRepository.existsById(3L)).thenReturn(true);
         when(vendorRepository.existsById(2L)).thenReturn(false);
+        when(vendorRepository.existsById(11L)).thenReturn(true);
+
     }
 
     @Test
@@ -118,6 +122,12 @@ public class VendorServiceTest {
     @Test
     void updateDeliveryZoneNoCouriersTest() throws VendorNotFoundException, VendorHasNoCouriersException {
         Long vendorId = 1L;
+        assertThrows(VendorHasNoCouriersException.class, () -> vendorService.updateDeliveryZone(vendorId, 30L));
+    }
+
+    @Test
+    void updateDeliveryZoneNoCouriersTest2() throws VendorNotFoundException, VendorHasNoCouriersException {
+        Long vendorId = 11L;
         assertThrows(VendorHasNoCouriersException.class, () -> vendorService.updateDeliveryZone(vendorId, 30L));
     }
 
