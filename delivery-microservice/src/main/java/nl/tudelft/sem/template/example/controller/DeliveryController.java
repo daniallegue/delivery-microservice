@@ -4,15 +4,13 @@ import static nl.tudelft.sem.template.model.Order.StatusEnum;
 
 import nl.tudelft.sem.template.api.DeliveryApi;
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
-import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
-import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
-import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
-import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
+import nl.tudelft.sem.template.example.exception.*;
 import nl.tudelft.sem.template.example.service.DeliveryService;
 import nl.tudelft.sem.template.example.service.OrderService;
 import nl.tudelft.sem.template.model.Delivery;
 import nl.tudelft.sem.template.model.DeliveryPostRequest;
 import nl.tudelft.sem.template.model.Issue;
+import nl.tudelft.sem.template.model.Location;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -321,6 +319,13 @@ public class DeliveryController implements DeliveryApi {
         return ResponseEntity.ok(defaultDeliveryZone);
     }
 
+    /**
+     * Updates the default delivery zone.
+     *
+     * @param newDeliveryZone Identification of the user who is making the request (required)
+     * @param authorizationId Default delivery zone radius (required)
+     * @path GET: /delivery/default-delivery-zone
+     */
     @Override
     public ResponseEntity<Void> deliveryDefaultDeliveryZonePut(Integer newDeliveryZone, Integer authorizationId) {
         try {
@@ -334,4 +339,51 @@ public class DeliveryController implements DeliveryApi {
             return new ResponseEntity<Void>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * GET /delivery/order/{order_id}/location
+     *
+     * @param orderId The unique identifier of the order. (required)
+     * @param authorizationId Identification of the user who is making the request. (required)
+     * @return Retrieve the current location for an order.
+     */
+    @Override
+    public ResponseEntity<Location> deliveryOrderOrderIdLocationGet(Integer orderId, Integer authorizationId) {
+        try {
+            String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
+            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+            if (!isAuthorized) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            Long deliveryId = deliveryService.getDeliveryIdByOrderId(orderId.longValue());
+            Location liveLocation = deliveryService.calculateLiveLocation(deliveryId);
+
+            return ResponseEntity.ok(liveLocation);
+
+        } catch (MicroserviceCommunicationException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
+        } catch (OrderNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    /**
+     *
+     * Returns the courier assigned to an order.
+     * @param orderId         Unique identifier of the order (required)
+     * @param authorizationId Identification of the user who is making the request (required)
+     * @path GET: /delivery/order/{order_id}/courier
+     */
+    @Override
+    public ResponseEntity<Integer> deliveryOrderOrderIdCourierGet(Integer orderId, Integer authorizationId) {
+        try {
+            Integer courierId = Math.toIntExact(deliveryService.getCourierFromOrder(orderId));
+            return ResponseEntity.ok(courierId);
+        } catch (OrderNotFoundException | CourierNotFoundException e) {
+            return new ResponseEntity<Integer>(HttpStatus.BAD_REQUEST);
+        }
+    }
 }
+

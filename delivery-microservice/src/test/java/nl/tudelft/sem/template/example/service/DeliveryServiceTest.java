@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.service;
 
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
+import nl.tudelft.sem.template.example.exception.*;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.OrderAlreadyExistsException;
@@ -71,6 +72,9 @@ public class DeliveryServiceTest {
         mockTime = new Time();
         mockDelivery = new Delivery();
         mockDelivery.setTime(mockTime);
+        mockDelivery.setId(1L); // Set a non-null ID for the mock delivery
+        mockDelivery.setTime(mockTime);
+        mockDelivery.setOrder(new Order());
     }
 
     @Test
@@ -142,6 +146,38 @@ public class DeliveryServiceTest {
         Mockito.when(deliveryRepository.findDeliveryByOrder_OrderId(any())).thenReturn(null);
         Assertions.assertThatThrownBy(() -> deliveryService.retrieveIssueOfDelivery(6))
                 .isInstanceOf(DeliveryNotFoundException.class);
+    }
+
+    @Test
+    void getCourierFromOrderSuccessfulTest() throws OrderNotFoundException, CourierNotFoundException {
+        Vendor vendor1 = new Vendor(5L, 30L, null, new ArrayList<>());
+        Order order1 = new Order(1L, 4567L, vendor1, Order.StatusEnum.PENDING, new Location(2.0, 3.0));
+        Delivery delivery = new Delivery();
+        delivery.setOrder(order1);
+        delivery.setCourierId(2L);
+        when(orderRepository.existsById(1L)).thenReturn(true);
+        when(deliveryRepository.findDeliveryByOrder_OrderId((1L))).thenReturn(delivery);
+
+        Long id = deliveryService.getCourierFromOrder(Math.toIntExact(1L));
+        assertEquals(2L, id);
+    }
+
+    @Test
+    void getCourierFromOrderNotFoundTest() throws OrderNotFoundException, CourierNotFoundException {
+        when(orderRepository.existsById(1L)).thenReturn(false);
+        assertThrows(OrderNotFoundException.class, () -> deliveryService.getCourierFromOrder((int) 1));
+    }
+
+    @Test
+    void getCourierFromOrderNoCourierTest() throws OrderNotFoundException, CourierNotFoundException {
+        Vendor vendor1 = new Vendor(5L, 30L, null, new ArrayList<>());
+        Order order1 = new Order(1L, 4567L, vendor1, Order.StatusEnum.PENDING, new Location(2.0, 3.0));
+        Delivery delivery = new Delivery();
+        delivery.setOrder(order1);
+        when(orderRepository.existsById(1L)).thenReturn(true);
+        when(deliveryRepository.findDeliveryByOrder_OrderId((1L))).thenReturn(delivery);
+
+        assertThrows(CourierNotFoundException.class, () -> deliveryService.getCourierFromOrder((int) 1L));
     }
 
     @Test
@@ -255,6 +291,67 @@ public class DeliveryServiceTest {
         when(deliveryRepository.findDeliveryByOrder_OrderId(orderId)).thenReturn(null);
 
         assertThrows(OrderNotFoundException.class, () -> deliveryService.updateDeliveredTime(orderId, newDeliveredTime));
+    }
+
+    @Test
+    void testCalculateLiveLocationOrderNotFound() {
+        when(deliveryRepository.findDeliveryByOrder_OrderId(anyLong())).thenReturn(null);
+
+        assertThrows(OrderNotFoundException.class, () -> deliveryService.calculateLiveLocation(orderId));
+    }
+
+    @Test
+    void testGetDeliveryIdByOrderIdSuccess() throws OrderNotFoundException {
+        when(deliveryRepository.findDeliveryByOrder_OrderId(anyLong())).thenReturn(mockDelivery);
+
+        Long result = deliveryService.getDeliveryIdByOrderId(orderId);
+
+        assertNotNull(result);
+        assertEquals(mockDelivery.getId(), result); // This should now pass
+    }
+
+
+    @Test
+    void testGetDeliveryIdByOrderIdNotFound() {
+        when(deliveryRepository.findDeliveryByOrder_OrderId(anyLong())).thenReturn(null);
+
+        assertThrows(OrderNotFoundException.class, () -> deliveryService.getDeliveryIdByOrderId(orderId));
+    }
+
+    @Test
+    void testLinearInterpolation() {
+        double start = 0;
+        double end = 10;
+        double fraction = 0.5;
+
+        double result = deliveryService.linearInterpolation(start, end, fraction);
+        assertEquals(5.0, result, "Linear interpolation should be halfway between start and end");
+    }
+
+    @Test
+    void testEstimatePositionBeforePickup() {
+        Location start = new Location(0.0, 0.0);
+        Location end = new Location(10.0, 10.0);
+        OffsetDateTime pickupTime = OffsetDateTime.now().plusHours(1);
+        OffsetDateTime currentTime = OffsetDateTime.now();
+
+        Location result = deliveryService.estimatePosition(start, end, pickupTime, currentTime);
+
+        assertEquals(start.getLatitude(), result.getLatitude(), "Latitude should be start latitude");
+        assertEquals(start.getLongitude(), result.getLongitude(), "Longitude should be start longitude");
+    }
+
+    @Test
+    void testEstimatePositionMidway() {
+        Location start = new Location(0.0, 0.0);
+        Location end = new Location(0.0, 3600.0); // 3600 meters away
+        OffsetDateTime pickupTime = OffsetDateTime.now().minusMinutes(30); // 30 minutes ago
+        OffsetDateTime currentTime = OffsetDateTime.now();
+
+        Location result = deliveryService.estimatePosition(start, end, pickupTime, currentTime);
+
+        assertEquals(0.0, result.getLatitude());
+        assertEquals(1800.0, result.getLongitude());
     }
 
 }

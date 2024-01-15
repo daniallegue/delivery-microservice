@@ -1,5 +1,8 @@
 package nl.tudelft.sem.template.example.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
 import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
@@ -12,9 +15,6 @@ import nl.tudelft.sem.template.model.Vendor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class VendorService {
@@ -115,7 +115,8 @@ public class VendorService {
      * @return the updated vendor
      * @throws VendorNotFoundException throws exception if vendor does not exist
      */
-    public Vendor assignCourierToVendor(Long vendorId, Long courierId) throws VendorNotFoundException, CourierNotFoundException {
+    public Vendor assignCourierToVendor(Long vendorId, Long courierId)
+            throws VendorNotFoundException, CourierNotFoundException {
         if (!vendorRepository.existsById(vendorId)) {
             throw new VendorNotFoundException("Vendor was not found");
         }
