@@ -1,7 +1,8 @@
 package nl.tudelft.sem.template.example.controller;
 
-import nl.tudelft.sem.template.example.controller.CourierController;
+import nl.tudelft.sem.template.example.authorization.AuthorizationService;
 import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
+import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
@@ -9,6 +10,7 @@ import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
 import nl.tudelft.sem.template.example.service.CourierService;
 import nl.tudelft.sem.template.model.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -21,6 +23,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 
@@ -29,7 +32,9 @@ public class CourierControllerTest {
     private final DeliveryRepository deliveryRepository = Mockito.mock(DeliveryRepository.class);
     private final VendorRepository vendorRepository = Mockito.mock(VendorRepository.class);
     private final CourierService courierService = Mockito.mock(CourierService.class);
-    private final CourierController courierController = new CourierController(courierService);
+    private final AuthorizationService authorizationService = Mockito.mock(AuthorizationService.class);
+    private final CourierController courierController = new CourierController(courierService, authorizationService);
+
 
     @BeforeEach
     void setup() {
@@ -76,9 +81,12 @@ public class CourierControllerTest {
     }
 
     @Test
-    void getAvailableOrdersTest() {
+    void getAvailableOrdersTest() throws MicroserviceCommunicationException {
         Mockito.when(courierService.getAvailableOrderIds(1L)).thenReturn(List.of(5L));
         Mockito.when(courierService.getAvailableOrderIds(18L)).thenReturn(List.of(9L));
+        when(authorizationService.canViewCourierAnalytics(1L, 1L)).thenReturn(true);
+        when(authorizationService.canViewCourierAnalytics(1L, 18L)).thenReturn(true);
+
 
         List<Long> orderIds = courierController.courierDeliveryCourierIdAvailableOrdersGet(1L, 1).getBody();
         List<Long> expectedResult = new ArrayList<>(List.of(5L));
@@ -90,7 +98,7 @@ public class CourierControllerTest {
     }
 
     @Test
-    void testAssignCourierToRandomOrderSuccess() throws DeliveryNotFoundException, NoAvailableOrdersException {
+    void testAssignCourierToRandomOrderSuccess() throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException {
         Long courierId = 1L;
         Integer authorizationId = 1;
         doNothing().when(courierService).assignCourierToRandomOrder(courierId);
@@ -100,7 +108,7 @@ public class CourierControllerTest {
     }
 
     @Test
-    void testAssignCourierToRandomOrderNoAvailableOrders() throws DeliveryNotFoundException, NoAvailableOrdersException {
+    void testAssignCourierToRandomOrderNoAvailableOrders() throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException {
         Long courierId = 1L;
         Integer authorizationId = 1;
         doThrow(new NoAvailableOrdersException("No available orders")).when(courierService).assignCourierToRandomOrder(courierId);
@@ -110,7 +118,7 @@ public class CourierControllerTest {
     }
 
     @Test
-    void testAssignCourierToRandomOrderDeliveryNotFound() throws DeliveryNotFoundException, NoAvailableOrdersException {
+    void testAssignCourierToRandomOrderDeliveryNotFound() throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException {
         Long courierId = 1L;
         Integer authorizationId = 1;
         doThrow(new DeliveryNotFoundException("Delivery not found")).when(courierService).assignCourierToRandomOrder(courierId);
@@ -121,7 +129,7 @@ public class CourierControllerTest {
 
 
     @Test
-    void assignCourierToSpecificOrderSuccessTest() throws OrderNotFoundException, CourierNotFoundException {
+    void assignCourierToSpecificOrderSuccessTest() throws OrderNotFoundException, CourierNotFoundException, DeliveryNotFoundException, NoAvailableOrdersException {
         Long courierId = 1L;
         Long orderId = 5L;
 
@@ -134,7 +142,7 @@ public class CourierControllerTest {
     }
 
     @Test
-    void assignNonExistentCourierToOrderTest() throws OrderNotFoundException, CourierNotFoundException {
+    void assignNonExistentCourierToOrderTest() throws OrderNotFoundException, CourierNotFoundException, DeliveryNotFoundException, NoAvailableOrdersException {
         Long nonExistentCourierId = 999L;
         Long orderId = 5L;
 
@@ -148,7 +156,7 @@ public class CourierControllerTest {
     }
 
     @Test
-    void assignCourierToNonExistentOrderTest() throws OrderNotFoundException, CourierNotFoundException {
+    void assignCourierToNonExistentOrderTest() throws OrderNotFoundException, CourierNotFoundException, DeliveryNotFoundException, NoAvailableOrdersException {
         Long courierId = 1L;
         Long nonExistentOrderId = 999L;
 
@@ -161,4 +169,19 @@ public class CourierControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
+    @Test
+    void getAvailableOrdersMiscommunicationTest() throws MicroserviceCommunicationException {
+        when(authorizationService.canViewCourierAnalytics(10L, 2L)).thenThrow(MicroserviceCommunicationException.class);
+
+        ResponseEntity<List<Long>> response = courierController.courierDeliveryCourierIdAvailableOrdersGet(2L, 10);
+        Assertions.assertEquals(response.getStatusCode(), HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void getAvailableOrdersUnauthorizedTest() throws MicroserviceCommunicationException {
+        when(authorizationService.getUserRole(1L)).thenReturn("customer");
+
+        ResponseEntity<List<Long>> response = courierController.courierDeliveryCourierIdAvailableOrdersGet(2L, 1);
+        Assertions.assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
 }

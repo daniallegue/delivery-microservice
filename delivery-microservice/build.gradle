@@ -81,7 +81,7 @@ test {
 	jacoco {
 		enabled = true
 		includes = ['nl.tudelft.sem.template.*']
-		excludes = ['**/build/*']
+		excludes = ["**/api/**", "**/model/**"]
 	}
 }
 
@@ -96,13 +96,25 @@ jacocoTestCoverageVerification() {
 			enabled = true
 			element = 'CLASS'
 			includes = ['nl.tudelft.sem.template.*']
-
 			limit {
 				counter = 'BRANCH'
 				value = 'COVEREDRATIO'
 				minimum = 0.1
 			}
 		}
+	}
+}
+
+jacocoTestReport {
+	dependsOn test
+
+	afterEvaluate {
+		classDirectories.setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it, exclude: [
+					"**/api/**",
+					"**/model/**"
+			])
+		}))
 	}
 }
 
@@ -139,13 +151,14 @@ pmd {
 apply plugin: 'info.solidsoft.pitest'
 pitest {
 	//adds dependency to org.pitest:pitest-junit5-plugin and sets "testPlugin" to "junit5"
-	junit5PluginVersion = '0.12'
+	junit5PluginVersion = '1.2.0'
 
 	targetClasses = ['nl.tudelft.sem.template.*']  //by default "${project.group}.*"
-	pitestVersion = '1.5.1' //not needed when a default PIT version should be used
+	pitestVersion = '1.5.2' //not needed when a default PIT version should be used
 	threads = 4
 	outputFormats = ['XML', 'HTML']
 	timestampedReports = false
+	excludedClasses = ['nl.tudelft.sem.template.api.*', 'nl.tudelft.sem.template.model.*']
 }
 
 apply plugin: 'org.openapi.generator'

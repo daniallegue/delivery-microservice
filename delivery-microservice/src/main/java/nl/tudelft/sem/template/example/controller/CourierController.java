@@ -2,8 +2,10 @@ package nl.tudelft.sem.template.example.controller;
 
 import java.util.List;
 import nl.tudelft.sem.template.api.CourierApi;
+import nl.tudelft.sem.template.example.authorization.AuthorizationService;
 import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
+import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.service.CourierService;
@@ -12,9 +14,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RestController
 public class CourierController implements CourierApi {
     CourierService courierService;
+    AuthorizationService authorizationService;
 
     /**
      * Simple constructor that handles dependency injection of the service.
@@ -22,8 +26,9 @@ public class CourierController implements CourierApi {
      * @param courierService Instance of CourierService to handle the logic
      */
     @Autowired
-    public CourierController(CourierService courierService) {
+    public CourierController(CourierService courierService, AuthorizationService authorizationService) {
         this.courierService = courierService;
+        this.authorizationService = authorizationService;
     }
 
     /**
@@ -36,14 +41,21 @@ public class CourierController implements CourierApi {
      */
     @Override
     public ResponseEntity<List<Long>> courierDeliveryCourierIdAvailableOrdersGet(Long courierId, Integer authorizationId) {
-        //TODO: handle authorization
-        List<Long> availableOrderIds = courierService.getAvailableOrderIds(courierId);
-        return ResponseEntity.ok(availableOrderIds);
+        try {
+            if (!authorizationService.canViewCourierAnalytics((long) authorizationId, courierId)) {
+                return new ResponseEntity<List<Long>>(HttpStatus.UNAUTHORIZED);
+            }
+            List<Long> availableOrderIds = courierService.getAvailableOrderIds(courierId);
+            return ResponseEntity.ok(availableOrderIds);
+        } catch (MicroserviceCommunicationException e) {
+            return new ResponseEntity<List<Long>>(HttpStatus.BAD_REQUEST);
+        }
+
     }
 
 
     /**
-     * Returns a text format of the order's string.
+     * Assigns a random order to a courier.
      *
      * @path PUT: /courier/delivery/{courier_id}/assign-any-order
      * @param courierId Unique identifier of the courier (required)
@@ -54,7 +66,8 @@ public class CourierController implements CourierApi {
     public ResponseEntity<Void> courierDeliveryCourierIdAssignAnyOrderPut(Long courierId, Integer authorizationId)  {
         try {
             courierService.assignCourierToRandomOrder(courierId);
-        } catch (DeliveryNotFoundException | NoAvailableOrdersException e) {
+        } catch (DeliveryNotFoundException | NoAvailableOrdersException | OrderNotFoundException |
+                 CourierNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.ok().build();
@@ -75,8 +88,10 @@ public class CourierController implements CourierApi {
         try {
             courierService.assignCourierToSpecificOrder(courierId, orderId);
             return ResponseEntity.ok().build();
-        } catch (OrderNotFoundException | CourierNotFoundException e) {
+        } catch (DeliveryNotFoundException | NoAvailableOrdersException | OrderNotFoundException |
+                 CourierNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
 }

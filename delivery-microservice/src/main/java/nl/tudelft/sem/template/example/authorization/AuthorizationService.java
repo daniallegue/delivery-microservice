@@ -1,13 +1,15 @@
 package nl.tudelft.sem.template.example.authorization;
 
-import java.util.Optional;
 import java.util.Objects;
+import java.util.Optional;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.external.UsersMicroservice;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.model.Delivery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import static java.util.Collections.replaceAll;
 
 @Service
 public class AuthorizationService {
@@ -43,7 +45,6 @@ public class AuthorizationService {
      */
     public Boolean isInvolvedInOrder(Long authorizationId, String role, Long orderId) {
         Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
-
         if (role.equals(ADMIN)) {
             return true;
         }
@@ -77,7 +78,7 @@ public class AuthorizationService {
         if (userType.isEmpty()) {
             throw new MicroserviceCommunicationException("User type could not be found");
         }
-        return userType.get();
+        return userType.get().replaceAll("\"", "");
     }
 
     /**
@@ -95,7 +96,8 @@ public class AuthorizationService {
     }
 
     /**
-     * Checks whether the user with the specified authorization id has permission to update delivery details for the given order.
+     * Checks whether the user with the specified authorization id
+     * has permission to update delivery details for the given order.
      *
      * @param authorizationId The id of the user for whom the permission is checked.
      * @param orderId The id of the order for which the permission is checked.
@@ -140,6 +142,8 @@ public class AuthorizationService {
     }
 
     /**
+     * Checks whether the user can update the default delivery zone.
+     *
      * @param authorizationId The id of the user for whom the permission is checked.
      * @return {@code true} if the user is allowed to change the delviery zone; otherwise, {@code false}.
      * @throws MicroserviceCommunicationException If communication with the user microservice fails

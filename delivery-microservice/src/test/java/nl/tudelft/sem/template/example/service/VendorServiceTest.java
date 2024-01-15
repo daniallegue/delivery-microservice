@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.service;
 
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.VendorHasNoCouriersException;
 import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
@@ -30,6 +31,7 @@ public class VendorServiceTest {
     private UsersMicroservice usersMicroservice;
 
     private VendorService vendorService;
+    private CourierService courierService;
 
 
     Vendor vendor;
@@ -39,17 +41,17 @@ public class VendorServiceTest {
         vendorRepository = Mockito.mock(VendorRepository.class);
         configurationProperties = new ConfigurationProperties();
         usersMicroservice = Mockito.mock(UsersMicroservice.class);
-        vendorService = new VendorService(vendorRepository, configurationProperties, usersMicroservice);
+        courierService = Mockito.mock(CourierService.class);
+        vendorService = new VendorService(vendorRepository, configurationProperties, usersMicroservice, courierService);
 
-        //TO DO: change address with the (mocked) one from other microservices
         Location address = new Location(0.0,0.0);
         vendor = new Vendor(1L, configurationProperties.getDefaultDeliveryZone(), address, new ArrayList<>());
         Vendor vendor1 = new Vendor(1L, 5L, address, null);
         List<Long> couriers = new ArrayList<>();
         couriers.add(2L);
         Vendor vendor2 = new Vendor(3L, 7L, address, couriers);
-        when(vendorRepository.findById(1L)).thenReturn(Optional.ofNullable(vendor1));
-        when(vendorRepository.findById(3L)).thenReturn(Optional.ofNullable(vendor2));
+        when(vendorRepository.findById(1L)).thenReturn(Optional.of(vendor1));
+        when(vendorRepository.findById(3L)).thenReturn(Optional.of(vendor2));
         when(vendorRepository.existsById(1L)).thenReturn(true);
         when(vendorRepository.existsById(3L)).thenReturn(true);
         when(vendorRepository.existsById(2L)).thenReturn(false);
@@ -98,7 +100,8 @@ public class VendorServiceTest {
     @Test
     void updateDeliveryZoneInvalidTest() throws VendorNotFoundException {
         Long vendorId = 2L;
-        assertThrows(VendorNotFoundException.class, () -> vendorService.getDeliveryZone(vendorId));
+        Long newZone = 10L;
+        assertThrows(VendorNotFoundException.class, () -> vendorService.updateDeliveryZone(vendorId, newZone));
     }
 
     @Test
@@ -130,5 +133,61 @@ public class VendorServiceTest {
                 .isInstanceOf(MicroserviceCommunicationException.class);
 
         verify(vendorRepository, never()).save(any());
+    }
+
+    @Test
+    void assignCourierTest() throws VendorNotFoundException, CourierNotFoundException {
+        Long vendorId = 3L;
+        when(courierService.doesCourierExist(2L)).thenReturn(true);
+        when(courierService.doesCourierExist(6L)).thenReturn(true);
+        Vendor updated = vendorService.assignCourierToVendor(3L, 6L);
+        List<Long> couriers = new ArrayList<>();
+        couriers.add(2L);
+        couriers.add(6L);
+        assertEquals(couriers, updated.getCouriers());
+        assertDoesNotThrow(() -> vendorService.getAssignedCouriers(vendorId));
+        verify(vendorRepository, times(1)).save(any());
+    }
+
+    @Test
+    void assignCouriersInvalidTest() throws VendorNotFoundException {
+        assertThrows(VendorNotFoundException.class, () -> vendorService.assignCourierToVendor(2L, 5L));
+    }
+
+    @Test
+    void getCouriersTest() throws VendorNotFoundException {
+        Long vendorId = 3L;
+        List<Long> updated = vendorService.getAssignedCouriers(3L);
+        List<Long> couriers = new ArrayList<>();
+        couriers.add(2L);
+        assertEquals(couriers, updated);
+        assertDoesNotThrow(() -> vendorService.getAssignedCouriers(vendorId));
+    }
+
+    @Test
+    void getCouriersInvalidTest() throws VendorNotFoundException {
+        assertThrows(VendorNotFoundException.class, () -> vendorService.getAssignedCouriers(2L));
+    }
+
+    @Test
+    void testFindVendorAddressWorks() throws VendorNotFoundException, MicroserviceCommunicationException {
+        when(vendorRepository.findById(any())).thenReturn(Optional.of(vendor));
+        Location address = vendorService.getVendorLocation(1);
+        assertEquals(new Location(0.0,0.0), address);
+    }
+
+    @Test
+    void testFindVendorAddressVendorIsNotFound() {
+        when(vendorRepository.findById(any())).thenReturn(Optional.empty());
+        Assertions.assertThatThrownBy(() -> vendorService.getVendorLocation(6))
+                .isInstanceOf(VendorNotFoundException.class);
+    }
+
+    @Test
+    void testFindVendorAddressLocationIsEmpty() {
+        Vendor vendorNoAddress = new Vendor(1L, 5L, null, null);
+        when(vendorRepository.findById(any())).thenReturn(Optional.of(vendorNoAddress));
+        Assertions.assertThatThrownBy(() -> vendorService.getVendorLocation(6))
+                .isInstanceOf(MicroserviceCommunicationException.class);
     }
 }
