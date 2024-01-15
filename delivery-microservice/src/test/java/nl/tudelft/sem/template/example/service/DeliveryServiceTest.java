@@ -14,6 +14,7 @@ import org.mockito.Mockito;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -384,9 +385,10 @@ public class DeliveryServiceTest {
         delivery1.setOrder(order1);
 
         when(deliveryRepository.findDeliveryByOrder_OrderId(orderId)).thenReturn(delivery1);
+        OffsetDateTime estimatedTime = OffsetDateTime.now().plusMinutes(30);
 
         OffsetDateTime eta = deliveryService.getEta(orderId);
-        assertEquals(OffsetDateTime.now().plusMinutes(30), eta);
+        assertThat(eta).isBetween(estimatedTime.minusSeconds(2), estimatedTime.plusSeconds(2));
     }
 
     @Test
