@@ -13,12 +13,7 @@ import org.springframework.web.client.RestTemplate;
 public class UsersMicroservice {
     private final RestTemplate restTemplate;
 
-    private final String usersBaseUrl = "localhost:8081";
-
-    //TODO: to change after with the actual microservice server number,
-    //this is for testing purposes with postman
-    //private final String usersBaseUrl = "https://5d9855d1-4c2c-4318-b1d6-9a2e8ba40b95.mock.pstmn.io";
-
+    private final String usersBaseUrl = "http://localhost:8081";
 
     @Autowired
     public UsersMicroservice(RestTemplate restTemplate) {

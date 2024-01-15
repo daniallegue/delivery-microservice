@@ -21,7 +21,7 @@ public class UsersMicroserviceTest {
     private RestTemplate restTemplate;
 
     private UsersMicroservice usersMicroservice;
-    private final String usersBaseUrl = "localhost:8081";
+    private final String usersBaseUrl = "http://localhost:8081";
 
     @BeforeEach
     public void setup() {
