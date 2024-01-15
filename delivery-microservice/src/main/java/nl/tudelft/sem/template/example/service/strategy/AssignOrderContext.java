@@ -1,12 +1,9 @@
 package nl.tudelft.sem.template.example.service.strategy;
 
+import java.util.List;
 import lombok.Setter;
-import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
-import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
-
-import java.util.List;
 
 @Setter
 public class AssignOrderContext {
@@ -21,7 +18,8 @@ public class AssignOrderContext {
      * @throws DeliveryNotFoundException No delivery with id `orderId`
      * @throws NoAvailableOrdersException No available orders for courier with id `courierId`
      */
-    public void assignOrder(Long courierId, Long orderId, List<Long> availableOrders) throws DeliveryNotFoundException, NoAvailableOrdersException {
+    public void assignOrder(Long courierId, Long orderId, List<Long> availableOrders) throws DeliveryNotFoundException,
+            NoAvailableOrdersException {
         assignOrderStrategy.assignOrder(courierId, orderId, availableOrders);
     }
 }

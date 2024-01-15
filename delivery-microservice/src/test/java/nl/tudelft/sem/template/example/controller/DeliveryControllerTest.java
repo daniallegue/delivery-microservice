@@ -152,7 +152,7 @@ public class DeliveryControllerTest {
 
     @Test
     public void updateDefaultDeliveryZoneSuccessfulTest() throws MicroserviceCommunicationException {
-        when(authorizationService.getUserRole(2L)).thenReturn(authorizationService.ADMIN);
+        when(authorizationService.getUserRole(2L)).thenReturn("admin");
         ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(25, 2);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
@@ -345,7 +345,7 @@ public class DeliveryControllerTest {
 
     @Test
     public void updateDefaultDeliveryZoneUnauthorizedTest() throws MicroserviceCommunicationException {
-        when(authorizationService.getUserRole(2L)).thenReturn(authorizationService.CUSTOMER);
+        when(authorizationService.getUserRole(2L)).thenReturn("customer");
 
         ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(25, 2);
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());

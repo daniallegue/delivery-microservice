@@ -75,7 +75,7 @@ public class VendorControllerTest {
         when(vendorRepository.findById(2L)).thenReturn(Optional.ofNullable(vendor1));
         when(vendorRepository.existsById(2L)).thenReturn(true);
         when(vendorService.updateDeliveryZone(2L, 10L)).thenReturn(updated);
-        when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.VENDOR);
+        when(authorizationService.getUserRole(1L)).thenReturn("vendor");
 
         ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
         Vendor updatedVendor = response.getBody();
@@ -90,7 +90,7 @@ public class VendorControllerTest {
         when(vendorRepository.findById(2L)).thenReturn(Optional.ofNullable(vendor1));
         when(vendorRepository.existsById(2L)).thenReturn(true);
         when(vendorService.updateDeliveryZone(2L, 10L)).thenReturn(updated);
-        when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.CUSTOMER);
+        when(authorizationService.getUserRole(1L)).thenReturn("customer");
         when(authorizationService.cannotUpdateVendorDeliveryZone(1L)).thenReturn(true);
 
         ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
@@ -101,7 +101,7 @@ public class VendorControllerTest {
     void updateDeliveryZoneNotFoundTest() throws VendorNotFoundException, VendorHasNoCouriersException, MicroserviceCommunicationException {
         when(vendorRepository.existsById(2L)).thenReturn(false);
         when(vendorService.updateDeliveryZone(2L, 10L)).thenThrow(VendorNotFoundException.class);
-        when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.ADMIN);
+        when(authorizationService.getUserRole(1L)).thenReturn("admin");
 
         ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
         assertEquals( HttpStatus.NOT_FOUND, response.getStatusCode());
@@ -112,7 +112,7 @@ public class VendorControllerTest {
         when(vendorRepository.findById(2L)).thenReturn(Optional.ofNullable(vendor1));
         when(vendorRepository.existsById(2L)).thenReturn(true);
         when(vendorService.updateDeliveryZone(2L, 10L)).thenThrow(VendorHasNoCouriersException.class);
-        when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.ADMIN);
+        when(authorizationService.getUserRole(1L)).thenReturn("admin");
 
         ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -131,7 +131,7 @@ public class VendorControllerTest {
     @Test
     void assignCourierVendorDoesNotExistTest() throws VendorNotFoundException, MicroserviceCommunicationException, CourierNotFoundException {
         when(vendorService.assignCourierToVendor(2L, 10L)).thenThrow(VendorNotFoundException.class);
-        when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.ADMIN);
+        when(authorizationService.getUserRole(1L)).thenReturn("admin");
 
         ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdAssignCourierIdPut(2, 10, 1);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
@@ -146,7 +146,7 @@ public class VendorControllerTest {
 
     @Test
     void assignCourierTest() throws MicroserviceCommunicationException, VendorNotFoundException, CourierNotFoundException {
-        when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.ADMIN);
+        when(authorizationService.getUserRole(1L)).thenReturn("admin");
         when(vendorService.assignCourierToVendor(2L, 5L)).thenReturn(vendor1);
         ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdAssignCourierIdPut(2, 5, 1);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -163,7 +163,7 @@ public class VendorControllerTest {
     @Test
     void getCouriersVendorDoesNotExistTest() throws VendorNotFoundException, MicroserviceCommunicationException {
         when(vendorService.getAssignedCouriers(2L)).thenThrow(VendorNotFoundException.class);
-        when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.ADMIN);
+        when(authorizationService.getUserRole(1L)).thenReturn("admin");
 
         ResponseEntity<List<Long>> response = vendorController.vendorDeliveryVendorIdCouriersGet(2, 1);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
@@ -179,7 +179,7 @@ public class VendorControllerTest {
 
     @Test
     void getCouriersTest() throws MicroserviceCommunicationException, VendorNotFoundException {
-        when(authorizationService.getUserRole(1L)).thenReturn(authorizationService.VENDOR);
+        when(authorizationService.getUserRole(1L)).thenReturn("vendor");
         when(vendorService.getAssignedCouriers(2L)).thenReturn(couriers);
 
         ResponseEntity<List<Long>> response = vendorController.vendorDeliveryVendorIdCouriersGet(2, 1);

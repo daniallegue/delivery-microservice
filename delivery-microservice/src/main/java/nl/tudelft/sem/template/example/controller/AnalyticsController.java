@@ -1,16 +1,19 @@
 package nl.tudelft.sem.template.example.controller;
 
+import java.util.List;
 import nl.tudelft.sem.template.api.AnalyticsApi;
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
-import nl.tudelft.sem.template.example.exception.*;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
+import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
+import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
+import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
+import nl.tudelft.sem.template.example.exception.RatingNotFoundException;
 import nl.tudelft.sem.template.example.service.AnalyticsService;
 import nl.tudelft.sem.template.model.Rating;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 public class AnalyticsController implements AnalyticsApi {
@@ -24,7 +27,7 @@ public class AnalyticsController implements AnalyticsApi {
     }
 
     /**
-     * Creates a rating for an order
+     * Creates a rating for an order.
      *
      * @path PUT: PUT /analytics/order/{order_id}/rating
      * @param orderId Unique identifier of the order (required)
@@ -48,7 +51,7 @@ public class AnalyticsController implements AnalyticsApi {
     }
 
     /**
-     * Returns a rating for a specific order
+     * Returns a rating for a specific order.
      *
      * @path GET: GET /analytics/order/{order_id}/rating
      * @param orderId Unique identifier of the order (required)
@@ -69,7 +72,7 @@ public class AnalyticsController implements AnalyticsApi {
     }
 
     /**
-     * Retrieve the average number of deliveries a courier has made/day
+     * Retrieve the average number of deliveries a courier has made/day.
      *
      * @path GET: GET /analytics/courier/{courier_id}/deliveries-per-day : Deliveries/day of a courier
      * @param courierId The id of the courier (required)
@@ -81,7 +84,8 @@ public class AnalyticsController implements AnalyticsApi {
      *         or There was a problem with the server (status code 500)
      */
     @Override
-    public  ResponseEntity<Integer> analyticsCourierCourierIdDeliveriesPerDayGet(Integer courierId, Integer authorizationId) {
+    public  ResponseEntity<Integer> analyticsCourierCourierIdDeliveriesPerDayGet(Integer courierId,
+                                                                                 Integer authorizationId) {
         try {
             if (!authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)) {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -95,9 +99,8 @@ public class AnalyticsController implements AnalyticsApi {
         }
     }
 
-
     /**
-     * Retrieve the number of successful deliveries a courier has made
+     * Retrieve the number of successful deliveries a courier has made.
      *
      * @path GET: GET /analytics/courier/{courier_id}/successful-deliveries : Number of successful deliveries of a courier
      * @param courierId The id of the courier (required)
@@ -109,7 +112,8 @@ public class AnalyticsController implements AnalyticsApi {
      *         or There was a problem with the server (status code 500)
      */
     @Override
-    public ResponseEntity<Integer> analyticsCourierCourierIdSuccessfulDeliveriesGet(Integer courierId, Integer authorizationId) {
+    public ResponseEntity<Integer> analyticsCourierCourierIdSuccessfulDeliveriesGet(Integer courierId,
+                                                                                    Integer authorizationId) {
         try {
             if (!authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)) {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -124,7 +128,7 @@ public class AnalyticsController implements AnalyticsApi {
     }
 
     /**
-     * Retrieve the issues a courier has encountered during deliveries
+     * Retrieve the issues a courier has encountered during deliveries.
      *
      * @path GET: GET /analytics/courier/{courier_id}/courier-issues : Issues of a courier
      * @param courierId The id of the courier (required)
@@ -136,7 +140,8 @@ public class AnalyticsController implements AnalyticsApi {
      *         or There was a problem with the server (status code 500)
      */
     @Override
-    public ResponseEntity<List<String>> analyticsCourierCourierIdCourierIssuesGet(Integer courierId, Integer authorizationId) {
+    public ResponseEntity<List<String>> analyticsCourierCourierIdCourierIssuesGet(Integer courierId,
+                                                                                  Integer authorizationId) {
         try {
             if (!authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)) {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);

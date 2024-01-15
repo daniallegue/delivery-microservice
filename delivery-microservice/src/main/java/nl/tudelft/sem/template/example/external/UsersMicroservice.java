@@ -2,7 +2,6 @@ package nl.tudelft.sem.template.example.external;
 
 import java.util.List;
 import java.util.Optional;
-
 import nl.tudelft.sem.template.model.Location;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

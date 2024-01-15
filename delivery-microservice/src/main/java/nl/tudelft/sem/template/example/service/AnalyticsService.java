@@ -1,20 +1,24 @@
 package nl.tudelft.sem.template.example.service;
 
-import nl.tudelft.sem.template.example.exception.*;
-import nl.tudelft.sem.template.example.repository.DeliveryRepository;
-import nl.tudelft.sem.template.model.Delivery;
-import nl.tudelft.sem.template.model.Order;
-import nl.tudelft.sem.template.model.Rating;
-import nl.tudelft.sem.template.model.Issue;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
+import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
+import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
+import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
+import nl.tudelft.sem.template.example.exception.RatingNotFoundException;
+import nl.tudelft.sem.template.example.repository.DeliveryRepository;
+import nl.tudelft.sem.template.model.Delivery;
+import nl.tudelft.sem.template.model.Issue;
+import nl.tudelft.sem.template.model.Order;
+import nl.tudelft.sem.template.model.Rating;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 
 
 @Service
