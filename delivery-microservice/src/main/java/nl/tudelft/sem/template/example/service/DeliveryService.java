@@ -1,11 +1,7 @@
 package nl.tudelft.sem.template.example.service;
 
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
-import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
-import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
-import nl.tudelft.sem.template.example.exception.OrderAlreadyExistsException;
-import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
-import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
+import nl.tudelft.sem.template.example.exception.*;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
@@ -15,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.util.Optional;
 
 @Service
 public class DeliveryService {
@@ -226,7 +221,7 @@ public class DeliveryService {
      * @param end The end location(destination).
      * @return The distance between the 2 points.
      */
-    private double calculateDistance(Location start, Location end) {
+    public double calculateDistance(Location start, Location end) {
         double latDifference = end.getLatitude() - start.getLatitude();
         double lonDifference = end.getLongitude() - start.getLongitude();
         return Math.sqrt(latDifference * latDifference + lonDifference * lonDifference);

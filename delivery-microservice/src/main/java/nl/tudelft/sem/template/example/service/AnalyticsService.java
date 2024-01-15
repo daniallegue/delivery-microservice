@@ -25,14 +25,16 @@ public class AnalyticsService {
 
     private final VendorRepository vendorRepository;
     private final OrderRepository orderRepository;
+    private final DeliveryService deliveryService;
 
     @Autowired
     public AnalyticsService(DeliveryRepository deliveryRepository, CourierService courierService,
-                            VendorRepository vendorRepository, OrderRepository orderRepository) {
+                            VendorRepository vendorRepository, OrderRepository orderRepository, DeliveryService deliveryService) {
         this.deliveryRepository = deliveryRepository;
         this.courierService = courierService;
         this.vendorRepository = vendorRepository;
         this.orderRepository = orderRepository;
+        this.deliveryService = deliveryService;
     }
 
     /**
@@ -180,21 +182,13 @@ public class AnalyticsService {
                 .orElse(Duration.ZERO);
         long totalSeconds = totalDuration.toSeconds();
 
-
         double totalDistance = successfulDeliveries.stream()
-                .map(delivery -> (calculateDistance(delivery.getOrder().getVendor().getAddress(), delivery.getOrder().getDestination())))
+                .map(delivery -> (deliveryService.calculateDistance(delivery.getOrder().getVendor().getAddress(), delivery.getOrder().getDestination())))
                 .mapToDouble(Double::doubleValue)
                 .sum();
 
         return (int) (totalDistance*100000 / totalSeconds);
 
-
-    }
-
-    private double calculateDistance(Location start, Location end) {
-        double latDifference = end.getLatitude() - start.getLatitude();
-        double lonDifference = end.getLongitude() - start.getLongitude();
-        return Math.sqrt(latDifference * latDifference + lonDifference * lonDifference);
     }
 
     /**

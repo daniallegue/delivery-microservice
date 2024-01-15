@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.service;
 
 
+import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
 import nl.tudelft.sem.template.example.exception.*;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
@@ -29,6 +30,7 @@ public class AnalyticsServiceTest {
     private CourierService courierService;
     private VendorRepository vendorRepository;
     private List<Delivery> mockDeliveries;
+    private DeliveryService deliveryService;
     private Rating rating;
     private Order order;
     private Delivery delivery;
@@ -38,8 +40,9 @@ public class AnalyticsServiceTest {
         courierService = Mockito.mock(CourierService.class);
         vendorRepository = Mockito.mock(VendorRepository.class);
         orderRepository = Mockito.mock(OrderRepository.class);
+        deliveryService = new DeliveryService(deliveryRepository, orderRepository, vendorRepository, Mockito.mock(VendorService.class), Mockito.mock(ConfigurationProperties.class));
 
-        analyticsService = new AnalyticsService(deliveryRepository, courierService, vendorRepository, orderRepository);
+        analyticsService = new AnalyticsService(deliveryRepository, courierService, vendorRepository, orderRepository, deliveryService);
 
         rating = new Rating();
         rating.setComment("Fine");
@@ -204,7 +207,6 @@ public class AnalyticsServiceTest {
     @Test
     void testGetCourierEfficiencySuccess() throws CourierNotFoundException {
         Long courierId = 1L;
-
         when(courierService.doesCourierExist(courierId)).thenReturn(true);
         List<Delivery> deliveries = createMockDeliveries();
         when(deliveryRepository.findByCourierId(courierId)).thenReturn(deliveries);
