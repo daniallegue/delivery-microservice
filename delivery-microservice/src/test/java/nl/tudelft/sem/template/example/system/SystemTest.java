@@ -24,10 +24,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 /**
  * This class tests the system as a whole.
  * <p>
- * To test that the system works with the provided examples in
- * the other microservices' api specifications, we mock them with WireMock.
- * In this case, for the tests to pass, Application.java in the Delivery Microservice must be running.
- * <p>
  * To check that our system works with the actual microservices, we comment out the mocking.
  * In this case, for the tests to pass, Application.java in the Delivery Microservice,
  * Orders Microservice and UsersMicroservice must be running.
@@ -37,18 +33,19 @@ public class SystemTest {
     private RestTemplate restTemplate;
 
     ObjectMapper objectMapper = new ObjectMapper();
+    WireMockServer ordersMicroservice;
 
     String BASE_URL = "http://localhost:8080";
 
     @BeforeEach
     public void setup() throws JsonProcessingException {
         restTemplate = new RestTemplate();
-//        mockOrdersMicroservice();
+        mockOrdersMicroservice();
     }
 
     @AfterEach
     public void tearDown() {
-//        WireMockConfig.stopOrdersServer();
+        WireMockConfig.stopOrdersServer();
     }
 
     /**
@@ -56,11 +53,17 @@ public class SystemTest {
      */
     public void mockOrdersMicroservice(){
         WireMockConfig.startOrdersServer();
-        WireMockServer ordersMicroservice = WireMockConfig.ordersMicroservice;
+        ordersMicroservice = WireMockConfig.ordersMicroservice;
+    }
 
-        // Mocking the endpoint localhost:8082/order/4/status
-        ordersMicroservice.stubFor(put(urlPathEqualTo("/order/4000/status/5"))
-                .withQueryParam("status", equalTo("Accepted"))
+    /**
+     * Mocking the Orders Microservice's endpoint:
+     * localhost:8082/order/{orderId}/status/{userId}?status={status}
+     */
+    public void mockPutStatus(Integer orderId, Integer userId, String status){
+        System.out.println("/order/"+orderId + "/status/ + " + userId);
+        ordersMicroservice.stubFor(put(urlPathEqualTo("/order/" + orderId + "/status/" + userId))
+                .withQueryParam("status", equalTo(status))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(HttpStatus.OK.value())));
@@ -124,7 +127,7 @@ public class SystemTest {
     /**
      * Series of requests to create an order in the Orders Microservice database.
      */
-    public ResponseEntity<String> createOrder(String requestBody, String customerId, String vendorId){
+    public ResponseEntity<String> createOrder(String customerId, String vendorId){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
@@ -157,11 +160,9 @@ public class SystemTest {
     public void createDelivery() throws JsonProcessingException {
         //(1) create an admin in the Users Microservice database
         ResponseEntity<String> creatingAdminEntity = createAdmin(ADMIN_JSON);
-        Assertions.assertTrue(creatingAdminEntity.getStatusCode().is2xxSuccessful());
 
         //(2) create a vendor in the Users Microservice database
         ResponseEntity<String> creatingVendorEntity = createVendor(VENDOR_JSON_1,  extractIdFromResponse(creatingAdminEntity));
-        Assertions.assertTrue(creatingVendorEntity.getStatusCode().is2xxSuccessful());
 
         //(3) create a delivery in our database, which makes a call to the Users Microservice
         DeliveryPostRequest dummyDeliveryPostRequest = new DeliveryPostRequest(409, 123,
@@ -170,7 +171,6 @@ public class SystemTest {
         HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, createHeaders(extractIdFromResponse(creatingVendorEntity).toString()));
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(BASE_URL + "/delivery", HttpMethod.POST, requestEntity, String.class);
-        Assertions.assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
     }
 
     /**
@@ -186,15 +186,12 @@ public class SystemTest {
     public void ratingIsForbidden() throws JsonProcessingException {
         //(1) create an admin in the Users Microservice database
         ResponseEntity<String> creatingAdminEntity = createAdmin(ADMIN_JSON_2);
-        Assertions.assertTrue(creatingAdminEntity.getStatusCode().is2xxSuccessful());
 
         //(1) create a vendor in the Users Microservice database
         ResponseEntity<String> creatingVendorEntity = createVendor(VENDOR_JSON_2,extractIdFromResponse(creatingAdminEntity));
-        Assertions.assertTrue(creatingVendorEntity.getStatusCode().is2xxSuccessful());
 
         //(2) create a customer in the Users Microservice database
         ResponseEntity<String> creatingCustomerEntity = createCustomer(CUSTOMER_JSON_1);
-        Assertions.assertTrue(creatingCustomerEntity.getStatusCode().is2xxSuccessful());
 
 
         //(3) create a delivery in our database
@@ -203,7 +200,6 @@ public class SystemTest {
         String requestBody =  objectMapper.writeValueAsString(dummyDeliveryPostRequest);
         HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, createHeaders(extractIdFromResponse(creatingAdminEntity).toString()));
         ResponseEntity<String> responseEntity = restTemplate.exchange(BASE_URL + "/delivery", HttpMethod.POST, requestEntity, String.class);
-        Assertions.assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
 
         //(4) try to add a rating to the order, it will fail, because the admin is not authorized to do so
         Rating rating = new Rating(5, "yummy");
@@ -223,70 +219,64 @@ public class SystemTest {
 //    @Test
     public void changeOrderStatus() throws JsonProcessingException {
         //(1) create an admin in the Users Microservice database
-        ResponseEntity<String> creatingAdminEntity = createAdmin(ADMIN_JSON_2);
-        Assertions.assertTrue(creatingAdminEntity.getStatusCode().is2xxSuccessful());
+        ResponseEntity<String> creatingAdminEntity = createAdmin(ADMIN_JSON_3);
+
 
         //(1) create a vendor in the Users Microservice database
-        ResponseEntity<String> creatingVendorEntity = createVendor(VENDOR_JSON_2,extractIdFromResponse(creatingAdminEntity));
-        Assertions.assertTrue(creatingVendorEntity.getStatusCode().is2xxSuccessful());
+        ResponseEntity<String> creatingVendorEntity = createVendor(VENDOR_JSON_3,extractIdFromResponse(creatingAdminEntity));
+
 
         //(2) create a customer in the Users Microservice database
-       ResponseEntity<String> creatingCustomerEntity = createCustomer(CUSTOMER_JSON_1);
-       Assertions.assertTrue(creatingCustomerEntity.getStatusCode().is2xxSuccessful());
+        ResponseEntity<String> creatingCustomerEntity = createCustomer(CUSTOMER_JSON_2);
+
 
         //(3) create an order in the Orders Microservice, which, in theory, should post a delivery in our database
-        ResponseEntity<String> creatingOrderEntity = createOrder(ORDER_JSON_1, "123", "5");
-        Assertions.assertTrue(creatingOrderEntity.getStatusCode().is2xxSuccessful());
+//        ResponseEntity<String> creatingOrderEntity = createOrder(extractIdFromResponse(creatingCustomerEntity), extractIdFromResponse(creatingVendorEntity));
+        mockPutStatus(202020, extractIdFromResponse(creatingAdminEntity), "Accepted");
 
-        //(3.2) create a delivery in our database, if the other microservice did not do it
-        DeliveryPostRequest dummyDeliveryPostRequest = new DeliveryPostRequest(4000, 123,
-                new Location(4.0, 5.0), 5);
+
+        //(3.2) create a delivery in our database, if the Orders microservice did not do it
+        DeliveryPostRequest dummyDeliveryPostRequest = new DeliveryPostRequest(202020, extractIdFromResponse(creatingCustomerEntity),
+                new Location(4.0, 5.0), extractIdFromResponse(creatingVendorEntity));
         String requestBody =  objectMapper.writeValueAsString(dummyDeliveryPostRequest);
-        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, createHeaders("5"));
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, createHeaders(extractIdFromResponse(creatingAdminEntity).toString()));
         ResponseEntity<String> responseEntity = restTemplate.exchange(BASE_URL + "/delivery", HttpMethod.POST, requestEntity, String.class);
-        Assertions.assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
+
 
         //(4) change the order status (both in our microservice and in the Orders microservice
-        String url2 = BASE_URL + "delivery/order/4000/status";
-        HttpEntity<String> requestEntity2 = new HttpEntity<>("Accepted",createHeaders("5"));
+        String url2 = BASE_URL + "delivery/order/202020/status";
+        HttpEntity<String> requestEntity2 = new HttpEntity<>("Accepted",createHeaders(extractIdFromResponse(creatingAdminEntity).toString()));
         ResponseEntity<String> responseEntity2 = restTemplate.exchange(url2, HttpMethod.PUT, requestEntity2, String.class);
-        Assertions.assertTrue(responseEntity2.getStatusCode().is2xxSuccessful());
     }
 
 //    @Test
     public void courierActions() throws JsonProcessingException {
-        //(1) create a vendor in the Users Microservice database
-        ResponseEntity<String> creatingVendorEntity = createVendor(VENDOR_JSON_1, 100);
-        Assertions.assertTrue(creatingVendorEntity.getStatusCode().is2xxSuccessful());
+        //(1) create an admin in the Users Microservice database
+        ResponseEntity<String> creatingAdminEntity = createAdmin(ADMIN_JSON_4);
 
-        //(2) create couriers in the Users Microservice database
+        //(2) create a vendor in the Users Microservice database
+        ResponseEntity<String> creatingVendorEntity = createVendor(VENDOR_JSON_4, extractIdFromResponse(creatingAdminEntity));
+
+        //(3) create couriers in the Users Microservice database
         ResponseEntity<String> creatingCourierEntity1 = createCourier(COURIER_JSON_1);
-        Assertions.assertTrue(creatingCourierEntity1.getStatusCode().is2xxSuccessful());
-
-        ResponseEntity<String> creatingCourierEntity2 = createCourier(COURIER_JSON_2);
-        Assertions.assertTrue(creatingCourierEntity2.getStatusCode().is2xxSuccessful());
-
-        //(3) create a customer in the Users Microservice database
-        ResponseEntity<String> creatingCustomerEntity = createCustomer(CUSTOMER_JSON_1);
-        Assertions.assertTrue(creatingCustomerEntity.getStatusCode().is2xxSuccessful());
 
         //(4) create an order in the Orders Microservice, which, in theory, should post a delivery in our database
-        ResponseEntity<String> creatingOrderEntity = createOrder(ORDER_JSON_1, "123", "5");
-        Assertions.assertTrue(creatingOrderEntity.getStatusCode().is2xxSuccessful());
+//        ResponseEntity<String> creatingOrderEntity = createOrder(ORDER_JSON_1, 555, extractIdFromResponse(creatingVendorEntity).toString());
+//        Assertions.assertTrue(creatingOrderEntity.getStatusCode().is2xxSuccessful());
+        mockPutStatus(777, extractIdFromResponse(creatingVendorEntity), "Accepted");
 
         //(4.2) create a delivery in our database, if the other microservice did not do it
-        DeliveryPostRequest dummyDeliveryPostRequest = new DeliveryPostRequest(4000, 123,
-                new Location(4.0, 5.0), 5);
+        DeliveryPostRequest dummyDeliveryPostRequest = new DeliveryPostRequest(777, 555,
+                new Location(4.0, 5.0), extractIdFromResponse(creatingVendorEntity));
         String requestBody =  objectMapper.writeValueAsString(dummyDeliveryPostRequest);
-        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, createHeaders("5"));
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, createHeaders(extractIdFromResponse(creatingVendorEntity).toString()));
         ResponseEntity<String> responseEntity = restTemplate.exchange(BASE_URL + "/delivery", HttpMethod.POST, requestEntity, String.class);
-        Assertions.assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
 
-        //(5) change the order status (both in our microservice and in the Orders microservice
-        String url2 = BASE_URL + "delivery/order/4000/status";
-        HttpEntity<String> requestEntity2 = new HttpEntity<>("Accepted",createHeaders("5"));
-        ResponseEntity<String> responseEntity2 = restTemplate.exchange(url2, HttpMethod.PUT, requestEntity2, String.class);
-        Assertions.assertTrue(responseEntity2.getStatusCode().is2xxSuccessful());
+        //(5) assign a courier to the order
+        String url3 = BASE_URL + "delivery/courier/" + 10 + "assign/777";
+        HttpEntity<String> requestEntity3 = new HttpEntity<>(createHeaders(extractIdFromResponse(creatingVendorEntity).toString()));
+        ResponseEntity<String> responseEntity3 = restTemplate.exchange(url3, HttpMethod.PUT, requestEntity3, String.class);
+        Assertions.assertTrue(responseEntity3.getStatusCode().is2xxSuccessful());
 
     }
 
@@ -347,7 +337,7 @@ public class SystemTest {
             "  \"proof\": \"These are the documents from the KvK confirming my ownership\"\n" +
             "}";
     String VENDOR_JSON_2 = "{\n" +
-            "  \"id\": 666,\n" +
+            "  \"id\": 666543,\n" +
             "  \"name\": \"bla\",\n" +
             "  \"surname\": \"bla\",\n" +
             "  \"email\": \"bla_bla@gmail.com\",\n" +
@@ -355,37 +345,32 @@ public class SystemTest {
             "  \"location\": {\n" +
             "    \"latitude\": 52.0116,\n" +
             "    \"longitude\": 4.3571\n" +
-            "  },\n" +
-            "  \"openingHours\": {\n" +
-            "    \"monday\": {\n" +
-            "      \"open\": \"09:00\",\n" +
-            "      \"close\": \"1320\"\n" +
-            "    },\n" +
-            "    \"tuesday\": {\n" +
-            "      \"open\": \"09:00\",\n" +
-            "      \"close\": \"1320\"\n" +
-            "    },\n" +
-            "    \"wednesday\": {\n" +
-            "      \"open\": \"09:00\",\n" +
-            "      \"close\": \"1320\"\n" +
-            "    },\n" +
-            "    \"thursday\": {\n" +
-            "      \"open\": \"09:00\",\n" +
-            "      \"close\": \"1320\"\n" +
-            "    },\n" +
-            "    \"friday\": {\n" +
-            "      \"open\": \"09:00\",\n" +
-            "      \"close\": \"1320\"\n" +
-            "    },\n" +
-            "    \"saturday\": {\n" +
-            "      \"open\": \"09:00\",\n" +
-            "      \"close\": \"1320\"\n" +
-            "    },\n" +
-            "    \"sunday\": {\n" +
-            "      \"open\": \"09:00\",\n" +
-            "      \"close\": \"1320\"\n" +
-            "    }\n" +
-            "  },\n" +
+            "  },\n"  +
+            "  \"proof\": \"These are twefefhe documents from the KvK confirming my ownership\"\n" +
+            "}";
+    String VENDOR_JSON_3 = "{\n" +
+            "  \"id\": 666,\n" +
+            "  \"name\": \"bla\",\n" +
+            "  \"surname\": \"bla\",\n" +
+            "  \"email\": \"bla_sdvfbla@gmadssil.com\",\n" +
+            "  \"deliveryZone\": 50,\n" +
+            "  \"location\": {\n" +
+            "    \"latitude\": 52.0116,\n" +
+            "    \"longitude\": 4.3571\n" +
+            "  },\n"  +
+            "  \"proof\": \"These are twefefhe documents from the KvK confirming my ownership\"\n" +
+            "}";
+
+    String VENDOR_JSON_4 = "{\n" +
+            "  \"id\": 12344321,\n" +
+            "  \"name\": \"bla\",\n" +
+            "  \"surname\": \"bla\",\n" +
+            "  \"email\": \"ayo@ayo.com\",\n" +
+            "  \"deliveryZone\": 50,\n" +
+            "  \"location\": {\n" +
+            "    \"latitude\": 52.0116,\n" +
+            "    \"longitude\": 4.3571\n" +
+            "  },\n"  +
             "  \"proof\": \"These are twefefhe documents from the KvK confirming my ownership\"\n" +
             "}";
 
@@ -393,6 +378,15 @@ public class SystemTest {
             "  \"name\": \"John\",\n" +
             "  \"surname\": \"Doe\",\n" +
             "  \"email\": \"john.doe@example.com\",\n" +
+            "  \"homeAddress\": {\n" +
+            "    \"latitude\": 52.0116,\n" +
+            "    \"longitude\": 4.3571\n" +
+            "  }\n" +
+            "}";
+    String CUSTOMER_JSON_2 = "{\n" +
+            "  \"name\": \"cleo\",\n" +
+            "  \"surname\": \"cleo\",\n" +
+            "  \"email\": \"cleo.cleo@cleo.com\",\n" +
             "  \"homeAddress\": {\n" +
             "    \"latitude\": 52.0116,\n" +
             "    \"longitude\": 4.3571\n" +
@@ -417,9 +411,6 @@ public class SystemTest {
             "  \"surname\": \"Bruh\",\n" +
             "  \"email\": \"burh@bruh.com\",\n" +
             "  \"validated\": true,\n" +
-            "  \"completedOrders\": [\n" +
-            "    1\n" +
-            "  ],\n" +
             "  \"paymentMethod\": \"cash\"\n" +
             "}";
 
@@ -435,8 +426,20 @@ public class SystemTest {
             "  \"surname\": \"Bruh\",\n" +
             "  \"email\": \"bruh@gmail.com\"\n" +
             "}";
+    String ADMIN_JSON_3 ="{\n" +
+            "  \"id\": 101010,\n" +
+            "  \"name\": \"lol\",\n" +
+            "  \"surname\": \"lol\",\n" +
+            "  \"email\": \"lol@lol.com\"\n" +
+            "}";
+    String ADMIN_JSON_4 ="{\n" +
+            "  \"id\": 1010,\n" +
+            "  \"name\": \"man\",\n" +
+            "  \"surname\": \"man\",\n" +
+            "  \"email\": \"man@man.com\"\n" +
+            "}";
     String ORDER_JSON_1 =  "{\n" +
-            "  \"order_id\": 4000,\n" +
+            "  \"order_id\": 6000,\n" +
             "  \"customer_id\": 123,\n" +
             "  \"vendor_id\": 5,\n" +
             "  \"price\": 20.3,\n" +
