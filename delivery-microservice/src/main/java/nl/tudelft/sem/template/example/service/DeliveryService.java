@@ -221,7 +221,7 @@ public class DeliveryService {
      * @param end The end location(destination).
      * @return The distance between the 2 points.
      */
-    private double calculateDistance(Location start, Location end) {
+    public double calculateDistance(Location start, Location end) {
         double latDifference = end.getLatitude() - start.getLatitude();
         double lonDifference = end.getLongitude() - start.getLongitude();
         return Math.sqrt(latDifference * latDifference + lonDifference * lonDifference);

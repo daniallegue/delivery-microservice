@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
@@ -131,9 +132,11 @@ public class OrderControllerTest {
         when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Pending";
         orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
 
         assertThat(status).isEqualTo("Pending");
+        assertEquals(400, response.getStatusCodeValue());
     }
 
     @Test
@@ -141,19 +144,34 @@ public class OrderControllerTest {
         when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Accepted";
         orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
 
         assertThat(status).isEqualTo("Accepted");
+        assertEquals(400, response.getStatusCodeValue());
     }
 
+    @Test
+    void putOrderStatusPendingToAcceptedNoChangeTest() {
+        when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
+        String newStatus = "Accepted";
+        orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
+        String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
+
+        assertThat(status).isEqualTo("Accepted");
+        assertEquals(400, response.getStatusCodeValue());
+    }
     @Test
     void putOrderStatusPendingToRejectedTest() {
         when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Rejected";
         orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
 
         assertThat(status).isEqualTo("Rejected");
+        assertEquals(400, response.getStatusCodeValue());
     }
 
     @Test
@@ -161,9 +179,11 @@ public class OrderControllerTest {
         when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Preparing";
         orderController.deliveryOrderOrderIdStatusPut(2, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(2, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(2, 1).getBody();
 
         assertThat(status).isEqualTo("Preparing");
+        assertEquals(400, response.getStatusCodeValue());
     }
 
     @Test
@@ -171,8 +191,11 @@ public class OrderControllerTest {
         when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Given_To_Courier";
         orderController.deliveryOrderOrderIdStatusPut(4, 1, newStatus);
+        ResponseEntity<Void> response =  orderController.deliveryOrderOrderIdStatusPut(4, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(4, 1).getBody();
+
         assertThat(status).isEqualTo("Given_To_Courier");
+        assertEquals(400, response.getStatusCodeValue());
     }
 
     @Test
@@ -180,8 +203,11 @@ public class OrderControllerTest {
         when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "On_Transit";
         orderController.deliveryOrderOrderIdStatusPut(5, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(5, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(5, 1).getBody();
+
         assertThat(status).isEqualTo("On_Transit");
+        assertEquals(400, response.getStatusCodeValue());
     }
 
     @Test
@@ -189,8 +215,11 @@ public class OrderControllerTest {
         when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Delivered";
         orderController.deliveryOrderOrderIdStatusPut(6, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(6, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(6, 1).getBody();
+
         assertThat(status).isEqualTo("Delivered");
+        assertEquals(400, response.getStatusCodeValue());
     }
 
     @Test
@@ -198,9 +227,11 @@ public class OrderControllerTest {
         when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Preparing";
         orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(1, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(1, 1).getBody();
 
         assertThat(status).isEqualTo("Pending");
+        assertEquals(400, response.getStatusCodeValue());
     }
 
     @Test
@@ -208,9 +239,11 @@ public class OrderControllerTest {
         when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Preparing";
         orderController.deliveryOrderOrderIdStatusPut(3, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(3, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(3, 1).getBody();
 
         assertThat(status).isEqualTo("Rejected");
+        assertEquals(400, response.getStatusCodeValue());
     }
 
     @Test
@@ -218,9 +251,11 @@ public class OrderControllerTest {
         when(ordersMicroservice.putOrderStatus(anyLong(), anyLong(), anyString())).thenReturn(true);
         String newStatus = "Pending";
         orderController.deliveryOrderOrderIdStatusPut(2, 1, newStatus);
+        ResponseEntity<Void> response = orderController.deliveryOrderOrderIdStatusPut(2, 1, newStatus);
         String status = orderController.deliveryOrderOrderIdStatusGet(2, 1).getBody();
 
         assertThat(status).isEqualTo("Accepted");
+        assertEquals(400, response.getStatusCodeValue());
     }
 
     @Test

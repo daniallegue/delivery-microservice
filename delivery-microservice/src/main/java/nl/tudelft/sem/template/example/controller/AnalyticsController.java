@@ -124,7 +124,7 @@ public class AnalyticsController implements AnalyticsApi {
     }
 
     /**
-     * Retrieve the issues a courier has encountered during deliveries
+     * Retrieve the issues a courier has encountered during deliveries.
      *
      * @path GET: GET /analytics/courier/{courier_id}/courier-issues : Issues of a courier
      * @param courierId The id of the courier (required)
@@ -149,4 +149,49 @@ public class AnalyticsController implements AnalyticsApi {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * Retrieve the courier's efficiency.
+     *
+     * @param courierId The id of the courier (required)
+     * @param authorizationId Identification of the user who is making the request (required)
+     * @return the integer that corresponds to driver's efficiency
+     */
+    @Override
+    public ResponseEntity<Integer> analyticsCourierCourierIdEfficiencyGet(Integer courierId, Integer authorizationId) {
+        try {
+            if (!authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)) {
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
+            int successfulDeliveries = analyticsService.getCourierEfficiency((long) courierId);
+            return ResponseEntity.ok(successfulDeliveries);
+        } catch (CourierNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (MicroserviceCommunicationException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Calculates average delivery time for a vendor.
+     *
+     * @param vendorId The id of the vendor (required)
+     * @param authorizationId Identification of the user who is making the request (required)
+     * @return integer that corresponds to average delivery time
+     */
+    @Override
+    public ResponseEntity<Integer> analyticsVendorVendorIdVendorAverageGet(Integer vendorId, Integer authorizationId) {
+        try {
+            if (!authorizationService.canViewCourierAnalytics((long) authorizationId, (long) vendorId)) {
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
+            int successfulDeliveries = analyticsService.getVendorAverage((long) vendorId);
+            return ResponseEntity.ok(successfulDeliveries);
+        } catch (VendorNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (MicroserviceCommunicationException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
