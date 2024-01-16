@@ -65,10 +65,14 @@ public class DeliveryService {
         }
 
         Location destination = deliveryPostRequest.getDestination();
+
+        boolean isWithinZone = isWithinDeliveryZone(destination, vendor.getAddress(), vendor.getDeliveryZone());
+
+        Order.StatusEnum status = isWithinZone ? Order.StatusEnum.PENDING : Order.StatusEnum.REJECTED;
         Order order = new Order(Long.valueOf(deliveryPostRequest.getOrderId()),
                 Long.valueOf(deliveryPostRequest.getCustomerId()),
                 vendor,
-                Order.StatusEnum.PENDING,
+                status,
                 destination
         );
 
@@ -76,6 +80,11 @@ public class DeliveryService {
         delivery.setOrder(order);
         delivery = deliveryRepository.save(delivery);
         return delivery;
+    }
+
+    private boolean isWithinDeliveryZone(Location destination, Location vendorLocation, Long deliveryZoneRadius) {
+        double distance = calculateDistance(vendorLocation, destination);
+        return distance <= deliveryZoneRadius;
     }
 
     public OffsetDateTime getReadyTime(Long orderId) throws OrderNotFoundException {

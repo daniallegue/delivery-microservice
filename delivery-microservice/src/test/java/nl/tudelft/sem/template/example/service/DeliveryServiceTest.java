@@ -354,4 +354,25 @@ public class DeliveryServiceTest {
         assertEquals(1800.0, result.getLongitude());
     }
 
+    @Test
+    void testCreateDeliveryOutsideDeliveryZone() throws Exception {
+        Mockito.when(vendorService.findVendorOrCreate(anyLong())).thenReturn(vendor);
+        Mockito.when(orderRepository.existsById(123L)).thenReturn(false);
+
+        // Set a destination outside the delivery zone
+        Location outsideDestination = new Location(100.0, 100.0);
+        dummyDeliveryPostRequest.setDestination(outsideDestination);
+
+        // Mock the behavior of deliveryRepository.save
+        Mockito.when(deliveryRepository.save(any(Delivery.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Call the method
+        Delivery result = deliveryService.createDelivery(dummyDeliveryPostRequest);
+
+        // Assertions
+        assertNotNull(result);
+        assertEquals(Order.StatusEnum.REJECTED, result.getOrder().getStatus());
+    }
+
+
 }
