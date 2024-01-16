@@ -172,9 +172,7 @@ public class AnalyticsService {
             throw new CourierNotFoundException("Courier with id " + courierId + " does not exist.");
         }
         List<Delivery> deliveries = deliveryRepository.findByCourierId(courierId);
-        List<Delivery> successfulDeliveries = deliveries.stream()
-                .filter(delivery -> delivery.getOrder().getStatus() == Order.StatusEnum.DELIVERED)
-                .collect(Collectors.toList());
+        List<Delivery> successfulDeliveries = successfulDeliveries(deliveries);
 
         Duration totalDuration = successfulDeliveries.stream()
                 .map(delivery -> Duration.between(delivery.getTime().getPickUpTime(), delivery.getTime().getDeliveredTime()))
@@ -212,9 +210,7 @@ public class AnalyticsService {
             }
         }
 
-        List<Delivery> successfulDeliveries = deliveries.stream()
-                .filter(delivery -> delivery.getOrder().getStatus() == Order.StatusEnum.DELIVERED)
-                .collect(Collectors.toList());
+        List<Delivery> successfulDeliveries = successfulDeliveries(deliveries);
 
         Duration totalDuration = successfulDeliveries.stream()
                 .map(delivery -> Duration.between(delivery.getTime().getPickUpTime(), delivery.getTime().getDeliveredTime()))
@@ -224,5 +220,16 @@ public class AnalyticsService {
 
         return (int) totalSeconds / successfulDeliveries.size();
 
+    }
+
+    /**
+     * getting successful deliveries.
+     * @param deliveries given deliveries
+     * @return returns deliveries that have status delivered
+     */
+    public List<Delivery> successfulDeliveries(List<Delivery> deliveries) {
+        return deliveries.stream()
+                .filter(delivery -> delivery.getOrder().getStatus() == Order.StatusEnum.DELIVERED)
+                .collect(Collectors.toList());
     }
 }
