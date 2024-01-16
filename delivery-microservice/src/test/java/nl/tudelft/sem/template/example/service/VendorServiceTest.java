@@ -154,8 +154,8 @@ public class VendorServiceTest {
 
         when(vendorRepository.existsById(33L)).thenReturn(true);
         when(vendorRepository.findById(33L)).thenReturn(Optional.of(vendor));
-        when(courierService.doesCourierExist(2L)).thenReturn(true);
-        when(courierService.doesCourierExist(6L)).thenReturn(true);
+        when(usersMicroservice.getUserType(2L)).thenReturn(Optional.of("courier"));
+        when(usersMicroservice.getUserType(6L)).thenReturn(Optional.of("courier"));
         Vendor updated = vendorService.assignCourierToVendor(33L, 6L);
         List<Long> couriers = new ArrayList<>();
         couriers.add(6L);
@@ -176,6 +176,7 @@ public class VendorServiceTest {
     }
     @Test
     void assignCouriersCourierNotFoundTest() throws VendorNotFoundException {
+        when(usersMicroservice.getUserType(55L)).thenReturn(Optional.of("vendor"));
         assertThrows(CourierNotFoundException.class, () -> vendorService.assignCourierToVendor(3L, 55L));
     }
 

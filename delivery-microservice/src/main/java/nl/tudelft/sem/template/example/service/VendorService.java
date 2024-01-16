@@ -49,22 +49,34 @@ public class VendorService {
      * @return The vendor with the given id.
      */
     public Vendor findVendorOrCreate(Long vendorId) throws MicroserviceCommunicationException {
-        if (!vendorRepository.existsById(vendorId)) {
-            Vendor newVendor = new Vendor();
-            newVendor.setId(vendorId);
-            newVendor.setDeliveryZone(configurationProperties.getDefaultDeliveryZone());
-            newVendor.setCouriers(new ArrayList<>());
-
-            Optional<Location> vendorAddress = usersMicroservice.getVendorLocation(vendorId);
-            if (vendorAddress.isPresent()) {
-                newVendor.setAddress(vendorAddress.get());
-                vendorRepository.save(newVendor);
-            } else {
-                throw new MicroserviceCommunicationException("The vendor address could not be retrieved");
+        try {
+            if (!vendorRepository.existsById(vendorId)) {
+                createVendor(vendorId);
             }
+            return vendorRepository.findById(vendorId).orElse(null);
+        } catch (MicroserviceCommunicationException e) {
+            throw new MicroserviceCommunicationException("The vendor address could not be retrieved");
         }
+    }
 
-        return vendorRepository.findById(vendorId).orElse(null);
+    /**
+     * Creates a vendor instance in the repository.
+     *
+     * @param vendorId The id of the vendor.
+     */
+    public void createVendor(Long vendorId) throws MicroserviceCommunicationException {
+        Vendor newVendor = new Vendor();
+        newVendor.setId(vendorId);
+        newVendor.setDeliveryZone(configurationProperties.getDefaultDeliveryZone());
+        newVendor.setCouriers(new ArrayList<>());
+
+        Optional<Location> vendorAddress = usersMicroservice.getVendorLocation(vendorId);
+        if (vendorAddress.isPresent()) {
+            newVendor.setAddress(vendorAddress.get());
+            vendorRepository.save(newVendor);
+        } else {
+            throw new MicroserviceCommunicationException("The vendor address could not be retrieved");
+        }
     }
 
 
@@ -79,7 +91,6 @@ public class VendorService {
             throw new VendorNotFoundException("Vendor was not found");
         }
         Vendor vendor = vendorRepository.findById(vendorId).get();
-        //Check for Null/Default delivery zone
         return vendor.getDeliveryZone();
     }
 
@@ -96,18 +107,15 @@ public class VendorService {
             throw new VendorNotFoundException("Vendor was not found");
         }
         Vendor vendor = vendorRepository.findById(vendorId).get();
-
         if (vendor.getCouriers() == null || vendor.getCouriers().size() < 1) {
             throw new VendorHasNoCouriersException("Vendor must have their own set of couriers");
         }
-
         vendor.setDeliveryZone(deliveryZone);
         vendorRepository.save(vendor);
         return vendor;
     }
 
     /**
-<<<<<<< HEAD
      * Assigns courier to the given vendor.
      *
      * @param vendorId The id of the vendor.
@@ -120,7 +128,7 @@ public class VendorService {
         if (!vendorRepository.existsById(vendorId)) {
             throw new VendorNotFoundException("Vendor was not found");
         }
-        if (!courierService.doesCourierExist(courierId)) {
+        if (!usersMicroservice.getUserType(courierId).get().equals("courier")) {
             throw new CourierNotFoundException("Courier was not found");
         }
         Vendor vendor = vendorRepository.findById(vendorId).get();

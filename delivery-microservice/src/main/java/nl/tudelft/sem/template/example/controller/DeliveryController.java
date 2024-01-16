@@ -2,9 +2,14 @@ package nl.tudelft.sem.template.example.controller;
 
 import static nl.tudelft.sem.template.model.Order.StatusEnum;
 
+import java.time.OffsetDateTime;
 import nl.tudelft.sem.template.api.DeliveryApi;
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
-import nl.tudelft.sem.template.example.exception.*;
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
+import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
+import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
+import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
+import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.service.DeliveryService;
 import nl.tudelft.sem.template.example.service.OrderService;
 import nl.tudelft.sem.template.model.Delivery;
@@ -17,8 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.time.OffsetDateTime;
 
 
 @RestController
@@ -117,7 +120,8 @@ public class DeliveryController implements DeliveryApi {
     public ResponseEntity<OffsetDateTime> deliveryOrderOrderIdReadyTimeGet(Integer orderId, Integer authorizationId) {
         try {
             String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
-            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId),
+                    Long.valueOf(orderId));
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
@@ -166,6 +170,12 @@ public class DeliveryController implements DeliveryApi {
         }
     }
 
+    /**
+     * Retrieves the issues associated with the order/delivery.
+     *
+     * @param orderId  Unique identifier of the order (required)
+     * @param authorizationId Identification of the user who is making the request (required)
+     */
     public ResponseEntity<Issue> deliveryOrderOrderIdIssueGet(Integer orderId, Integer authorizationId) {
         try {
             if (!authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId))) {
@@ -185,7 +195,8 @@ public class DeliveryController implements DeliveryApi {
     public ResponseEntity<OffsetDateTime> deliveryOrderOrderIdPickupTimeGet(Integer orderId, Integer authorizationId) {
         try {
             String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
-            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId),
+                    Long.valueOf(orderId));
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
@@ -200,10 +211,12 @@ public class DeliveryController implements DeliveryApi {
 
 
     @Override
-    public ResponseEntity<Void> deliveryOrderOrderIdPickupTimePut(Integer orderId, Integer authorizationId, OffsetDateTime newPickupTime) {
+    public ResponseEntity<Void> deliveryOrderOrderIdPickupTimePut(Integer orderId,
+                                                                  Integer authorizationId, OffsetDateTime newPickupTime) {
         try {
             String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
-            boolean isAuthorized = authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+            boolean isAuthorized = authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId),
+                    Long.valueOf(orderId));
 
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -225,12 +238,14 @@ public class DeliveryController implements DeliveryApi {
     public ResponseEntity<OffsetDateTime> deliveryOrderOrderIdTodGet(Integer orderId, Integer authorizationId) {
         try {
             String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
-            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId),
+                    Long.valueOf(orderId));
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
             OffsetDateTime deliveredTime = deliveryService.getDeliveredTime(Long.valueOf(orderId));
-            return deliveredTime == null ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(deliveredTime);
+            return deliveredTime == null ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() :
+                    ResponseEntity.ok(deliveredTime);
         } catch (MicroserviceCommunicationException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         } catch (OrderNotFoundException e) {
@@ -243,7 +258,8 @@ public class DeliveryController implements DeliveryApi {
                                                            OffsetDateTime newDeliveredTime) {
         try {
             String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
-            boolean isAuthorized = authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+            boolean isAuthorized = authorizationService.canUpdateDeliveryDetails(Long.valueOf(authorizationId),
+                    Long.valueOf(orderId));
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
@@ -261,7 +277,8 @@ public class DeliveryController implements DeliveryApi {
     public ResponseEntity<OffsetDateTime> deliveryOrderOrderIdEtaGet(Integer orderId, Integer authorizationId) {
         try {
             String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
-            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId),
+                    Long.valueOf(orderId));
 
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -273,7 +290,7 @@ public class DeliveryController implements DeliveryApi {
         } catch (MicroserviceCommunicationException | RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 
-        } catch (OrderNotFoundException e){
+        } catch (OrderNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -301,7 +318,7 @@ public class DeliveryController implements DeliveryApi {
     @Override
     public ResponseEntity<Void> deliveryDefaultDeliveryZonePut(Integer newDeliveryZone, Integer authorizationId) {
         try {
-            if (!authorizationService.getUserRole((long) authorizationId).equals(authorizationService.ADMIN)) {
+            if (!authorizationService.getUserRole((long) authorizationId).equals("admin")) {
                 ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
                 return response;
             }
@@ -313,7 +330,7 @@ public class DeliveryController implements DeliveryApi {
     }
 
     /**
-     * GET /delivery/order/{order_id}/location
+     * GET /delivery/order/{order_id}/location.
      *
      * @param orderId The unique identifier of the order. (required)
      * @param authorizationId Identification of the user who is making the request. (required)
@@ -323,7 +340,8 @@ public class DeliveryController implements DeliveryApi {
     public ResponseEntity<Location> deliveryOrderOrderIdLocationGet(Integer orderId, Integer authorizationId) {
         try {
             String userRole = authorizationService.getUserRole(Long.valueOf(authorizationId));
-            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId), Long.valueOf(orderId));
+            boolean isAuthorized = authorizationService.canViewDeliveryDetails(Long.valueOf(authorizationId),
+                    Long.valueOf(orderId));
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
@@ -342,9 +360,9 @@ public class DeliveryController implements DeliveryApi {
     }
 
     /**
-     *
      * Returns the courier assigned to an order.
-     * @param orderId         Unique identifier of the order (required)
+     *
+     * @param orderId Unique identifier of the order (required)
      * @param authorizationId Identification of the user who is making the request (required)
      * @path GET: /delivery/order/{order_id}/courier
      */

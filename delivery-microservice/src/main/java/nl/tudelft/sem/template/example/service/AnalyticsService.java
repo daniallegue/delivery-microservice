@@ -1,13 +1,5 @@
 package nl.tudelft.sem.template.example.service;
 
-import nl.tudelft.sem.template.example.exception.*;
-import nl.tudelft.sem.template.example.repository.DeliveryRepository;
-import nl.tudelft.sem.template.example.repository.OrderRepository;
-import nl.tudelft.sem.template.example.repository.VendorRepository;
-import nl.tudelft.sem.template.model.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -16,25 +8,43 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
+import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
+import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
+import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
+import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
+import nl.tudelft.sem.template.example.exception.RatingNotFoundException;
+import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
+import nl.tudelft.sem.template.example.external.UsersMicroservice;
+import nl.tudelft.sem.template.example.repository.DeliveryRepository;
+import nl.tudelft.sem.template.example.repository.OrderRepository;
+import nl.tudelft.sem.template.example.repository.VendorRepository;
+import nl.tudelft.sem.template.model.Delivery;
+import nl.tudelft.sem.template.model.Issue;
+import nl.tudelft.sem.template.model.Order;
+import nl.tudelft.sem.template.model.Rating;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class AnalyticsService {
     private final DeliveryRepository deliveryRepository;
-    private final CourierService courierService;
 
     private final VendorRepository vendorRepository;
     private final OrderRepository orderRepository;
     private final DeliveryService deliveryService;
 
+    private final UsersMicroservice usersMicroservice;
+
     @Autowired
-    public AnalyticsService(DeliveryRepository deliveryRepository, CourierService courierService,
-                            VendorRepository vendorRepository, OrderRepository orderRepository, DeliveryService deliveryService) {
+    public AnalyticsService(DeliveryRepository deliveryRepository, VendorRepository vendorRepository,
+                            OrderRepository orderRepository,
+                            DeliveryService deliveryService,
+                            UsersMicroservice usersMicroservice) {
         this.deliveryRepository = deliveryRepository;
-        this.courierService = courierService;
         this.vendorRepository = vendorRepository;
         this.orderRepository = orderRepository;
         this.deliveryService = deliveryService;
+        this.usersMicroservice = usersMicroservice;
     }
 
     /**
@@ -94,7 +104,7 @@ public class AnalyticsService {
      * @throws CourierNotFoundException If the courier with the given ID does not exist.
      */
     public int getDeliveriesPerDay(Long courierId) throws CourierNotFoundException {
-        if (!courierService.doesCourierExist(courierId)) {
+        if (!usersMicroservice.getUserType(courierId).get().equals("courier")) {
             throw new CourierNotFoundException("Courier with id " + courierId + " does not exist.");
         }
         List<Delivery> deliveries = deliveryRepository.findByCourierId(courierId);
@@ -127,7 +137,7 @@ public class AnalyticsService {
      * @throws CourierNotFoundException If the courier with the given ID does not exist.
      */
     public int getSuccessfulDeliveries(Long courierId) throws CourierNotFoundException {
-        if (!courierService.doesCourierExist(courierId)) {
+        if (!usersMicroservice.getUserType(courierId).get().equals("courier")) {
             throw new CourierNotFoundException("Courier with id " + courierId + " does not exist.");
         }
         List<Delivery> deliveries = deliveryRepository.findByCourierId(courierId);
@@ -147,7 +157,7 @@ public class AnalyticsService {
      */
     public List<String> getCourierIssues(Long courierId) throws CourierNotFoundException {
 
-        if (!courierService.doesCourierExist(courierId)) {
+        if (!usersMicroservice.getUserType(courierId).get().equals("courier")) {
             throw new CourierNotFoundException("Courier with id " + courierId + " does not exist.");
         }
         List<Delivery> deliveries = deliveryRepository.findByCourierId(courierId);
@@ -162,13 +172,14 @@ public class AnalyticsService {
 
     /**
      * Calculates the efficiency of a specified courier.
+     *
      * @param courierId The unique identifier of the courier.
      * @return an integer that describes courier's efficiency
      * @throws CourierNotFoundException If the courier with the given ID does not exist.
      */
     public Integer getCourierEfficiency(Long courierId) throws CourierNotFoundException {
 
-        if (!courierService.doesCourierExist(courierId)) {
+        if (!usersMicroservice.getUserType(courierId).get().equals("courier")) {
             throw new CourierNotFoundException("Courier with id " + courierId + " does not exist.");
         }
         List<Delivery> deliveries = deliveryRepository.findByCourierId(courierId);
@@ -181,16 +192,18 @@ public class AnalyticsService {
         long totalSeconds = totalDuration.toSeconds();
 
         double totalDistance = successfulDeliveries.stream()
-                .map(delivery -> (deliveryService.calculateDistance(delivery.getOrder().getVendor().getAddress(), delivery.getOrder().getDestination())))
+                .map(delivery -> (deliveryService.calculateDistance(delivery.getOrder().getVendor().getAddress(),
+                        delivery.getOrder().getDestination())))
                 .mapToDouble(Double::doubleValue)
                 .sum();
 
-        return (int) (totalDistance*100000 / totalSeconds);
+        return (int) (totalDistance * 100000 / totalSeconds);
 
     }
 
     /**
-     * Calculates the average time for one delivery in seconds for a given vendor
+     * Calculates the average time for one delivery in seconds for a given vendor.
+     *
      * @param vendorId The id of the vendor (required)
      * @return the time of average delivery
      * @throws VendorNotFoundException if the vendor with the given id does not exist
@@ -223,7 +236,8 @@ public class AnalyticsService {
     }
 
     /**
-     * getting successful deliveries.
+     * Getting successful deliveries.
+     *
      * @param deliveries given deliveries
      * @return returns deliveries that have status delivered
      */

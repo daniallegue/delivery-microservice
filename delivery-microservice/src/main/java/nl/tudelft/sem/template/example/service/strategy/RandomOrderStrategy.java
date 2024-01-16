@@ -1,19 +1,18 @@
 package nl.tudelft.sem.template.example.service.strategy;
 
-import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
+
+import java.util.List;
+import java.util.Optional;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
-import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.model.Delivery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
 
 @Service
-public class RandomOrderStrategy implements AssignOrderStrategy{
+public class RandomOrderStrategy implements AssignOrderStrategy {
 
     private final DeliveryRepository deliveryRepository;
 
@@ -32,7 +31,8 @@ public class RandomOrderStrategy implements AssignOrderStrategy{
      * @throws NoAvailableOrdersException No available orders for courier with id `courierId`
      */
     @Override
-    public void assignOrder(Long courierId, Long orderId, List<Long> availableOrders) throws DeliveryNotFoundException, NoAvailableOrdersException {
+    public void assignOrder(Long courierId, Long orderId, List<Long> availableOrders) throws DeliveryNotFoundException,
+            NoAvailableOrdersException {
         if (availableOrders.isEmpty()) {
             throw new NoAvailableOrdersException("No orders available for courier with id: " + courierId);
         }

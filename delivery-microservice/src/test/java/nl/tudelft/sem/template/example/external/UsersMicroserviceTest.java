@@ -21,7 +21,7 @@ public class UsersMicroserviceTest {
     private RestTemplate restTemplate;
 
     private UsersMicroservice usersMicroservice;
-    private final String usersBaseUrl = "localhost:8081";
+    private final String usersBaseUrl = "http://localhost:8081";
 
     @BeforeEach
     public void setup() {
@@ -54,21 +54,5 @@ public class UsersMicroserviceTest {
         when(restTemplate.getForObject(usersBaseUrl + "/vendor/" + 1 + "/location", Location.class))
                 .thenThrow(HttpClientErrorException.class);
         assertThat(usersMicroservice.getVendorLocation(1L)).isEqualTo(Optional.empty());
-    }
-
-    @Test
-    void getCourierIdsSuccessfulTest() {
-        List<Long> couriers = Arrays.asList(1L, 2L, 3L);
-        when(restTemplate.getForObject(usersBaseUrl + "/courier", List.class)).thenReturn(couriers);
-
-        assertEquals(Optional.of(couriers), usersMicroservice.getCourierIds());
-    }
-
-    @Test
-    void getCourierIdsEmptyTest() {
-        List<Long> couriers = new ArrayList<>();
-        when(restTemplate.getForObject(usersBaseUrl + "/courier", List.class)).thenReturn(couriers);
-
-        assertEquals(Optional.of(couriers), usersMicroservice.getCourierIds());
     }
 }

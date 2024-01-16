@@ -7,6 +7,7 @@ import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
 import nl.tudelft.sem.template.example.exception.RatingNotFoundException;
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
 import nl.tudelft.sem.template.example.exception.*;
+import nl.tudelft.sem.template.example.external.UsersMicroservice;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
@@ -33,22 +34,24 @@ public class AnalyticsServiceTest {
     private DeliveryRepository deliveryRepository;
     private OrderRepository orderRepository;
     private AnalyticsService analyticsService;
-    private CourierService courierService;
     private VendorRepository vendorRepository;
     private List<Delivery> mockDeliveries;
     private DeliveryService deliveryService;
+
+    private UsersMicroservice usersMicroservice;
     private Rating rating;
     private Order order;
     private Delivery delivery;
     @BeforeEach
     void setUp() {
         deliveryRepository = Mockito.mock(DeliveryRepository.class);
-        courierService = Mockito.mock(CourierService.class);
         vendorRepository = Mockito.mock(VendorRepository.class);
         orderRepository = Mockito.mock(OrderRepository.class);
+        usersMicroservice = Mockito.mock(UsersMicroservice.class);
         deliveryService = new DeliveryService(deliveryRepository, orderRepository, vendorRepository, Mockito.mock(VendorService.class), Mockito.mock(ConfigurationProperties.class));
 
-        analyticsService = new AnalyticsService(deliveryRepository, courierService, vendorRepository, orderRepository, deliveryService);
+        analyticsService = new AnalyticsService(deliveryRepository, vendorRepository, orderRepository,
+                deliveryService, usersMicroservice);
 
         rating = new Rating();
         rating.setComment("Fine");
@@ -174,7 +177,7 @@ public class AnalyticsServiceTest {
         delivery2.setOrder(null);
         mockDeliveries.add(delivery2);
 
-        when(courierService.doesCourierExist(courierId)).thenReturn(true);
+        when(usersMicroservice.getUserType(courierId)).thenReturn(Optional.of("courier"));
         when(deliveryRepository.findByCourierId(courierId)).thenReturn(mockDeliveries);
 
         double result = analyticsService.getDeliveriesPerDay(courierId);
@@ -184,8 +187,7 @@ public class AnalyticsServiceTest {
     @Test
     void testGetDeliveriesPerDayCourierNotFound() {
         Long courierId = 1L;
-        when(courierService.doesCourierExist(courierId)).thenReturn(false);
-
+        when(usersMicroservice.getUserType(courierId)).thenReturn(Optional.of("vendor"));
         assertThrows(CourierNotFoundException.class, () -> analyticsService.getDeliveriesPerDay(courierId));
     }
 
@@ -198,7 +200,7 @@ public class AnalyticsServiceTest {
         delivery1.setOrder(order1);
         mockDeliveries.add(delivery1);
 
-        when(courierService.doesCourierExist(courierId)).thenReturn(true);
+        when(usersMicroservice.getUserType(courierId)).thenReturn(Optional.of("courier"));
         when(deliveryRepository.findByCourierId(courierId)).thenReturn(mockDeliveries);
 
         int result = analyticsService.getSuccessfulDeliveries(courierId);
@@ -208,14 +210,14 @@ public class AnalyticsServiceTest {
     @Test
     void testGetSuccessfulDeliveriesCourierNotFound() {
         Long courierId = 1L;
-        when(courierService.doesCourierExist(courierId)).thenReturn(false);
+        when(usersMicroservice.getUserType(courierId)).thenReturn(Optional.of("vendor"));
         assertThrows(CourierNotFoundException.class, () -> analyticsService.getSuccessfulDeliveries(courierId));
     }
 
     @Test
     void testGetCourierIssuesSuccess() throws CourierNotFoundException {
         Long courierId = 1L;
-        when(courierService.doesCourierExist(courierId)).thenReturn(true);
+        when(usersMicroservice.getUserType(courierId)).thenReturn(Optional.of("courier"));
         Delivery delivery = new Delivery();
         Issue issue = new Issue()
                 .typeOfIssue("accident")
@@ -230,14 +232,14 @@ public class AnalyticsServiceTest {
     @Test
     void testGetCourierIssuesCourierNotFound() {
         Long courierId = 1L;
-        when(courierService.doesCourierExist(courierId)).thenReturn(false);
+        when(usersMicroservice.getUserType(courierId)).thenReturn(Optional.of("vendor"));
         assertThrows(CourierNotFoundException.class, () -> analyticsService.getCourierIssues(courierId));
     }
 
     @Test
     void testGetCourierEfficiencySuccess() throws CourierNotFoundException {
         Long courierId = 1L;
-        when(courierService.doesCourierExist(courierId)).thenReturn(true);
+            when(usersMicroservice.getUserType(courierId)).thenReturn(Optional.of("courier"));
         List<Delivery> deliveries = createMockDeliveries();
         when(deliveryRepository.findByCourierId(courierId)).thenReturn(deliveries);
         int result = analyticsService.getCourierEfficiency(courierId);
@@ -249,7 +251,7 @@ public class AnalyticsServiceTest {
     void testGetCourierEfficiencyCourierNotFound() {
         Long courierId = 1L;
 
-        when(courierService.doesCourierExist(courierId)).thenReturn(false);
+        when(usersMicroservice.getUserType(courierId)).thenReturn(Optional.of("admin"));
         assertThrows(CourierNotFoundException.class, () -> analyticsService.getCourierEfficiency(courierId));
     }
 
