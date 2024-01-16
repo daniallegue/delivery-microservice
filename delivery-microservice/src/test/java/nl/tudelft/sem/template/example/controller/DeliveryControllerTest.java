@@ -13,7 +13,6 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
@@ -48,7 +47,6 @@ public class DeliveryControllerTest {
         dummyDeliveryPostRequest.setVendorId(1);
         dummyDeliveryPostRequest.setOrderId(123);
         dummyDeliveryPostRequest.setCustomerId(456);
-        //dummyDeliveryPostRequest.setDestination(new Location(4.0, 5.0));
 
         deliveryService = Mockito.mock(DeliveryService.class);
         authorizationService = Mockito.mock(AuthorizationService.class);
@@ -57,9 +55,9 @@ public class DeliveryControllerTest {
         deliveryController = new DeliveryController(deliveryService, orderService, authorizationService);
 
         // Default authorization behavior
-        when(authorizationService.getUserRole(anyLong())).thenReturn("customer");
-        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenReturn(true);
-        when(authorizationService.canUpdateDeliveryDetails(anyLong(), anyLong())).thenReturn(true);
+        when(authorizationService.getUserRole(anyInt())).thenReturn("customer");
+        when(authorizationService.canViewDeliveryDetails(anyInt(), anyInt())).thenReturn(true);
+        when(authorizationService.canUpdateDeliveryDetails(anyInt(), anyInt())).thenReturn(true);
 
         vendor1 = new Vendor(5L, 30L, null, new ArrayList<>());
         order1 = new Order(1234L, 4567L, vendor1, Order.StatusEnum.PENDING, new Location(2.0, 3.0));
@@ -103,69 +101,69 @@ public class DeliveryControllerTest {
 
     @Test
     public void testDeliveryOrderOrderIdStatusPut_Success() throws MicroserviceCommunicationException, OrderNotFoundException, IllegalOrderStatusException {
-        when(authorizationService.canUpdateDeliveryDetails(anyLong(), anyLong())).thenReturn(true);
+        when(authorizationService.canUpdateDeliveryDetails(anyInt(), anyInt())).thenReturn(true);
 
         ResponseEntity<Void> response = deliveryController.deliveryOrderOrderIdStatusPut(123, 1, "DELIVERED");
 
-        verify(authorizationService).canUpdateDeliveryDetails(1L, 123L);
+        verify(authorizationService).canUpdateDeliveryDetails(1, 123);
         verify(orderService).setOrderStatus(123, 1, "DELIVERED");
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
     public void testDeliveryOrderOrderIdStatusPut_Forbidden() throws MicroserviceCommunicationException, OrderNotFoundException, IllegalOrderStatusException {
-        when(authorizationService.canUpdateDeliveryDetails(anyLong(), anyLong())).thenReturn(false);
+        when(authorizationService.canUpdateDeliveryDetails(anyInt(), anyInt())).thenReturn(false);
 
         ResponseEntity<Void> response = deliveryController.deliveryOrderOrderIdStatusPut(123, 1, "DELIVERED");
 
-        verify(authorizationService).canUpdateDeliveryDetails(1L, 123L);
+        verify(authorizationService).canUpdateDeliveryDetails(1, 123);
         verify(orderService, never()).setOrderStatus(anyInt(), anyInt(), anyString());
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
     @Test
     public void testDeliveryOrderOrderIdStatusPut_InternalServerErrorOnMicroserviceCommunicationException() throws MicroserviceCommunicationException, OrderNotFoundException, IllegalOrderStatusException {
-        when(authorizationService.canUpdateDeliveryDetails(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canUpdateDeliveryDetails(anyInt(), anyInt())).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<Void> response = deliveryController.deliveryOrderOrderIdStatusPut(123, 1, "DELIVERED");
 
-        verify(authorizationService).canUpdateDeliveryDetails(1L, 123L);
+        verify(authorizationService).canUpdateDeliveryDetails(1, 123);
         verify(orderService, never()).setOrderStatus(anyInt(), anyInt(), anyString());
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
     public void testDeliveryOrderOrderIdStatusPut_BadRequestOnOrderNotFoundException() throws MicroserviceCommunicationException, OrderNotFoundException, IllegalOrderStatusException {
-        when(authorizationService.canUpdateDeliveryDetails(anyLong(), anyLong())).thenReturn(true);
+        when(authorizationService.canUpdateDeliveryDetails(anyInt(), anyInt())).thenReturn(true);
         doThrow(OrderNotFoundException.class).when(orderService).setOrderStatus(anyInt(), anyInt(), anyString());
 
         ResponseEntity<Void> response = deliveryController.deliveryOrderOrderIdStatusPut(123, 1, "DELIVERED");
 
-        verify(authorizationService).canUpdateDeliveryDetails(1L, 123L);
+        verify(authorizationService).canUpdateDeliveryDetails(1, 123);
         verify(orderService).setOrderStatus(123, 1, "DELIVERED");
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
     public void testDeliveryOrderOrderIdStatusPut_BadRequestOnIllegalOrderStatusException() throws MicroserviceCommunicationException, OrderNotFoundException, IllegalOrderStatusException {
-        when(authorizationService.canUpdateDeliveryDetails(anyLong(), anyLong())).thenReturn(true);
+        when(authorizationService.canUpdateDeliveryDetails(anyInt(), anyInt())).thenReturn(true);
         doThrow(IllegalOrderStatusException.class).when(orderService).setOrderStatus(anyInt(), anyInt(), anyString());
 
         ResponseEntity<Void> response = deliveryController.deliveryOrderOrderIdStatusPut(123, 1, "INVALID_STATUS");
 
-        verify(authorizationService).canUpdateDeliveryDetails(1L, 123L);
+        verify(authorizationService).canUpdateDeliveryDetails(1, 123);
         verify(orderService).setOrderStatus(123, 1, "INVALID_STATUS");
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
     public void testDeliveryOrderOrderIdStatusGet_Success() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenReturn(true);
+        when(authorizationService.canViewDeliveryDetails(anyInt(), anyInt())).thenReturn(true);
         when(orderService.getOrderStatus(123)).thenReturn(Order.StatusEnum.DELIVERED);
 
         ResponseEntity<String> response = deliveryController.deliveryOrderOrderIdStatusGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         verify(orderService).getOrderStatus(123);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Delivered", response.getBody());
@@ -173,33 +171,33 @@ public class DeliveryControllerTest {
 
     @Test
     public void testDeliveryOrderOrderIdStatusGet_Forbidden() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenReturn(false);
+        when(authorizationService.canViewDeliveryDetails(anyInt(), anyInt())).thenReturn(false);
 
         ResponseEntity<String> response = deliveryController.deliveryOrderOrderIdStatusGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         verify(orderService, never()).getOrderStatus(anyInt());
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
     @Test
     public void testDeliveryOrderOrderIdStatusGet_InternalServerErrorOnMicroserviceCommunicationException() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canViewDeliveryDetails(anyInt(), anyInt())).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<String> response = deliveryController.deliveryOrderOrderIdStatusGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
     public void testDeliveryOrderOrderIdStatusGet_BadRequestOnOrderNotFoundException() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenReturn(true);
+        when(authorizationService.canViewDeliveryDetails(anyInt(), anyInt())).thenReturn(true);
         when(orderService.getOrderStatus(123)).thenThrow(OrderNotFoundException.class);
 
         ResponseEntity<String> response = deliveryController.deliveryOrderOrderIdStatusGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         verify(orderService).getOrderStatus(123);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
@@ -218,22 +216,22 @@ public class DeliveryControllerTest {
 
     @Test
     public void testDeliveryOrderOrderIdReadyTimeGet_Forbidden() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenReturn(false);
+        when(authorizationService.canViewDeliveryDetails(anyInt(), anyInt())).thenReturn(false);
 
         ResponseEntity<OffsetDateTime> response = deliveryController.deliveryOrderOrderIdReadyTimeGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         verify(deliveryService, never()).getReadyTime(anyLong());
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
     @Test
     public void testDeliveryOrderOrderIdReadyTimeGet_InternalServerErrorOnMicroserviceCommunicationException() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canViewDeliveryDetails(anyInt(), anyInt())).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<OffsetDateTime> response = deliveryController.deliveryOrderOrderIdReadyTimeGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
@@ -249,24 +247,24 @@ public class DeliveryControllerTest {
 
     @Test
     public void testDeliveryOrderOrderIdReadyTimeGet_NotFoundOnOrderNotFoundException() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenReturn(true);
+        when(authorizationService.canViewDeliveryDetails(anyInt(), anyInt())).thenReturn(true);
         when(deliveryService.getReadyTime(123L)).thenThrow(OrderNotFoundException.class);
 
         ResponseEntity<OffsetDateTime> response = deliveryController.deliveryOrderOrderIdReadyTimeGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         verify(deliveryService).getReadyTime(123L);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
     public void testDeliveryOrderOrderIdReadyTimeGet_BadRequestOnIllegalArgumentException() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenReturn(true);
+        when(authorizationService.canViewDeliveryDetails(anyInt(), anyInt())).thenReturn(true);
         when(deliveryService.getReadyTime(123L)).thenThrow(IllegalArgumentException.class);
 
         ResponseEntity<OffsetDateTime> response = deliveryController.deliveryOrderOrderIdReadyTimeGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         verify(deliveryService).getReadyTime(123L);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
@@ -283,32 +281,32 @@ public class DeliveryControllerTest {
 
     @Test
     public void testDeliveryOrderOrderIdReadyTimePut_Forbidden() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canUpdateDeliveryDetails(anyLong(), anyLong())).thenReturn(false);
+        when(authorizationService.canUpdateDeliveryDetails(anyInt(), anyInt())).thenReturn(false);
 
         ResponseEntity<Void> response = deliveryController.deliveryOrderOrderIdReadyTimePut(123, 1, OffsetDateTime.now());
 
-        verify(authorizationService).canUpdateDeliveryDetails(1L, 123L);
+        verify(authorizationService).canUpdateDeliveryDetails(1, 123);
         verify(deliveryService, never()).updateReadyTime(anyLong(), any(OffsetDateTime.class));
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
     @Test
     public void testDeliveryOrderOrderIdReadyTimePut_InternalServerErrorOnMicroserviceCommunicationException() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canUpdateDeliveryDetails(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canUpdateDeliveryDetails(anyInt(), anyInt())).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<Void> response = deliveryController.deliveryOrderOrderIdReadyTimePut(123, 1, OffsetDateTime.now());
 
-        verify(authorizationService).canUpdateDeliveryDetails(1L, 123L);
+        verify(authorizationService).canUpdateDeliveryDetails(1, 123);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
     public void testDeliveryOrderOrderIdReadyTimePut_BAD_REQUEST() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canUpdateDeliveryDetails(anyLong(), anyLong())).thenThrow(IllegalArgumentException.class);
+        when(authorizationService.canUpdateDeliveryDetails(anyInt(), anyInt())).thenThrow(IllegalArgumentException.class);
 
         ResponseEntity<Void> response = deliveryController.deliveryOrderOrderIdReadyTimePut(123, 1, OffsetDateTime.now());
 
-        verify(authorizationService).canUpdateDeliveryDetails(1L, 123L);
+        verify(authorizationService).canUpdateDeliveryDetails(1, 123);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
@@ -331,7 +329,7 @@ public class DeliveryControllerTest {
 
     @Test
     public void updateDefaultDeliveryZoneSuccessfulTest() throws MicroserviceCommunicationException {
-        when(authorizationService.getUserRole(2L)).thenReturn(authorizationService.ADMIN);
+        when(authorizationService.getUserRole(2)).thenReturn(AuthorizationService.ADMIN);
         ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(25, 2);
         verify(deliveryService).updateDefaultDeliveryZone(25);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -363,22 +361,22 @@ public class DeliveryControllerTest {
 
     @Test
     public void testDeliveryOrderOrderIdPickupTimeGet_Forbidden() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenReturn(false);
+        when(authorizationService.canViewDeliveryDetails(anyInt(), anyInt())).thenReturn(false);
 
         ResponseEntity<OffsetDateTime> response = deliveryController.deliveryOrderOrderIdPickupTimeGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         verify(deliveryService, never()).updateReadyTime(anyLong(), any(OffsetDateTime.class));
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
     @Test
     public void testDeliveryOrderOrderIdPickupTimeGett_InternalServerErrorOnMicroserviceCommunicationException() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canViewDeliveryDetails(anyInt(), anyInt())).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<OffsetDateTime> response = deliveryController.deliveryOrderOrderIdPickupTimeGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
@@ -406,22 +404,22 @@ public class DeliveryControllerTest {
 
     @Test
     public void testDeliveryOrderOrderIdPickupTimePut_Forbidden() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canUpdateDeliveryDetails(anyLong(), anyLong())).thenReturn(false);
+        when(authorizationService.canUpdateDeliveryDetails(anyInt(), anyInt())).thenReturn(false);
 
         ResponseEntity<Void> response = deliveryController.deliveryOrderOrderIdPickupTimePut(123, 1, OffsetDateTime.now());
 
-        verify(authorizationService).canUpdateDeliveryDetails(1L, 123L);
+        verify(authorizationService).canUpdateDeliveryDetails(1, 123);
         verify(deliveryService, never()).updateReadyTime(anyLong(), any(OffsetDateTime.class));
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
     @Test
     public void testDeliveryOrderOrderIdPickupTimePut_InternalServerErrorOnMicroserviceCommunicationException() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canUpdateDeliveryDetails(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canUpdateDeliveryDetails(anyInt(), anyInt())).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<Void> response = deliveryController.deliveryOrderOrderIdPickupTimePut(123, 1, OffsetDateTime.now());
 
-        verify(authorizationService).canUpdateDeliveryDetails(1L, 123L);
+        verify(authorizationService).canUpdateDeliveryDetails(1, 123);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
     @Test
@@ -480,22 +478,22 @@ public class DeliveryControllerTest {
 
     @Test
     public void testDeliveryOrderOrderIdTodGet_Forbidden() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenReturn(false);
+        when(authorizationService.canViewDeliveryDetails(anyInt(), anyInt())).thenReturn(false);
 
         ResponseEntity<OffsetDateTime> response = deliveryController.deliveryOrderOrderIdTodGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         verify(deliveryService, never()).updateReadyTime(anyLong(), any(OffsetDateTime.class));
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
     @Test
     public void testDeliveryOrderOrderIdTodGet_InternalServerErrorOnMicroserviceCommunicationException() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canViewDeliveryDetails(anyInt(), anyInt())).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<OffsetDateTime> response = deliveryController.deliveryOrderOrderIdTodGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
@@ -523,22 +521,22 @@ public class DeliveryControllerTest {
 
     @Test
     public void testDeliveryOrderOrderIdTodPut_Forbidden() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canUpdateDeliveryDetails(anyLong(), anyLong())).thenReturn(false);
+        when(authorizationService.canUpdateDeliveryDetails(anyInt(), anyInt())).thenReturn(false);
 
         ResponseEntity<Void> response = deliveryController.deliveryOrderOrderIdTodPut(123, 1, OffsetDateTime.now());
 
-        verify(authorizationService).canUpdateDeliveryDetails(1L, 123L);
+        verify(authorizationService).canUpdateDeliveryDetails(1, 123);
         verify(deliveryService, never()).updateReadyTime(anyLong(), any(OffsetDateTime.class));
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
     @Test
     public void testDeliveryOrderOrderIdTodPut_InternalServerErrorOnMicroserviceCommunicationException() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canUpdateDeliveryDetails(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canUpdateDeliveryDetails(anyInt(), anyInt())).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<Void> response = deliveryController.deliveryOrderOrderIdTodPut(123, 1, OffsetDateTime.now());
 
-        verify(authorizationService).canUpdateDeliveryDetails(1L, 123L);
+        verify(authorizationService).canUpdateDeliveryDetails(1, 123);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
     @Test
@@ -567,22 +565,22 @@ public class DeliveryControllerTest {
 
     @Test
     public void testDeliveryOrderOrderIdEtaGet_Forbidden() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenReturn(false);
+        when(authorizationService.canViewDeliveryDetails(anyInt(), anyInt())).thenReturn(false);
 
         ResponseEntity<OffsetDateTime> response = deliveryController.deliveryOrderOrderIdEtaGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         verify(deliveryService, never()).updateReadyTime(anyLong(), any(OffsetDateTime.class));
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
     @Test
     public void testDeliveryOrderOrderIdEtaGet_InternalServerErrorOnMicroserviceCommunicationException() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canViewDeliveryDetails(anyInt(), anyInt())).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<OffsetDateTime> response = deliveryController.deliveryOrderOrderIdEtaGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
@@ -640,8 +638,8 @@ public class DeliveryControllerTest {
 
     @Test
     public void getDefaultDeliveryZoneTest_Success() throws MicroserviceCommunicationException {
-        Integer defaulDeliveryZone = 5;
-        when(deliveryService.getDefaultDeliveryZone()).thenReturn(Long.valueOf(defaulDeliveryZone));
+        int defaultDeliveryZone = 5;
+        when(deliveryService.getDefaultDeliveryZone()).thenReturn(Long.valueOf(defaultDeliveryZone));
 
         ResponseEntity<Integer> response = deliveryController.deliveryDefaultDeliveryZoneGet(1);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -649,7 +647,7 @@ public class DeliveryControllerTest {
 
     @Test
     public void updateDefaultDeliveryZoneUnauthorizedTest() throws MicroserviceCommunicationException {
-        when(authorizationService.getUserRole(2L)).thenReturn(authorizationService.CUSTOMER);
+        when(authorizationService.getUserRole(2)).thenReturn(AuthorizationService.CUSTOMER);
 
         ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(25, 2);
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
@@ -657,7 +655,7 @@ public class DeliveryControllerTest {
 
     @Test
     public void updateDefaultDeliveryZoneMiscommunicationTest() throws MicroserviceCommunicationException {
-        when(authorizationService.getUserRole(5L)).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.getUserRole(5)).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(25, 5);
         
@@ -672,7 +670,7 @@ public class DeliveryControllerTest {
 
         ResponseEntity<Location> response = deliveryController.deliveryOrderOrderIdLocationGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         verify(deliveryService).getDeliveryIdByOrderId(123L);
         verify(deliveryService).calculateLiveLocation(456L);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -681,11 +679,11 @@ public class DeliveryControllerTest {
 
     @Test
     public void testDeliveryOrderOrderIdLocationGet_Unauthorized() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.canViewDeliveryDetails(1L, 123L)).thenReturn(false);
+        when(authorizationService.canViewDeliveryDetails(1, 123)).thenReturn(false);
 
         ResponseEntity<Location> response = deliveryController.deliveryOrderOrderIdLocationGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         verify(deliveryService, never()).getDeliveryIdByOrderId(anyLong());
         verify(deliveryService, never()).calculateLiveLocation(anyLong());
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
@@ -693,7 +691,7 @@ public class DeliveryControllerTest {
 
     @Test
     public void testDeliveryOrderOrderIdLocationGet_InternalServerErrorOnMicroserviceCommunicationException() throws MicroserviceCommunicationException, OrderNotFoundException {
-        when(authorizationService.getUserRole(anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.getUserRole(anyInt())).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<Location> response = deliveryController.deliveryOrderOrderIdLocationGet(123, 1);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
@@ -705,7 +703,7 @@ public class DeliveryControllerTest {
 
         ResponseEntity<Location> response = deliveryController.deliveryOrderOrderIdLocationGet(123, 1);
 
-        verify(authorizationService).canViewDeliveryDetails(1L, 123L);
+        verify(authorizationService).canViewDeliveryDetails(1, 123);
         verify(deliveryService).getDeliveryIdByOrderId(123L);
         verify(deliveryService, never()).calculateLiveLocation(anyLong());
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());

@@ -57,9 +57,9 @@ public class AuthorizationServiceTest {
 
     @Test
     void testIsInvolvedInOrderUserIsAdmin() {
-        Long authorizationId = 1L;
+        int authorizationId = 1;
         String role = "admin";
-        Long orderId = 1L;
+        int orderId = 1;
 
         boolean result = authorizationService.isInvolvedInOrder(authorizationId, role, orderId);
 
@@ -68,9 +68,9 @@ public class AuthorizationServiceTest {
 
     @Test
     void testIsInvolvedInOrderUserIsCustomerOfOrder() {
-        Long authorizationId = 7L;
+        int authorizationId = 7;
         String role = "customer";
-        Long orderId = 1L;
+        int orderId = 1;
 
         boolean result = authorizationService.isInvolvedInOrder(authorizationId, role, orderId);
 
@@ -79,9 +79,9 @@ public class AuthorizationServiceTest {
 
     @Test
     void testIsInvolvedInOrderUserIsCustomerButNotOfOrder() {
-        Long authorizationId = 10L;
+        int authorizationId = 10;
         String role = "customer";
-        Long orderId = 1L;
+        int orderId = 1;
 
         boolean result = authorizationService.isInvolvedInOrder(authorizationId, role, orderId);
 
@@ -90,9 +90,9 @@ public class AuthorizationServiceTest {
 
     @Test
     void testIsInvolvedInOrderUserIsVendorOfOrder() {
-        Long authorizationId = 4L;
+        int authorizationId = 4;
         String role = "vendor";
-        Long orderId = 1L;
+        int orderId = 1;
 
         boolean result = authorizationService.isInvolvedInOrder(authorizationId, role, orderId);
 
@@ -101,9 +101,9 @@ public class AuthorizationServiceTest {
 
     @Test
     void testIsInvolvedInOrderUserIsVendorButNotOfOrder() {
-        Long authorizationId = 9L;
+        int authorizationId = 9;
         String role = "vendor";
-        Long orderId = 1L;
+        int orderId = 1;
 
         boolean result = authorizationService.isInvolvedInOrder(authorizationId, role, orderId);
 
@@ -114,9 +114,9 @@ public class AuthorizationServiceTest {
 
     @Test
     void testIsInvolvedInOrderUserIsCourierButOrderHasNoCourier() {
-        Long authorizationId = 5L;
+        int authorizationId = 5;
         String role = "courier";
-        Long orderId = 1L;
+        int orderId = 1;
 
         boolean result = authorizationService.isInvolvedInOrder(authorizationId, role, orderId);
 
@@ -125,11 +125,11 @@ public class AuthorizationServiceTest {
 
     @Test
     void testIsInvolvedInOrderUserIsCourierButNotOfOrder() {
-        Long authorizationId = 5L;
+        int authorizationId = 5;
         String role = "courier";
-        Long orderId = 1L;
+        int orderId = 1;
 
-        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
+        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId((long) orderId);
         delivery.setCourierId(8L);
         deliveryRepository.save(delivery);
 
@@ -140,11 +140,11 @@ public class AuthorizationServiceTest {
 
     @Test
     void testIsInvolvedInOrderUserIsCourierOfOrder() {
-        Long authorizationId = 5L;
+        int authorizationId = 5;
         String role = "courier";
-        Long orderId = 1L;
+        int orderId = 1;
 
-        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
+        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId((long) orderId);
         delivery.setCourierId(5L);
         deliveryRepository.save(delivery);
 
@@ -157,7 +157,7 @@ public class AuthorizationServiceTest {
     void testGetUserRoleSuccessfulResponse() throws MicroserviceCommunicationException {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("customer"));
 
-        String userRole = authorizationService.getUserRole(123L);
+        String userRole = authorizationService.getUserRole(123);
 
         assertThat(userRole).isEqualTo("customer");
     }
@@ -165,131 +165,131 @@ public class AuthorizationServiceTest {
     @Test
     void testGetUserRoleEmptyResponse() {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.empty());
-        Assertions.assertThatThrownBy(() -> authorizationService.getUserRole(456L))
+        Assertions.assertThatThrownBy(() -> authorizationService.getUserRole(456))
                 .isInstanceOf(MicroserviceCommunicationException.class);
     }
 
     @Test
     void testCanViewDeliveryDetails() throws MicroserviceCommunicationException {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("vendor"));
-        boolean result = authorizationService.canViewDeliveryDetails(4L,1L);
+        boolean result = authorizationService.canViewDeliveryDetails(4,1);
         assertThat(result).isTrue();
     }
 
     @Test
     void testCanNotViewDeliveryDetails() throws MicroserviceCommunicationException {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("customer"));
-        boolean result = authorizationService.canViewDeliveryDetails(1000L,1L);
+        boolean result = authorizationService.canViewDeliveryDetails(1000,1);
         assertThat(result).isFalse();
     }
 
     @Test
     void testCanViewDeliveryDetailsFaultyMicroserviceCommunication()  {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.empty());
-        Assertions.assertThatThrownBy(() -> authorizationService.canViewDeliveryDetails(456L, 1L))
+        Assertions.assertThatThrownBy(() -> authorizationService.canViewDeliveryDetails(456, 1))
                 .isInstanceOf(MicroserviceCommunicationException.class);
     }
 
     @Test
     void testCanUpdateDeliveryDetails() throws MicroserviceCommunicationException {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("vendor"));
-        boolean result = authorizationService.canUpdateDeliveryDetails(4L,1L);
+        boolean result = authorizationService.canUpdateDeliveryDetails(4,1);
         assertThat(result).isTrue();
     }
 
     @Test
     void testCanNotUpdateDeliveryDetails() throws MicroserviceCommunicationException {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("customer"));
-        boolean result = authorizationService.canUpdateDeliveryDetails(7L,1L);
+        boolean result = authorizationService.canUpdateDeliveryDetails(7,1);
         assertThat(result).isFalse();
     }
 
     @Test
     void testCanUpdateDeliveryDetailsFaultyMicroserviceCommunication()  {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.empty());
-        Assertions.assertThatThrownBy(() -> authorizationService.canUpdateDeliveryDetails(1000L, 1L))
+        Assertions.assertThatThrownBy(() -> authorizationService.canUpdateDeliveryDetails(1000, 1))
                 .isInstanceOf(MicroserviceCommunicationException.class);
     }
 
     @Test
     void testCanViewCourierAnalyticsAsAdmin() throws MicroserviceCommunicationException {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("admin"));
-        boolean result = authorizationService.canViewCourierAnalytics(4L,1L);
+        boolean result = authorizationService.canViewCourierAnalytics(4,1);
         assertThat(result).isTrue();
     }
 
     @Test
     void testCanViewCourierAnalyticsAsACourier() throws MicroserviceCommunicationException {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("courier"));
-        boolean result = authorizationService.canViewCourierAnalytics(55L,55L);
+        boolean result = authorizationService.canViewCourierAnalytics(55,55);
         assertThat(result).isTrue();
     }
 
     @Test
     void testCanViewCourierAnalyticsAsADifferentCourier() throws MicroserviceCommunicationException {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("courier"));
-        boolean result = authorizationService.canViewCourierAnalytics(55L,77L);
+        boolean result = authorizationService.canViewCourierAnalytics(55,77);
         assertThat(result).isFalse();
     }
 
     @Test
     void testCanViewCourierAnalyticsAsOtherUser() throws MicroserviceCommunicationException {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("customer"));
-        boolean result = authorizationService.canViewCourierAnalytics(1L,77L);
+        boolean result = authorizationService.canViewCourierAnalytics(1,77);
         assertThat(result).isFalse();
     }
 
     @Test
     void testCanViewCourierAnalyticsFaultyMicroserviceCommunication()  {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.empty());
-        Assertions.assertThatThrownBy(() -> authorizationService.canViewCourierAnalytics(1000L, 1L))
+        Assertions.assertThatThrownBy(() -> authorizationService.canViewCourierAnalytics(1000, 1))
                 .isInstanceOf(MicroserviceCommunicationException.class);
     }
 
     @Test
     void testCanChangeOrderRating() throws MicroserviceCommunicationException {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("customer"));
-        boolean result = authorizationService.canChangeOrderRating(7L,1L);
+        boolean result = authorizationService.canChangeOrderRating(7,1);
         assertThat(result).isTrue();
     }
 
     @Test
     void testCanChangeOrderRatingNotCustomerOfOrder() throws MicroserviceCommunicationException {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("customer"));
-        boolean result = authorizationService.canChangeOrderRating(9L,1L);
+        boolean result = authorizationService.canChangeOrderRating(9,1);
         assertThat(result).isFalse();
     }
 
     @Test
     void testCanChangeOrderRatingFaultyMicroserviceCommunication()  {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.empty());
-        Assertions.assertThatThrownBy(() -> authorizationService.canChangeOrderRating(1000L, 1L))
+        Assertions.assertThatThrownBy(() -> authorizationService.canChangeOrderRating(1000, 1))
                 .isInstanceOf(MicroserviceCommunicationException.class);
     }
 
     @Test
     void testCanChangeVendorDeliveryZoneTrue() throws MicroserviceCommunicationException {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("vendor"));
-        boolean result = authorizationService.cannotUpdateVendorDeliveryZone(1L);
+        boolean result = authorizationService.cannotUpdateVendorDeliveryZone(1);
         assertThat(result).isFalse();
 
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("admin"));
-        boolean result2 = authorizationService.cannotUpdateVendorDeliveryZone(1L);
+        boolean result2 = authorizationService.cannotUpdateVendorDeliveryZone(1);
         assertThat(result).isFalse();
     }
 
     @Test
     void testCanChangeVendorDeliveryZoneFalse() throws MicroserviceCommunicationException {
         when(usersMicroservice.getUserType(anyLong())).thenReturn(Optional.of("customer"));
-        boolean result = authorizationService.cannotUpdateVendorDeliveryZone(1L);
+        boolean result = authorizationService.cannotUpdateVendorDeliveryZone(1);
         assertThat(result).isTrue();
     }
 
     @Test
     void testIsInvolvedInOrderFalse() {
-        Long authorizationId = 7L;
+        Integer authorizationId = 7;
         String role = "random";
-        Long orderId = 1L;
+        Integer orderId = 1;
 
         boolean result = authorizationService.isInvolvedInOrder(authorizationId, role, orderId);
 

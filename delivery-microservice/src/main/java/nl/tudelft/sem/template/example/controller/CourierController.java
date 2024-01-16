@@ -42,13 +42,13 @@ public class CourierController implements CourierApi {
     @Override
     public ResponseEntity<List<Long>> courierDeliveryCourierIdAvailableOrdersGet(Long courierId, Integer authorizationId) {
         try {
-            if (!authorizationService.canViewCourierAnalytics((long) authorizationId, courierId)) {
-                return new ResponseEntity<List<Long>>(HttpStatus.UNAUTHORIZED);
+            if (!authorizationService.canViewCourierAnalytics(authorizationId, Math.toIntExact(courierId))) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
             List<Long> availableOrderIds = courierService.getAvailableOrderIds(courierId);
             return ResponseEntity.ok(availableOrderIds);
         } catch (MicroserviceCommunicationException e) {
-            return new ResponseEntity<List<Long>>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
     }

@@ -43,21 +43,22 @@ public class AuthorizationService {
      * @param orderId The id of the order for which the request is made.
      * @return {@code true} if the user is involved in the order; otherwise, {@code false}.
      */
-    public Boolean isInvolvedInOrder(Long authorizationId, String role, Long orderId) {
-        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
+    public Boolean isInvolvedInOrder(Integer authorizationId, String role, Integer orderId) {
+        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(Long.valueOf(orderId));
         if (role.equals(ADMIN)) {
             return true;
         }
         switch (role) {
             case CUSTOMER -> {
-                return delivery.getOrder().getCustomerId().equals(authorizationId);
+                return delivery.getOrder().getCustomerId().equals(Long.valueOf(authorizationId));
             }
             case VENDOR -> {
-                return delivery.getOrder().getVendor().getId().equals(authorizationId);
+                return delivery.getOrder().getVendor().getId().equals(Long.valueOf(authorizationId));
             }
             case COURIER -> {
                 Long deliveryCourierId = delivery.getCourierId();
-                return deliveryCourierId != null && deliveryCourierId.equals(authorizationId);
+                return deliveryCourierId != null &&
+                        deliveryCourierId.equals(Long.valueOf(authorizationId));
             }
             default -> {
                 return false;
@@ -73,8 +74,8 @@ public class AuthorizationService {
      * @throws MicroserviceCommunicationException If communication with the user microservice fails
      *         or if the user type could not be found.
      */
-    public String getUserRole(Long authorizationId) throws MicroserviceCommunicationException {
-        Optional<String> userType = usersMicroservice.getUserType(authorizationId);
+    public String getUserRole(Integer authorizationId) throws MicroserviceCommunicationException {
+        Optional<String> userType = usersMicroservice.getUserType(Long.valueOf(authorizationId));
         if (userType.isEmpty()) {
             throw new MicroserviceCommunicationException("User type could not be found");
         }
@@ -90,7 +91,7 @@ public class AuthorizationService {
      * @throws MicroserviceCommunicationException If communication with the user microservice fails
      *         or if the user type could not be found.
      */
-    public Boolean canViewDeliveryDetails(Long authorizationId, Long orderId) throws MicroserviceCommunicationException {
+    public Boolean canViewDeliveryDetails(Integer authorizationId, Integer orderId) throws MicroserviceCommunicationException {
         String role = getUserRole(authorizationId);
         return isInvolvedInOrder(authorizationId, role, orderId);
     }
@@ -105,9 +106,10 @@ public class AuthorizationService {
      * @throws MicroserviceCommunicationException If communication with the user microservice fails
      *         or if the user type could not be found.
      */
-    public Boolean canUpdateDeliveryDetails(Long authorizationId, Long orderId) throws MicroserviceCommunicationException {
+    public Boolean canUpdateDeliveryDetails(Integer authorizationId, Integer orderId) throws MicroserviceCommunicationException {
         String role = getUserRole(authorizationId);
-        return !role.equals(CUSTOMER) && isInvolvedInOrder(authorizationId, role, orderId);
+        return !role.equals(CUSTOMER) &&
+                isInvolvedInOrder(authorizationId, role, orderId);
     }
 
     /**
@@ -119,7 +121,7 @@ public class AuthorizationService {
      * @throws MicroserviceCommunicationException If communication with the user microservice fails
      *         or if the user type could not be found.
      */
-    public Boolean canViewCourierAnalytics(Long authorizationId, Long courierId) throws MicroserviceCommunicationException {
+    public Boolean canViewCourierAnalytics(Integer authorizationId, Integer courierId) throws MicroserviceCommunicationException {
         String role = getUserRole(authorizationId);
         if (role.equals(ADMIN)) {
             return true;
@@ -136,7 +138,7 @@ public class AuthorizationService {
      * @throws MicroserviceCommunicationException If communication with the user microservice fails
      *         or if the user type could not be found.
      */
-    public Boolean canChangeOrderRating(Long authorizationId, Long orderId) throws MicroserviceCommunicationException {
+    public Boolean canChangeOrderRating(Integer authorizationId, Integer orderId) throws MicroserviceCommunicationException {
         String role = getUserRole(authorizationId);
         return role.equals(CUSTOMER) && isInvolvedInOrder(authorizationId, role, orderId);
     }
@@ -145,13 +147,12 @@ public class AuthorizationService {
      * Checks whether the user can update the default delivery zone.
      *
      * @param authorizationId The id of the user for whom the permission is checked.
-     * @return {@code true} if the user is allowed to change the delviery zone; otherwise, {@code false}.
+     * @return {@code true} if the user is allowed to change the delivery zone; otherwise, {@code false}.
      * @throws MicroserviceCommunicationException If communication with the user microservice fails
      *            or if the user type could not be found.
      */
-    public Boolean cannotUpdateVendorDeliveryZone(Long authorizationId) throws MicroserviceCommunicationException {
+    public Boolean cannotUpdateVendorDeliveryZone(Integer authorizationId) throws MicroserviceCommunicationException {
         String role = getUserRole(authorizationId);
         return !role.equals(ADMIN) && !role.equals(VENDOR);
     }
-
 }

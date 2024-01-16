@@ -1,8 +1,7 @@
 package nl.tudelft.sem.template.example.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -76,9 +75,9 @@ public class OrderControllerTest {
         order = new Order(7L, 4L, vendor, Order.StatusEnum.DELIVERED,  location);
         Mockito.when(orderRepository.findById(7L)).thenReturn(Optional.of(order));
 
-        when(authorizationService.getUserRole(anyLong())).thenReturn("customer");
-        when(authorizationService.canViewDeliveryDetails(anyLong(), anyLong())).thenReturn(true);
-        when(authorizationService.canUpdateDeliveryDetails(anyLong(), anyLong())).thenReturn(true);
+        when(authorizationService.getUserRole(anyInt())).thenReturn("customer");
+        when(authorizationService.canViewDeliveryDetails(anyInt(), anyInt())).thenReturn(true);
+        when(authorizationService.canUpdateDeliveryDetails(anyInt(), anyInt())).thenReturn(true);
     }
 
     @Test

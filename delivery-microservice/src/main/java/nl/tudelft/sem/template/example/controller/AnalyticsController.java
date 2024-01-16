@@ -17,6 +17,11 @@ public class AnalyticsController implements AnalyticsApi {
     AnalyticsService analyticsService;
     AuthorizationService authorizationService;
 
+    /** Simple constructor that handles dependency injection of the service and authorization
+     *
+     * @param analyticsService Instance of AnalyticsService to handle the logic
+     * @param authorizationService Instance of AuthorizationService to handle security
+     */
     @Autowired
     public AnalyticsController(AnalyticsService analyticsService, AuthorizationService authorizationService) {
         this.analyticsService = analyticsService;
@@ -24,7 +29,7 @@ public class AnalyticsController implements AnalyticsApi {
     }
 
     /**
-     * Creates a rating for an order
+     * Creates a rating for an order.
      *
      * @path PUT: PUT /analytics/order/{order_id}/rating
      * @param orderId Unique identifier of the order (required)
@@ -33,7 +38,7 @@ public class AnalyticsController implements AnalyticsApi {
     @Override
     public ResponseEntity<Void> analyticsOrderOrderIdRatingPut(Integer orderId, Integer authorizationId, Rating rating) {
         try {
-            if (!authorizationService.canChangeOrderRating((long) authorizationId, (long) orderId)) {
+            if (!authorizationService.canChangeOrderRating(authorizationId, orderId)) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
             analyticsService.saveRating(rating, (long) orderId);
@@ -43,12 +48,12 @@ public class AnalyticsController implements AnalyticsApi {
         } catch (IllegalOrderStatusException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } catch (MicroserviceCommunicationException e) {
-            return new ResponseEntity<Void>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     /**
-     * Returns a rating for a specific order
+     * Returns a rating for a specific order.
      *
      * @path GET: GET /analytics/order/{order_id}/rating
      * @param orderId Unique identifier of the order (required)
@@ -69,7 +74,7 @@ public class AnalyticsController implements AnalyticsApi {
     }
 
     /**
-     * Retrieve the average number of deliveries a courier has made/day
+     * Retrieve the average number of deliveries a courier has made/day.
      *
      * @path GET: GET /analytics/courier/{courier_id}/deliveries-per-day : Deliveries/day of a courier
      * @param courierId The id of the courier (required)
@@ -83,7 +88,7 @@ public class AnalyticsController implements AnalyticsApi {
     @Override
     public  ResponseEntity<Integer> analyticsCourierCourierIdDeliveriesPerDayGet(Integer courierId, Integer authorizationId) {
         try {
-            if (!authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)) {
+            if (!authorizationService.canViewCourierAnalytics(authorizationId, courierId)) {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
             int deliveriesPerDay = analyticsService.getDeliveriesPerDay((long) courierId);
@@ -97,7 +102,7 @@ public class AnalyticsController implements AnalyticsApi {
 
 
     /**
-     * Retrieve the number of successful deliveries a courier has made
+     * Retrieve the number of successful deliveries a courier has made.
      *
      * @path GET: GET /analytics/courier/{courier_id}/successful-deliveries : Number of successful deliveries of a courier
      * @param courierId The id of the courier (required)
@@ -111,7 +116,7 @@ public class AnalyticsController implements AnalyticsApi {
     @Override
     public ResponseEntity<Integer> analyticsCourierCourierIdSuccessfulDeliveriesGet(Integer courierId, Integer authorizationId) {
         try {
-            if (!authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)) {
+            if (!authorizationService.canViewCourierAnalytics(authorizationId, courierId)) {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
             int successfulDeliveries = analyticsService.getSuccessfulDeliveries((long) courierId);
@@ -138,7 +143,7 @@ public class AnalyticsController implements AnalyticsApi {
     @Override
     public ResponseEntity<List<String>> analyticsCourierCourierIdCourierIssuesGet(Integer courierId, Integer authorizationId) {
         try {
-            if (!authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)) {
+            if (!authorizationService.canViewCourierAnalytics(authorizationId, courierId)) {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
             List<String> courierIssues = analyticsService.getCourierIssues((long) courierId);
@@ -160,7 +165,7 @@ public class AnalyticsController implements AnalyticsApi {
     @Override
     public ResponseEntity<Integer> analyticsCourierCourierIdEfficiencyGet(Integer courierId, Integer authorizationId) {
         try {
-            if (!authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)) {
+            if (!authorizationService.canViewCourierAnalytics(authorizationId, courierId)) {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
             int successfulDeliveries = analyticsService.getCourierEfficiency((long) courierId);
@@ -182,7 +187,7 @@ public class AnalyticsController implements AnalyticsApi {
     @Override
     public ResponseEntity<Integer> analyticsVendorVendorIdVendorAverageGet(Integer vendorId, Integer authorizationId) {
         try {
-            if (!authorizationService.canViewCourierAnalytics((long) authorizationId, (long) vendorId)) {
+            if (!authorizationService.canViewCourierAnalytics(authorizationId, vendorId)) {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
             int successfulDeliveries = analyticsService.getVendorAverage((long) vendorId);

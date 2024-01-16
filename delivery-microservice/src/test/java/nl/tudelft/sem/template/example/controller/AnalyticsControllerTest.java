@@ -44,12 +44,12 @@ public class AnalyticsControllerTest {
         rating.setGrade(5);
         rating.setComment("Excellent");
 
-        when(authorizationService.canChangeOrderRating(1L, (long) 10)).thenReturn(true);
+        when(authorizationService.canChangeOrderRating(1, 10)).thenReturn(true);
         when(analyticsService.saveRating(rating, (long) 10)).thenReturn(rating);
 
         ResponseEntity<Void> response = analyticsController.analyticsOrderOrderIdRatingPut(10, 1, rating);
 
-        verify(authorizationService).canChangeOrderRating(1L, (long) 10);
+        verify(authorizationService).canChangeOrderRating(1, 10);
         verify(analyticsService).saveRating(rating, (long) 10);
         assertEquals(200, response.getStatusCodeValue());
     }
@@ -57,19 +57,19 @@ public class AnalyticsControllerTest {
 
     @Test
     void testSetRatingOrderNotFound() throws Exception {
-        when(authorizationService.canChangeOrderRating(1L, (long) 10)).thenReturn(true);
+        when(authorizationService.canChangeOrderRating(1, 10)).thenReturn(true);
         doThrow(new OrderNotFoundException("Order not found")).when(analyticsService).saveRating(rating, (long) 10);
 
         ResponseEntity<Void> response = analyticsController.analyticsOrderOrderIdRatingPut(10, 1, rating);
 
-        verify(authorizationService).canChangeOrderRating(1L, (long) 10);
+        verify(authorizationService).canChangeOrderRating(1, 10);
         verify(analyticsService).saveRating(rating, (long) 10);
         assertEquals(404, response.getStatusCodeValue());
     }
 
     @Test
     public void testRatingPutIllegalOrderStatusException() throws MicroserviceCommunicationException, OrderNotFoundException, IllegalOrderStatusException {
-        when(authorizationService.canChangeOrderRating((long) authorizationId, (long) orderId)).thenReturn(true);
+        when(authorizationService.canChangeOrderRating(authorizationId, orderId)).thenReturn(true);
         doThrow(new IllegalOrderStatusException("Illegal order status")).when(analyticsService).saveRating(rating, (long) orderId);
 
         ResponseEntity<Void> response = analyticsController.analyticsOrderOrderIdRatingPut(orderId, authorizationId, rating);
@@ -78,10 +78,10 @@ public class AnalyticsControllerTest {
 
     @Test
     void testSetRatingUnauthorized() throws Exception {
-        when(authorizationService.canChangeOrderRating((long) 1, (long) 10)).thenReturn(false);
+        when(authorizationService.canChangeOrderRating(1, 10)).thenReturn(false);
         ResponseEntity<Void> response = analyticsController.analyticsOrderOrderIdRatingPut(10, 1, rating);
 
-        verify(authorizationService).canChangeOrderRating((long) 1, (long) 10);
+        verify(authorizationService).canChangeOrderRating(1, 10);
         verifyNoInteractions(analyticsService);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
@@ -89,7 +89,7 @@ public class AnalyticsControllerTest {
 
     @Test
     void testSetRatingInternalServerError() throws Exception {
-        when(authorizationService.canChangeOrderRating((long) 10, (long) 1)).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canChangeOrderRating(10, 1)).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<Void> response = analyticsController.analyticsOrderOrderIdRatingPut(1, 10, rating);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
@@ -126,7 +126,7 @@ public class AnalyticsControllerTest {
 
     @Test
     void testGetDeliveriesPerDaySuccess() throws Exception {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(true);
+        when(authorizationService.canViewCourierAnalytics(authorizationId, courierId)).thenReturn(true);
         when(analyticsService.getDeliveriesPerDay((long) courierId)).thenReturn(5);
 
         ResponseEntity<Integer> response = analyticsController.analyticsCourierCourierIdDeliveriesPerDayGet(courierId, authorizationId);
@@ -136,7 +136,7 @@ public class AnalyticsControllerTest {
 
     @Test
     void testGetDeliveriesPerDayUnauthorized() throws Exception {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(false);
+        when(authorizationService.canViewCourierAnalytics(authorizationId, courierId)).thenReturn(false);
 
         ResponseEntity<Integer> response = analyticsController.analyticsCourierCourierIdDeliveriesPerDayGet(courierId, authorizationId);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
@@ -144,7 +144,7 @@ public class AnalyticsControllerTest {
 
     @Test
     void testGetDeliveriesPerDayCourierNotFound() throws Exception {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(true);
+        when(authorizationService.canViewCourierAnalytics(authorizationId, courierId)).thenReturn(true);
         when(analyticsService.getDeliveriesPerDay((long) courierId)).thenThrow(new CourierNotFoundException("Courier not found"));
 
         ResponseEntity<Integer> response = analyticsController.analyticsCourierCourierIdDeliveriesPerDayGet(courierId, authorizationId);
@@ -153,14 +153,14 @@ public class AnalyticsControllerTest {
 
     @Test
     public void testDeliveriesPerDayMiscommunication() throws MicroserviceCommunicationException {
-        when(authorizationService.canViewCourierAnalytics(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canViewCourierAnalytics(anyInt(), anyInt())).thenThrow(MicroserviceCommunicationException.class);
         ResponseEntity<Integer> response = analyticsController.analyticsCourierCourierIdDeliveriesPerDayGet(anyInt(), anyInt());
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
     void testGetSuccessfulDeliveriesSuccess() throws Exception {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(true);
+        when(authorizationService.canViewCourierAnalytics(authorizationId, courierId)).thenReturn(true);
         when(analyticsService.getSuccessfulDeliveries((long) courierId)).thenReturn(10);
 
         ResponseEntity<Integer> response = analyticsController.analyticsCourierCourierIdSuccessfulDeliveriesGet(courierId, authorizationId);
@@ -170,14 +170,14 @@ public class AnalyticsControllerTest {
 
     @Test
     public void testSuccessfulDeliveriesCourierNotFoundException() throws MicroserviceCommunicationException {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(false);
+        when(authorizationService.canViewCourierAnalytics(authorizationId, courierId)).thenReturn(false);
         ResponseEntity<Integer> response = analyticsController.analyticsCourierCourierIdSuccessfulDeliveriesGet(courierId, authorizationId);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
     @Test
     public void testAnalyticsCourierCourierIdSuccessfulDeliveriesGetCourierNotFound() throws MicroserviceCommunicationException, CourierNotFoundException {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(true);
+        when(authorizationService.canViewCourierAnalytics(authorizationId, courierId)).thenReturn(true);
         when(analyticsService.getSuccessfulDeliveries((long) courierId)).thenThrow(new CourierNotFoundException("Courier not found"));
 
         ResponseEntity<Integer> response = analyticsController.analyticsCourierCourierIdSuccessfulDeliveriesGet(courierId, authorizationId);
@@ -186,7 +186,7 @@ public class AnalyticsControllerTest {
 
     @Test
     public void testSuccessfulDeliveriesMiscommunication() throws MicroserviceCommunicationException {
-        when(authorizationService.canViewCourierAnalytics(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canViewCourierAnalytics(anyInt(), anyInt())).thenThrow(MicroserviceCommunicationException.class);
         ResponseEntity<Integer> response = analyticsController.analyticsCourierCourierIdSuccessfulDeliveriesGet(anyInt(), anyInt());
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
@@ -194,7 +194,7 @@ public class AnalyticsControllerTest {
     @Test
     void testGetCourierIssuesSuccess() throws Exception {
         List<String> mockIssues = Arrays.asList("Issue 1", "Issue 2");
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(true);
+        when(authorizationService.canViewCourierAnalytics(authorizationId, courierId)).thenReturn(true);
         when(analyticsService.getCourierIssues((long) courierId)).thenReturn(mockIssues);
 
         ResponseEntity<List<String>> response = analyticsController.analyticsCourierCourierIdCourierIssuesGet(courierId, authorizationId);
@@ -204,7 +204,7 @@ public class AnalyticsControllerTest {
 
     @Test
     public void testAnalyticsCourierCourierIdCourierIssuesGetCourierNotFound() throws MicroserviceCommunicationException, CourierNotFoundException {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(true);
+        when(authorizationService.canViewCourierAnalytics(authorizationId, courierId)).thenReturn(true);
         when(analyticsService.getCourierIssues((long) courierId)).thenThrow(new CourierNotFoundException("Courier not found"));
 
         ResponseEntity<List<String>> response = analyticsController.analyticsCourierCourierIdCourierIssuesGet(courierId, authorizationId);
@@ -213,7 +213,7 @@ public class AnalyticsControllerTest {
 
     @Test
     public void testAnalyticsCourierCourierIdCourierIssuesGetForbidden() throws MicroserviceCommunicationException {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(false);
+        when(authorizationService.canViewCourierAnalytics(authorizationId, courierId)).thenReturn(false);
 
         ResponseEntity<List<String>> response = analyticsController.analyticsCourierCourierIdCourierIssuesGet(courierId, authorizationId);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
@@ -221,14 +221,14 @@ public class AnalyticsControllerTest {
 
     @Test
     public void testCourierIssuesMiscommunication() throws MicroserviceCommunicationException {
-        when(authorizationService.canViewCourierAnalytics(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canViewCourierAnalytics(anyInt(), anyInt())).thenThrow(MicroserviceCommunicationException.class);
         ResponseEntity<List<String>> response = analyticsController.analyticsCourierCourierIdCourierIssuesGet(anyInt(), anyInt());
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
     void testGetCourierEfficiencySuccess() throws Exception {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(true);
+        when(authorizationService.canViewCourierAnalytics(authorizationId, courierId)).thenReturn(true);
         when(analyticsService.getCourierEfficiency((long) courierId)).thenReturn(80);
 
         ResponseEntity<Integer> response = analyticsController.analyticsCourierCourierIdEfficiencyGet(courierId, authorizationId);
@@ -238,7 +238,7 @@ public class AnalyticsControllerTest {
 
     @Test
     void testGetCourierEfficiencyUnauthorized() throws Exception {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(false);
+        when(authorizationService.canViewCourierAnalytics(authorizationId, courierId)).thenReturn(false);
 
         ResponseEntity<Integer> response = analyticsController.analyticsCourierCourierIdEfficiencyGet(courierId, authorizationId);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
@@ -246,7 +246,7 @@ public class AnalyticsControllerTest {
 
     @Test
     void testGetCourierEfficiencyCourierNotFound() throws Exception {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) courierId)).thenReturn(true);
+        when(authorizationService.canViewCourierAnalytics(authorizationId, courierId)).thenReturn(true);
         when(analyticsService.getCourierEfficiency((long) courierId)).thenThrow(new CourierNotFoundException("Courier not found"));
 
         ResponseEntity<Integer> response = analyticsController.analyticsCourierCourierIdEfficiencyGet(courierId, authorizationId);
@@ -255,14 +255,14 @@ public class AnalyticsControllerTest {
 
     @Test
     void testGetCourierEfficiencyMiscommunication() throws MicroserviceCommunicationException {
-        when(authorizationService.canViewCourierAnalytics(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canViewCourierAnalytics(anyInt(), anyInt())).thenThrow(MicroserviceCommunicationException.class);
         ResponseEntity<Integer> response = analyticsController.analyticsCourierCourierIdEfficiencyGet(anyInt(), anyInt());
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
     void testGetVendorAverageSuccess() throws Exception {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) vendorId)).thenReturn(true);
+        when(authorizationService.canViewCourierAnalytics(authorizationId, vendorId)).thenReturn(true);
         when(analyticsService.getVendorAverage((long) vendorId)).thenReturn(45);
 
         ResponseEntity<Integer> response = analyticsController.analyticsVendorVendorIdVendorAverageGet(vendorId, authorizationId);
@@ -272,7 +272,7 @@ public class AnalyticsControllerTest {
 
     @Test
     void testGetVendorAverageUnauthorized() throws Exception {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) vendorId)).thenReturn(false);
+        when(authorizationService.canViewCourierAnalytics(authorizationId, vendorId)).thenReturn(false);
 
         ResponseEntity<Integer> response = analyticsController.analyticsVendorVendorIdVendorAverageGet(vendorId, authorizationId);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
@@ -280,7 +280,7 @@ public class AnalyticsControllerTest {
 
     @Test
     void testGetVendorAverageCourierNotFound() throws Exception {
-        when(authorizationService.canViewCourierAnalytics((long) authorizationId, (long) vendorId)).thenReturn(true);
+        when(authorizationService.canViewCourierAnalytics(authorizationId, vendorId)).thenReturn(true);
         when(analyticsService.getVendorAverage((long) vendorId)).thenThrow(new VendorNotFoundException("Vendor not found"));
 
         ResponseEntity<Integer> response = analyticsController.analyticsVendorVendorIdVendorAverageGet(vendorId, authorizationId);
@@ -289,7 +289,7 @@ public class AnalyticsControllerTest {
 
     @Test
     void testGetVendorAverageMiscommunication() throws MicroserviceCommunicationException {
-        when(authorizationService.canViewCourierAnalytics(anyLong(), anyLong())).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canViewCourierAnalytics(anyInt(), anyInt())).thenThrow(MicroserviceCommunicationException.class);
         ResponseEntity<Integer> response = analyticsController.analyticsVendorVendorIdVendorAverageGet(anyInt(), anyInt());
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }

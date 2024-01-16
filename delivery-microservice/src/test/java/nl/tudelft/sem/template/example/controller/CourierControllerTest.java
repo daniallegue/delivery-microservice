@@ -84,8 +84,8 @@ public class CourierControllerTest {
     void getAvailableOrdersTest() throws MicroserviceCommunicationException {
         Mockito.when(courierService.getAvailableOrderIds(1L)).thenReturn(List.of(5L));
         Mockito.when(courierService.getAvailableOrderIds(18L)).thenReturn(List.of(9L));
-        when(authorizationService.canViewCourierAnalytics(1L, 1L)).thenReturn(true);
-        when(authorizationService.canViewCourierAnalytics(1L, 18L)).thenReturn(true);
+        when(authorizationService.canViewCourierAnalytics(1, 1)).thenReturn(true);
+        when(authorizationService.canViewCourierAnalytics(1, 18)).thenReturn(true);
 
 
         List<Long> orderIds = courierController.courierDeliveryCourierIdAvailableOrdersGet(1L, 1).getBody();
@@ -171,7 +171,7 @@ public class CourierControllerTest {
 
     @Test
     void getAvailableOrdersMiscommunicationTest() throws MicroserviceCommunicationException {
-        when(authorizationService.canViewCourierAnalytics(10L, 2L)).thenThrow(MicroserviceCommunicationException.class);
+        when(authorizationService.canViewCourierAnalytics(10, 2)).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<List<Long>> response = courierController.courierDeliveryCourierIdAvailableOrdersGet(2L, 10);
         Assertions.assertEquals(response.getStatusCode(), HttpStatus.BAD_REQUEST);
@@ -179,7 +179,7 @@ public class CourierControllerTest {
 
     @Test
     void getAvailableOrdersUnauthorizedTest() throws MicroserviceCommunicationException {
-        when(authorizationService.getUserRole(1L)).thenReturn("customer");
+        when(authorizationService.getUserRole(1)).thenReturn("customer");
 
         ResponseEntity<List<Long>> response = courierController.courierDeliveryCourierIdAvailableOrdersGet(2L, 1);
         Assertions.assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());

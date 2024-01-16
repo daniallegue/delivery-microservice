@@ -15,8 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-
-
 @RestController
 public class VendorController implements VendorApi {
     VendorService vendorService;
@@ -48,7 +46,7 @@ public class VendorController implements VendorApi {
             Integer deliveryZone = (int) vendorService.getDeliveryZone((long) vendorId);
             return ResponseEntity.ok(deliveryZone);
         } catch (VendorNotFoundException e) {
-            return new ResponseEntity<Integer>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -65,16 +63,16 @@ public class VendorController implements VendorApi {
     public ResponseEntity<Vendor> vendorDeliveryVendorIdDeliveryZonePut(Integer vendorId,
                                                                         Integer deliveryZone, Integer authorizationId) {
         try {
-            if (authorizationService.cannotUpdateVendorDeliveryZone((long) authorizationId)) {
-                return new ResponseEntity<Vendor>(HttpStatus.UNAUTHORIZED);
+            if (authorizationService.cannotUpdateVendorDeliveryZone(authorizationId)) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
             Vendor vendor = vendorService.updateDeliveryZone((long) vendorId, (long) deliveryZone);
             return ResponseEntity.ok(vendor);
         } catch (VendorNotFoundException | VendorHasNoCouriersException | MicroserviceCommunicationException e) {
             if (e instanceof VendorNotFoundException) {
-                return new ResponseEntity<Vendor>(HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             } else {
-                return new ResponseEntity<Vendor>(HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
         }
     }
@@ -92,16 +90,16 @@ public class VendorController implements VendorApi {
     public ResponseEntity<Vendor> vendorDeliveryVendorIdAssignCourierIdPut(Integer vendorId,
                                                                            Integer courierId, Integer authorizationId) {
         try {
-            if (!authorizationService.getUserRole((long) authorizationId).equals(authorizationService.ADMIN)) {
-                return new ResponseEntity<Vendor>(HttpStatus.UNAUTHORIZED);
+            if (!authorizationService.getUserRole(authorizationId).equals(AuthorizationService.ADMIN)) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
             Vendor vendor = vendorService.assignCourierToVendor((long) vendorId, (long) courierId);
             return ResponseEntity.ok(vendor);
         } catch (VendorNotFoundException | MicroserviceCommunicationException | CourierNotFoundException e) {
             if (e instanceof VendorNotFoundException) {
-                return new ResponseEntity<Vendor>(HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             } else {
-                return new ResponseEntity<Vendor>(HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
         }
     }
@@ -117,17 +115,17 @@ public class VendorController implements VendorApi {
     @Override
     public ResponseEntity<List<Long>> vendorDeliveryVendorIdCouriersGet(Integer vendorId, Integer authorizationId) {
         try {
-            if (!authorizationService.getUserRole((long) authorizationId).equals(authorizationService.VENDOR)
-                    && !authorizationService.getUserRole((long) authorizationId).equals(authorizationService.ADMIN)) {
-                return new ResponseEntity<List<Long>>(HttpStatus.UNAUTHORIZED);
+            if (!authorizationService.getUserRole(authorizationId).equals(AuthorizationService.VENDOR)
+                    && !authorizationService.getUserRole( authorizationId).equals(AuthorizationService.ADMIN)) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
             List<Long> courierIds = vendorService.getAssignedCouriers((long) vendorId);
             return ResponseEntity.ok(courierIds);
         } catch (VendorNotFoundException | MicroserviceCommunicationException e) {
             if (e instanceof VendorNotFoundException) {
-                return new ResponseEntity<List<Long>>(HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             } else {
-                return new ResponseEntity<List<Long>>(HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
         }
     }
