@@ -690,7 +690,7 @@ public class DeliveryControllerTest {
     }
 
     @Test
-    public void testDeliveryOrderOrderIdLocationGet_InternalServerErrorOnMicroserviceCommunicationException() throws MicroserviceCommunicationException, OrderNotFoundException {
+    public void testDeliveryOrderOrderIdLocationGet_InternalServerErrorOnMicroserviceCommunicationException() throws MicroserviceCommunicationException {
         when(authorizationService.getUserRole(anyInt())).thenThrow(MicroserviceCommunicationException.class);
 
         ResponseEntity<Location> response = deliveryController.deliveryOrderOrderIdLocationGet(123, 1);
