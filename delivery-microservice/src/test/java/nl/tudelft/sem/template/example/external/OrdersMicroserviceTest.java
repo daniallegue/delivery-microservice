@@ -13,7 +13,7 @@ public class OrdersMicroserviceTest {
     private RestTemplate restTemplate;
 
     private OrdersMicroservice ordersMicroservice;
-    private final String usersBaseUrl = "localhost:8082";
+    private final String usersBaseUrl = "http://localhost:8082";
 
     @BeforeEach
     public void setup() {

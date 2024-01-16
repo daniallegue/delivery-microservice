@@ -128,7 +128,7 @@ public class VendorService {
         if (!vendorRepository.existsById(vendorId)) {
             throw new VendorNotFoundException("Vendor was not found");
         }
-        if (!courierService.doesCourierExist(courierId)) {
+        if (!usersMicroservice.getUserType(courierId).get().equals("courier")) {
             throw new CourierNotFoundException("Courier was not found");
         }
         Vendor vendor = vendorRepository.findById(vendorId).get();

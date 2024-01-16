@@ -1,6 +1,5 @@
 package nl.tudelft.sem.template.example.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
@@ -27,7 +26,7 @@ public class CourierService {
     VendorRepository vendorRepository;
 
     UsersMicroservice usersMicroservice;
-    private List<Long> courierList = new ArrayList<>();
+    //private List<Long> courierList = new ArrayList<>();
     AssignOrderContext assignOrderContext = new AssignOrderContext();
 
     /**
@@ -108,27 +107,6 @@ public class CourierService {
                 .collect(Collectors.toList());
     }
 
-    /** Adds a courier with a specific ID to our database.
-     *
-     * @param courierId Unique identifier of the courier (required)
-     */
-    public void addCourier(Long courierId) {
-        // Check if the courier ID is already known, if not, add it to the list
-        if (!courierList.contains(courierId)) {
-            courierList.add(courierId);
-        }
-    }
-
-    /**
-     * Checks whether a courier exists.
-     *
-     * @param courierId Unique identifier of the courier (required)
-     * @return returns true if a courier with the specified ID exists in our database
-     */
-    public boolean doesCourierExist(Long courierId) {
-        return courierList.contains(courierId);
-    }
-
     /**
      * Assigns a specific order to a courier.
      *
@@ -139,27 +117,13 @@ public class CourierService {
      */
     public void assignCourierToSpecificOrder(Long courierId, Long orderId)
             throws OrderNotFoundException, CourierNotFoundException, DeliveryNotFoundException, NoAvailableOrdersException {
-        if (!doesCourierExist(courierId)) {
+        if (!usersMicroservice.getUserType(courierId).get().equals("courier")) {
             throw new CourierNotFoundException("Courier with id " + courierId + " not found.");
         }
         assignOrderContext.setAssignOrderStrategy(new SpecificOrderStrategy(this.deliveryRepository));
         assignOrderContext.assignOrder(courierId, orderId, getAvailableOrderIds(courierId));
     }
 
-    /**
-     * Retrieves all the couriers from UsersMicroservice.
-     * This function runs periodically to retrieve continuously all the couriers
-     */
-    public void populateAllCouriers() {
-        List<Long> couriers = usersMicroservice.getCourierIds().get();
-        if (couriers.size() > 0) {
-            for (Long courier : couriers) {
-                if (!doesCourierExist(courier)) {
-                    addCourier(courier);
-                }
-            }
-        }
-    }
 
 
     /**
@@ -169,7 +133,7 @@ public class CourierService {
      */
     public void assignCourierToRandomOrder(Long courierId) throws DeliveryNotFoundException, NoAvailableOrdersException,
             OrderNotFoundException, CourierNotFoundException {
-        if (!doesCourierExist(courierId)) {
+        if (!usersMicroservice.getUserType(courierId).get().equals("courier")) {
             throw new CourierNotFoundException("Courier with id " + courierId + " not found.");
         }
         assignOrderContext.setAssignOrderStrategy(new RandomOrderStrategy(this.deliveryRepository));

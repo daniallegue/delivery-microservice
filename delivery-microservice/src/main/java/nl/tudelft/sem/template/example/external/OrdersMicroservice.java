@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
 public class OrdersMicroservice {
     private final RestTemplate restTemplate;
 
-    private final String usersBaseUrl = "localhost:8082";
+    private final String usersBaseUrl = "http://localhost:8082";
 
     //For testing with postman
     // private final String usersBaseUrl = "https://6a7a0417-bef0-4ad2-972d-c4b3a928eec9.mock.pstmn.io";

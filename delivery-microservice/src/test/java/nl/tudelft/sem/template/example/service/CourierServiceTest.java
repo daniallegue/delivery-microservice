@@ -121,7 +121,7 @@ public class CourierServiceTest {
 
     @Test
     void assignCourierToRandomOrderTest() throws DeliveryNotFoundException, NoAvailableOrdersException, OrderNotFoundException, CourierNotFoundException {
-        courierService.addCourier(1L);
+        when(usersMicroservice.getUserType(1L)).thenReturn(Optional.of("courier"));
         courierService.assignCourierToRandomOrder(1L);
 
         Long actual = deliveryRepository.findById(2L).get().getCourierId();
@@ -130,7 +130,7 @@ public class CourierServiceTest {
 
     @Test
     void assignCourierToRandomOrderCourierNotFoundTest() throws CourierNotFoundException {
-
+        when(usersMicroservice.getUserType(999L)).thenReturn(Optional.of("vendor"));
         Long nonExistentCourierId = 999L;
         Throwable exception = assertThrows(CourierNotFoundException.class, () -> {
             courierService.assignCourierToRandomOrder(nonExistentCourierId);
@@ -142,8 +142,8 @@ public class CourierServiceTest {
 
     @Test
     void assignCourierToSpecificOrderTest() throws DeliveryNotFoundException, OrderNotFoundException, CourierNotFoundException, NoAvailableOrdersException {
-        courierService.addCourier(1L);
-        courierService.addCourier(5L);
+        when(usersMicroservice.getUserType(1L)).thenReturn(Optional.of("courier"));
+        when(usersMicroservice.getUserType(5L)).thenReturn(Optional.of("courier"));
         courierService.assignCourierToSpecificOrder(5L, 9L);
 
         Long actualCourier = deliveryRepository.findById(2L).get().getCourierId();
@@ -154,7 +154,7 @@ public class CourierServiceTest {
     void assigningNonExistentCourierToSpecificOrderTest() {
         Long nonExistentCourierId = 999L;
         Long existingOrderId = 9L;
-
+        when(usersMicroservice.getUserType(999L)).thenReturn(Optional.of("vendor"));
         Throwable exception = assertThrows(CourierNotFoundException.class, () -> {
             courierService.assignCourierToSpecificOrder(nonExistentCourierId, existingOrderId);
         });
@@ -166,7 +166,7 @@ public class CourierServiceTest {
     void assigningNonExistentOrderToCourierTest() {
         Long existingCourierId = 1L;
         Long nonExistentOrderId = 999L;
-        courierService.addCourier(1L);
+        when(usersMicroservice.getUserType(1L)).thenReturn(Optional.of("courier"));
 
         Throwable exception = assertThrows(DeliveryNotFoundException.class, () -> {
             courierService.assignCourierToSpecificOrder(existingCourierId, nonExistentOrderId);
@@ -174,35 +174,5 @@ public class CourierServiceTest {
 
         assertThat(exception.getMessage()).isEqualTo("Delivery with order id " + nonExistentOrderId + " was not found.");
     }
-
-    @Test
-    void populateAllCouriers() {
-        List<Long> newCouriers = Arrays.asList(1L, 2L, 3L);
-        Mockito.when(usersMicroservice.getCourierIds()).thenReturn(Optional.of(newCouriers));
-
-        courierService.populateAllCouriers();
-
-        for (Long newCourier : newCouriers) {
-            Mockito.verify(courierService, Mockito.times(1)).addCourier(newCourier);
-        }
-    }
-
-    @Test
-    void populateAllCouriersWithNoCouriersTest() {
-        Mockito.when(usersMicroservice.getCourierIds()).thenReturn(Optional.of(Collections.emptyList()));
-        courierService.populateAllCouriers();
-
-        Mockito.verify(courierService, Mockito.never()).doesCourierExist(anyLong());
-        Mockito.verify(courierService, Mockito.never()).addCourier(anyLong());
-    }
-
-    @Test
-    void addExistingCourierTest() {
-        List<Long> couriers = new ArrayList<>();
-        couriers.add(5L);
-        courierService.addCourier(5L);
-        assertEquals(Arrays.asList(5L), couriers);
-    }
-
 
 }
