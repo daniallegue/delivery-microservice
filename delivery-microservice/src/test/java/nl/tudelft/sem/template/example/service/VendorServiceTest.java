@@ -50,11 +50,15 @@ public class VendorServiceTest {
         List<Long> couriers = new ArrayList<>();
         couriers.add(2L);
         Vendor vendor2 = new Vendor(3L, 7L, address, couriers);
+        Vendor vendor3 = new Vendor(11L, 7L, address, new ArrayList<>());
         when(vendorRepository.findById(1L)).thenReturn(Optional.of(vendor1));
         when(vendorRepository.findById(3L)).thenReturn(Optional.of(vendor2));
+        when(vendorRepository.findById(11L)).thenReturn(Optional.of(vendor3));
         when(vendorRepository.existsById(1L)).thenReturn(true);
         when(vendorRepository.existsById(3L)).thenReturn(true);
         when(vendorRepository.existsById(2L)).thenReturn(false);
+        when(vendorRepository.existsById(11L)).thenReturn(true);
+
     }
 
     @Test
@@ -122,6 +126,12 @@ public class VendorServiceTest {
     }
 
     @Test
+    void updateDeliveryZoneNoCouriersTest2() throws VendorNotFoundException, VendorHasNoCouriersException {
+        Long vendorId = 11L;
+        assertThrows(VendorHasNoCouriersException.class, () -> vendorService.updateDeliveryZone(vendorId, 30L));
+    }
+
+    @Test
     void testFindVendorOrCreateWithNewVendorFaultyMicroserviceCommunication(){
         Long vendorId = 1L;
 
@@ -137,21 +147,36 @@ public class VendorServiceTest {
 
     @Test
     void assignCourierTest() throws VendorNotFoundException, CourierNotFoundException {
-        Long vendorId = 3L;
+        Long vendorId = 33L;
+        Vendor vendor = new Vendor();
+        vendor.setCouriers(new ArrayList<>());
+        vendor.setId(33L);
+
+        when(vendorRepository.existsById(33L)).thenReturn(true);
+        when(vendorRepository.findById(33L)).thenReturn(Optional.of(vendor));
         when(courierService.doesCourierExist(2L)).thenReturn(true);
         when(courierService.doesCourierExist(6L)).thenReturn(true);
-        Vendor updated = vendorService.assignCourierToVendor(3L, 6L);
+        Vendor updated = vendorService.assignCourierToVendor(33L, 6L);
         List<Long> couriers = new ArrayList<>();
-        couriers.add(2L);
         couriers.add(6L);
         assertEquals(couriers, updated.getCouriers());
         assertDoesNotThrow(() -> vendorService.getAssignedCouriers(vendorId));
         verify(vendorRepository, times(1)).save(any());
+        couriers.add(2L);
+        updated = vendorService.assignCourierToVendor(33L, 2L);
+        assertEquals(couriers, updated.getCouriers());
+
+
+
     }
 
     @Test
     void assignCouriersInvalidTest() throws VendorNotFoundException {
         assertThrows(VendorNotFoundException.class, () -> vendorService.assignCourierToVendor(2L, 5L));
+    }
+    @Test
+    void assignCouriersCourierNotFoundTest() throws VendorNotFoundException {
+        assertThrows(CourierNotFoundException.class, () -> vendorService.assignCourierToVendor(3L, 55L));
     }
 
     @Test
