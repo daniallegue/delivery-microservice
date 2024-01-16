@@ -3,11 +3,7 @@ package nl.tudelft.sem.template.example.service;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
-import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
-import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
-import nl.tudelft.sem.template.example.exception.OrderAlreadyExistsException;
-import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
-import nl.tudelft.sem.template.example.exception.VendorNotFoundException;
+import nl.tudelft.sem.template.example.exception.*;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
@@ -20,6 +16,7 @@ import nl.tudelft.sem.template.model.Time;
 import nl.tudelft.sem.template.model.Vendor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 
 @Service
 public class DeliveryService {
@@ -69,10 +66,14 @@ public class DeliveryService {
         }
 
         Location destination = deliveryPostRequest.getDestination();
+
+        boolean isWithinZone = isWithinDeliveryZone(destination, vendor.getAddress(), vendor.getDeliveryZone());
+
+        Order.StatusEnum status = isWithinZone ? Order.StatusEnum.PENDING : Order.StatusEnum.REJECTED;
         Order order = new Order(Long.valueOf(deliveryPostRequest.getOrderId()),
                 Long.valueOf(deliveryPostRequest.getCustomerId()),
                 vendor,
-                Order.StatusEnum.PENDING,
+                status,
                 destination
         );
 
@@ -81,6 +82,14 @@ public class DeliveryService {
         delivery = deliveryRepository.save(delivery);
         return delivery;
     }
+
+
+
+    private boolean isWithinDeliveryZone(Location destination, Location vendorLocation, Long deliveryZoneRadius) {
+        double distance = calculateDistance(vendorLocation, destination);
+        return distance <= deliveryZoneRadius;
+    }
+
 
     /**
      * Retrieves the ready time for a delivery.
@@ -286,7 +295,7 @@ public class DeliveryService {
      * @param end The end location(destination).
      * @return The distance between the 2 points.
      */
-    private double calculateDistance(Location start, Location end) {
+    public double calculateDistance(Location start, Location end) {
         double latDifference = end.getLatitude() - start.getLatitude();
         double lonDifference = end.getLongitude() - start.getLongitude();
         return Math.sqrt(latDifference * latDifference + lonDifference * lonDifference);
