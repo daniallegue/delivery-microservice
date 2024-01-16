@@ -24,10 +24,10 @@ public class DeliveryService {
     /**
      * Constructor for the Delivery Service that allow dependency injection.
      *
-     * @param deliveryRepository The repository where Delivery objects are saved in.
-     * @param orderRepository The repository where Order objects are saved in.
-     * @param vendorRepository The repository where Vendor objects are saved in.
-     * @param vendorService The service that handles the vendor interaction logic.
+     * @param deliveryRepository      The repository where Delivery objects are saved in.
+     * @param orderRepository         The repository where Order objects are saved in.
+     * @param vendorRepository        The repository where Vendor objects are saved in.
+     * @param vendorService           The service that handles the vendor interaction logic.
      * @param configurationProperties The configuration properties of the whole microservice
      */
     @Autowired
@@ -82,19 +82,13 @@ public class DeliveryService {
         return distance <= deliveryZoneRadius;
     }
 
-    public OffsetDateTime getReadyTime(Long orderId) throws OrderNotFoundException {
-        // Fetch delivery using the repository
-        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
-        if (delivery == null) {
-            throw new OrderNotFoundException("Order with ID: " + orderId + " not found.");
-        }
-
-        // Extract and return the ready time
-        Time time = delivery.getTime();
-        return time != null ? time.getReadyTime() : null;
-    }
-
-    public void updateReadyTime(Long orderId, OffsetDateTime newReadyTime) throws OrderNotFoundException {
+    /** Helper method to get the time and handle exceptions.
+     *
+     * @param orderId id of the order
+     * @return Delivery object to modify the time parameter
+     * @throws OrderNotFoundException if order id is not found
+     */
+    private Delivery processDeliveryByOrderId(Long orderId) throws OrderNotFoundException {
         Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
         if (delivery == null) {
             throw new OrderNotFoundException("Order with ID: " + orderId + " not found.");
@@ -105,7 +99,19 @@ public class DeliveryService {
             time = new Time();
             delivery.setTime(time);
         }
-        time.setReadyTime(newReadyTime);
+
+        return delivery;
+    }
+
+    public OffsetDateTime getReadyTime(Long orderId) throws OrderNotFoundException {
+        Delivery delivery = processDeliveryByOrderId(orderId);
+        Time time = delivery.getTime();
+        return time != null ? time.getReadyTime() : null;
+    }
+
+    public void updateReadyTime(Long orderId, OffsetDateTime newReadyTime) throws OrderNotFoundException {
+        Delivery delivery = processDeliveryByOrderId(orderId);
+        delivery.getTime().setReadyTime(newReadyTime);
         deliveryRepository.save(delivery);
     }
 
@@ -120,17 +126,8 @@ public class DeliveryService {
     }
 
     public void updatePickupTime(Long orderId, OffsetDateTime newPickUpTime) throws OrderNotFoundException {
-        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
-        if (delivery == null) {
-            throw new OrderNotFoundException("Order with ID: " + orderId + " not found.");
-        }
-
-        Time time = delivery.getTime();
-        if (time == null) {
-            time = new Time();
-            delivery.setTime(time);
-        }
-        time.setPickUpTime(newPickUpTime);
+        Delivery delivery = processDeliveryByOrderId(orderId);
+        delivery.getTime().setPickUpTime(newPickUpTime);
         deliveryRepository.save(delivery);
     }
 
@@ -145,35 +142,23 @@ public class DeliveryService {
     }
 
     public void updateDeliveredTime(Long orderId, OffsetDateTime newDeliveredTime) throws OrderNotFoundException {
-        Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
-        if (delivery == null) {
-            throw new OrderNotFoundException("Order with ID: " + orderId + " not found.");
-        }
-
-        Time time = delivery.getTime();
-        if (time == null) {
-            time = new Time();
-            delivery.setTime(time);
-        }
-        time.setDeliveredTime(newDeliveredTime);
+        Delivery delivery = processDeliveryByOrderId(orderId);
+        delivery.getTime().setDeliveredTime(newDeliveredTime);
         deliveryRepository.save(delivery);
     }
 
     public OffsetDateTime getEta(Long orderId) throws OrderNotFoundException {
-        // Fetch the delivery using the repository
         Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
         if (delivery == null) {
             throw new OrderNotFoundException("Order with ID: " + orderId + " not found.");
         }
 
-        OffsetDateTime eta = calculateEstimatedTime(delivery.getOrder().getVendor().getAddress(), delivery.getOrder().getDestination());
-
-        return eta;
+        return calculateEstimatedTime(delivery.getOrder().getVendor().getAddress(), delivery.getOrder().getDestination());
     }
 
     private OffsetDateTime calculateEstimatedTime(Location vendorLocation, Location destination) {
         // TODO: Implement specific computation of the estimated time of arrival.
-        long estimatedTravelDurationInMinutes = 30; // Example fixed duration
+        long estimatedTravelDurationInMinutes = 30;
         return OffsetDateTime.now().plusMinutes(estimatedTravelDurationInMinutes);
     }
 
@@ -225,9 +210,8 @@ public class DeliveryService {
     }
 
     /**
-     *
      * @param start The start location(vendor).
-     * @param end The end location(destination).
+     * @param end   The end location(destination).
      * @return The distance between the 2 points.
      */
     public double calculateDistance(Location start, Location end) {
@@ -239,10 +223,9 @@ public class DeliveryService {
     private static final double COURIER_SPEED = 1; // meter per second
 
     /**
-     *
-     * @param start The start location.
-     * @param end The end location.
-     * @param pickupTime The time the order was picked up.
+     * @param start       The start location.
+     * @param end         The end location.
+     * @param pickupTime  The time the order was picked up.
      * @param currentTime The current time.
      * @return Returns the current location of the order/courier.
      */
@@ -267,9 +250,8 @@ public class DeliveryService {
     }
 
     /**
-     *
-     * @param start The start location
-     * @param end The end location
+     * @param start    The start location
+     * @param end      The end location
      * @param fraction The fraction at which to interpolate between the start and the end values.
      * @return The interpolated value between start and end based on the given fraction.
      */
@@ -278,7 +260,6 @@ public class DeliveryService {
     }
 
     /**
-     *
      * @param deliveryId The unique ID of the delivery.
      * @return The current live location of the delivery.
      * @throws OrderNotFoundException OrderNotFoundException If the delivery with the specified ID is not found.
@@ -299,7 +280,6 @@ public class DeliveryService {
     }
 
     /**
-     *
      * @param orderId The unique ID of the order.
      * @return The delivery ID associated with the given order ID.
      * @throws OrderNotFoundException If the order with the specified ID is not found.
@@ -312,8 +292,10 @@ public class DeliveryService {
             throw new OrderNotFoundException("Order with ID: " + orderId + " not found.");
         }
     }
+
     /**
      * Returns the courier assigned to an order with id: orderId.
+     *
      * @param orderId The id of the order within the delivery.
      * @return id of the courier assigned to the order
      */

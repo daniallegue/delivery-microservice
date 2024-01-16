@@ -7,7 +7,6 @@ import nl.tudelft.sem.template.example.authorization.AuthorizationService;
 import nl.tudelft.sem.template.example.exception.*;
 import nl.tudelft.sem.template.example.service.DeliveryService;
 import nl.tudelft.sem.template.example.service.OrderService;
-import nl.tudelft.sem.template.model.Delivery;
 import nl.tudelft.sem.template.model.DeliveryPostRequest;
 import nl.tudelft.sem.template.model.Issue;
 import nl.tudelft.sem.template.model.Location;
@@ -49,7 +48,6 @@ public class DeliveryController implements DeliveryApi {
     public ResponseEntity<Void> deliveryPost(@RequestHeader(value = "authorizationId") Integer authorizationId,
                                              @RequestBody DeliveryPostRequest deliveryPostRequest) {
         try {
-            Delivery delivery = deliveryService.createDelivery(deliveryPostRequest);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -73,14 +71,11 @@ public class DeliveryController implements DeliveryApi {
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
-            // Update order status
             orderService.setOrderStatus(orderId, authorizationId, newStatus.replaceAll("\"", ""));
             return ResponseEntity.ok().build();
         } catch (MicroserviceCommunicationException e) {
-            // Handle exceptions related to user role retrieval or authorization check
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         } catch (OrderNotFoundException | IllegalOrderStatusException e) {
-            // Handle specific exceptions related to order processing
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
@@ -97,7 +92,6 @@ public class DeliveryController implements DeliveryApi {
     @Override
     public ResponseEntity<String> deliveryOrderOrderIdStatusGet(Integer orderId, Integer authorizationId) {
         try {
-            String userRole = authorizationService.getUserRole(authorizationId);
             boolean isAuthorized = authorizationService.canViewDeliveryDetails(authorizationId, orderId);
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -114,7 +108,6 @@ public class DeliveryController implements DeliveryApi {
     @Override
     public ResponseEntity<OffsetDateTime> deliveryOrderOrderIdReadyTimeGet(Integer orderId, Integer authorizationId) {
         try {
-            String userRole = authorizationService.getUserRole(authorizationId);
             boolean isAuthorized = authorizationService.canViewDeliveryDetails(authorizationId, orderId);
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -147,7 +140,6 @@ public class DeliveryController implements DeliveryApi {
     public ResponseEntity<Void> deliveryOrderOrderIdReadyTimePut(Integer orderId, Integer authorizationId,
                                                                  OffsetDateTime newReadyTime) {
         try {
-            String userRole = authorizationService.getUserRole(authorizationId);
             boolean isAuthorized = authorizationService.canUpdateDeliveryDetails(authorizationId,
                     orderId);
             if (!isAuthorized) {
@@ -182,7 +174,6 @@ public class DeliveryController implements DeliveryApi {
     @Override
     public ResponseEntity<OffsetDateTime> deliveryOrderOrderIdPickupTimeGet(Integer orderId, Integer authorizationId) {
         try {
-            String userRole = authorizationService.getUserRole(authorizationId);
             boolean isAuthorized = authorizationService.canViewDeliveryDetails(authorizationId, orderId);
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -200,7 +191,6 @@ public class DeliveryController implements DeliveryApi {
     @Override
     public ResponseEntity<Void> deliveryOrderOrderIdPickupTimePut(Integer orderId, Integer authorizationId, OffsetDateTime newPickupTime) {
         try {
-            String userRole = authorizationService.getUserRole(authorizationId);
             boolean isAuthorized = authorizationService.canUpdateDeliveryDetails(authorizationId, orderId);
 
             if (!isAuthorized) {
@@ -222,7 +212,6 @@ public class DeliveryController implements DeliveryApi {
     @Override
     public ResponseEntity<OffsetDateTime> deliveryOrderOrderIdTodGet(Integer orderId, Integer authorizationId) {
         try {
-            String userRole = authorizationService.getUserRole(authorizationId);
             boolean isAuthorized = authorizationService.canViewDeliveryDetails(authorizationId, orderId);
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -240,7 +229,6 @@ public class DeliveryController implements DeliveryApi {
     public ResponseEntity<Void> deliveryOrderOrderIdTodPut(Integer orderId, Integer authorizationId,
                                                            OffsetDateTime newDeliveredTime) {
         try {
-            String userRole = authorizationService.getUserRole(authorizationId);
             boolean isAuthorized = authorizationService.canUpdateDeliveryDetails(authorizationId, orderId);
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -258,7 +246,6 @@ public class DeliveryController implements DeliveryApi {
     @Override
     public ResponseEntity<OffsetDateTime> deliveryOrderOrderIdEtaGet(Integer orderId, Integer authorizationId) {
         try {
-            String userRole = authorizationService.getUserRole(authorizationId);
             boolean isAuthorized = authorizationService.canViewDeliveryDetails(authorizationId, orderId);
 
             if (!isAuthorized) {
@@ -319,7 +306,6 @@ public class DeliveryController implements DeliveryApi {
     @Override
     public ResponseEntity<Location> deliveryOrderOrderIdLocationGet(Integer orderId, Integer authorizationId) {
         try {
-            String userRole = authorizationService.getUserRole(authorizationId);
             boolean isAuthorized = authorizationService.canViewDeliveryDetails(authorizationId, orderId);
             if (!isAuthorized) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

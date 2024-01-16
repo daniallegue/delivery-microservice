@@ -1,8 +1,5 @@
 package nl.tudelft.sem.template.example.service;
 
-import static nl.tudelft.sem.template.model.Order.StatusEnum;
-
-import java.util.Optional;
 import nl.tudelft.sem.template.example.exception.IllegalOrderStatusException;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
 import nl.tudelft.sem.template.example.exception.OrderNotFoundException;
@@ -11,6 +8,10 @@ import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.model.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+import static nl.tudelft.sem.template.model.Order.StatusEnum;
 
 @Service
 public class OrderService {
@@ -23,7 +24,7 @@ public class OrderService {
      * Simple constructor handling dependency injection.
      *
      * @param ordersMicroservice microservice responsible for handling orders
-     * @param orderRepository JPA repository holding the orders
+     * @param orderRepository    JPA repository holding the orders
      */
     @Autowired
     public OrderService(OrderRepository orderRepository, OrdersMicroservice ordersMicroservice) {
@@ -51,12 +52,12 @@ public class OrderService {
      * certain rules, and if so changes and updates the order in the repository.
      * If not, it throws an exception.
      *
-     * @param orderId Unique identifier of the order (required)
-     * @param authorizationId Unique identifier of the user making the request.
+     * @param orderId           Unique identifier of the order (required)
+     * @param authorizationId   Unique identifier of the user making the request.
      * @param orderStatusString String format of the new status
      * @throws IllegalOrderStatusException if status doesn't respect the flow
-     *     or status string is not available
-     * @throws OrderNotFoundException if order was not found
+     *                                     or status string is not available
+     * @throws OrderNotFoundException      if order was not found
      */
     public void setOrderStatus(Integer orderId, Integer authorizationId, String orderStatusString)
             throws IllegalOrderStatusException, OrderNotFoundException, MicroserviceCommunicationException {
@@ -126,7 +127,8 @@ public class OrderService {
                 throw new IllegalOrderStatusException("Error! Order status can't change from DELIVERED to "
                         + newStatus.toString().toUpperCase() + ".");
             }
-            default -> { }
+            default -> {
+            }
         }
     }
 }

@@ -1,6 +1,5 @@
 package nl.tudelft.sem.template.example.controller;
 
-import java.util.List;
 import nl.tudelft.sem.template.api.VendorApi;
 import nl.tudelft.sem.template.example.authorization.AuthorizationService;
 import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
@@ -14,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 public class VendorController implements VendorApi {
@@ -42,7 +43,6 @@ public class VendorController implements VendorApi {
     @Override
     public ResponseEntity<Integer> vendorDeliveryVendorIdDeliveryZoneGet(Integer vendorId, Integer authorizationId) {
         try {
-
             Integer deliveryZone = (int) vendorService.getDeliveryZone((long) vendorId);
             return ResponseEntity.ok(deliveryZone);
         } catch (VendorNotFoundException e) {
@@ -68,20 +68,18 @@ public class VendorController implements VendorApi {
             }
             Vendor vendor = vendorService.updateDeliveryZone((long) vendorId, (long) deliveryZone);
             return ResponseEntity.ok(vendor);
-        } catch (VendorNotFoundException | VendorHasNoCouriersException | MicroserviceCommunicationException e) {
-            if (e instanceof VendorNotFoundException) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            } else {
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
+        } catch (VendorHasNoCouriersException | MicroserviceCommunicationException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (VendorNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
     /**
      * Assigns the courier with ID courier_id to the vendor with ID vendor_id.
      *
-     * @param vendorId The unique identifier of the order. (required)
-     * @param courierId The unique identifier of the courier. (required)
+     * @param vendorId        The unique identifier of the order. (required)
+     * @param courierId       The unique identifier of the courier. (required)
      * @param authorizationId Identification of the user who is making the request (required)
      * @return the updated vendor
      * @path PUT: /vendor/delivery/{vendor_id}/assign/{courier_id}:
@@ -95,19 +93,17 @@ public class VendorController implements VendorApi {
             }
             Vendor vendor = vendorService.assignCourierToVendor((long) vendorId, (long) courierId);
             return ResponseEntity.ok(vendor);
-        } catch (VendorNotFoundException | MicroserviceCommunicationException | CourierNotFoundException e) {
-            if (e instanceof VendorNotFoundException) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            } else {
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
+        } catch (MicroserviceCommunicationException | CourierNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (VendorNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
     /**
      * Retrieves the ids of all couriers assigned to the vendor with the specified ID.
      *
-     * @param vendorId The unique identifier of the vendor. (required)
+     * @param vendorId        The unique identifier of the vendor. (required)
      * @param authorizationId Identification of the user who is making the request (required)
      * @return list of assigned couriers ids
      * @path GET: /vendor/delivery/{vendor_id}/couriers:
@@ -116,17 +112,15 @@ public class VendorController implements VendorApi {
     public ResponseEntity<List<Long>> vendorDeliveryVendorIdCouriersGet(Integer vendorId, Integer authorizationId) {
         try {
             if (!authorizationService.getUserRole(authorizationId).equals(AuthorizationService.VENDOR)
-                    && !authorizationService.getUserRole( authorizationId).equals(AuthorizationService.ADMIN)) {
+                    && !authorizationService.getUserRole(authorizationId).equals(AuthorizationService.ADMIN)) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
             List<Long> courierIds = vendorService.getAssignedCouriers((long) vendorId);
             return ResponseEntity.ok(courierIds);
-        } catch (VendorNotFoundException | MicroserviceCommunicationException e) {
-            if (e instanceof VendorNotFoundException) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            } else {
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
+        } catch (VendorNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (MicroserviceCommunicationException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 

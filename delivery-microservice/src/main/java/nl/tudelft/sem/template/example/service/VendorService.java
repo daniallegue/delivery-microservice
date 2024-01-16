@@ -1,8 +1,5 @@
 package nl.tudelft.sem.template.example.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
 import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
@@ -14,6 +11,10 @@ import nl.tudelft.sem.template.model.Location;
 import nl.tudelft.sem.template.model.Vendor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -28,12 +29,12 @@ public class VendorService {
     /**
      * Constructor for the Service allowing dependency injection.
      *
-     * @param vendorRepository The JPA repository holding the Vendor entities.
+     * @param vendorRepository        The JPA repository holding the Vendor entities.
      * @param configurationProperties The configurations holding the delivery zone.
      */
     @Autowired
     public VendorService(VendorRepository vendorRepository, ConfigurationProperties configurationProperties,
-                  UsersMicroservice usersMicroservice, CourierService courierService) {
+                         UsersMicroservice usersMicroservice, CourierService courierService) {
         this.vendorRepository = vendorRepository;
         this.configurationProperties = configurationProperties;
         this.usersMicroservice = usersMicroservice;
@@ -79,7 +80,6 @@ public class VendorService {
             throw new VendorNotFoundException("Vendor was not found");
         }
         Vendor vendor = vendorRepository.findById(vendorId).get();
-        //Check for Null/Default delivery zone
         return vendor.getDeliveryZone();
     }
 
@@ -97,7 +97,7 @@ public class VendorService {
         }
         Vendor vendor = vendorRepository.findById(vendorId).get();
 
-        if (vendor.getCouriers() == null || vendor.getCouriers().size() < 1) {
+        if (vendor.getCouriers() == null || vendor.getCouriers().isEmpty()) {
             throw new VendorHasNoCouriersException("Vendor must have their own set of couriers");
         }
 
@@ -107,10 +107,10 @@ public class VendorService {
     }
 
     /**
-<<<<<<< HEAD
+     * <<<<<<< HEAD
      * Assigns courier to the given vendor.
      *
-     * @param vendorId The id of the vendor.
+     * @param vendorId  The id of the vendor.
      * @param courierId the id of the courier
      * @return the updated vendor
      * @throws VendorNotFoundException throws exception if vendor does not exist
@@ -152,13 +152,13 @@ public class VendorService {
      *
      * @param vendorId The id of the Vendor we want to get the address of.
      * @return The address of the Vendor.
-     * @throws VendorNotFoundException If the Vendor with the specified id does not exist.
+     * @throws VendorNotFoundException            If the Vendor with the specified id does not exist.
      * @throws MicroserviceCommunicationException If the Vendor does not have an address saved, it
-     *     means that there was a problem with retrieving it from the Users Microservice.
+     *                                            means that there was a problem with retrieving it from the Users Microservice.
      */
     public Location getVendorLocation(Integer vendorId) throws VendorNotFoundException,
             MicroserviceCommunicationException {
-        Optional<Vendor> vendor =  vendorRepository.findById(Long.valueOf(vendorId));
+        Optional<Vendor> vendor = vendorRepository.findById(Long.valueOf(vendorId));
         if (vendor.isEmpty()) {
             throw new VendorNotFoundException("Vendor with id: " + vendorId + " was not found!");
         }

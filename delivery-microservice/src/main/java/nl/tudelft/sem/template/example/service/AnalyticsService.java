@@ -4,7 +4,10 @@ import nl.tudelft.sem.template.example.exception.*;
 import nl.tudelft.sem.template.example.repository.DeliveryRepository;
 import nl.tudelft.sem.template.example.repository.OrderRepository;
 import nl.tudelft.sem.template.example.repository.VendorRepository;
-import nl.tudelft.sem.template.model.*;
+import nl.tudelft.sem.template.model.Delivery;
+import nl.tudelft.sem.template.model.Issue;
+import nl.tudelft.sem.template.model.Order;
+import nl.tudelft.sem.template.model.Rating;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +25,6 @@ import java.util.stream.Collectors;
 public class AnalyticsService {
     private final DeliveryRepository deliveryRepository;
     private final CourierService courierService;
-
     private final VendorRepository vendorRepository;
     private final OrderRepository orderRepository;
     private final DeliveryService deliveryService;
@@ -40,12 +42,10 @@ public class AnalyticsService {
     /**
      * Saves a rating for a specific order.
      *
-     * @param rating The rating object to be saved.
+     * @param rating  The rating object to be saved.
      * @param orderId The unique identifier of the order to which the rating is to be associated.
      * @return The saved rating object.
-     * @throws RatingNotFoundException If the rating is not found in the repository.
      * @throws OrderNotFoundException If no order is found with the given ID.
-     * @throws DeliveryNotFoundException If no delivery is found for the given order ID.
      */
     public Rating saveRating(Rating rating, Long orderId) throws OrderNotFoundException, IllegalOrderStatusException {
         Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
@@ -67,9 +67,8 @@ public class AnalyticsService {
      *
      * @param orderId The unique identifier of the order for which the rating is to be retrieved.
      * @return The rating associated with the specified order.
-     * @throws RatingNotFoundException If no rating is found for the specified order ID.
-     * @throws OrderNotFoundException If no order is found with the given ID.
-     * @throws DeliveryNotFoundException If no delivery is found for the given order ID.
+     * @throws RatingNotFoundException   If no rating is found for the specified order ID.
+     * @throws OrderNotFoundException    If no order is found with the given ID.
      */
     public Rating getRatingByOrderId(Long orderId) throws RatingNotFoundException, OrderNotFoundException {
 
@@ -132,10 +131,9 @@ public class AnalyticsService {
         }
         List<Delivery> deliveries = deliveryRepository.findByCourierId(courierId);
 
-        int successfulDeliveries = (int) deliveries.stream()
+        return (int) deliveries.stream()
                 .filter(delivery -> delivery.getOrder().getStatus() == Order.StatusEnum.DELIVERED)
                 .count();
-        return successfulDeliveries;
     }
 
     /**
@@ -152,16 +150,16 @@ public class AnalyticsService {
         }
         List<Delivery> deliveries = deliveryRepository.findByCourierId(courierId);
 
-        List<String> issues = deliveries.stream()
+        return deliveries.stream()
                 .map(Delivery::getIssue)
                 .filter(Objects::nonNull)
                 .map(Issue::getDescription)
                 .collect(Collectors.toList());
-        return issues;
     }
 
     /**
      * Calculates the efficiency of a specified courier.
+     *
      * @param courierId The unique identifier of the courier.
      * @return an integer that describes courier's efficiency
      * @throws CourierNotFoundException If the courier with the given ID does not exist.
@@ -185,12 +183,13 @@ public class AnalyticsService {
                 .mapToDouble(Double::doubleValue)
                 .sum();
 
-        return (int) (totalDistance*100000 / totalSeconds);
+        return (int) (totalDistance * 100000 / totalSeconds);
 
     }
 
     /**
      * Calculates the average time for one delivery in seconds for a given vendor
+     *
      * @param vendorId The id of the vendor (required)
      * @return the time of average delivery
      * @throws VendorNotFoundException if the vendor with the given id does not exist
@@ -224,6 +223,7 @@ public class AnalyticsService {
 
     /**
      * getting successful deliveries.
+     *
      * @param deliveries given deliveries
      * @return returns deliveries that have status delivered
      */

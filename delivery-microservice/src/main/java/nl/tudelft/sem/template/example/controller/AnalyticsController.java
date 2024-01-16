@@ -17,9 +17,10 @@ public class AnalyticsController implements AnalyticsApi {
     AnalyticsService analyticsService;
     AuthorizationService authorizationService;
 
-    /** Simple constructor that handles dependency injection of the service and authorization
+    /**
+     * Simple constructor that handles dependency injection of the service and authorization
      *
-     * @param analyticsService Instance of AnalyticsService to handle the logic
+     * @param analyticsService     Instance of AnalyticsService to handle the logic
      * @param authorizationService Instance of AuthorizationService to handle security
      */
     @Autowired
@@ -31,9 +32,9 @@ public class AnalyticsController implements AnalyticsApi {
     /**
      * Creates a rating for an order.
      *
-     * @path PUT: PUT /analytics/order/{order_id}/rating
-     * @param orderId Unique identifier of the order (required)
+     * @param orderId         Unique identifier of the order (required)
      * @param authorizationId Identification of the user who is making the request (required)
+     * @path PUT: PUT /analytics/order/{order_id}/rating
      */
     @Override
     public ResponseEntity<Void> analyticsOrderOrderIdRatingPut(Integer orderId, Integer authorizationId, Rating rating) {
@@ -55,10 +56,10 @@ public class AnalyticsController implements AnalyticsApi {
     /**
      * Returns a rating for a specific order.
      *
-     * @path GET: GET /analytics/order/{order_id}/rating
-     * @param orderId Unique identifier of the order (required)
+     * @param orderId         Unique identifier of the order (required)
      * @param authorizationId Identification of the user who is making the request (required)
      * @return Returns the rating of a specific order
+     * @path GET: GET /analytics/order/{order_id}/rating
      */
     @Override
     public ResponseEntity<Rating> analyticsOrderOrderIdRatingGet(Integer orderId, Integer authorizationId) {
@@ -76,17 +77,17 @@ public class AnalyticsController implements AnalyticsApi {
     /**
      * Retrieve the average number of deliveries a courier has made/day.
      *
-     * @path GET: GET /analytics/courier/{courier_id}/deliveries-per-day : Deliveries/day of a courier
-     * @param courierId The id of the courier (required)
+     * @param courierId       The id of the courier (required)
      * @param authorizationId Identification of the user who is making the request (required)
      * @return successful (status code 200)
-     *         or Bad request if the courier ID is invalid (status code 400)
-     *         or Forbidden access (status code 403)
-     *         or Courier not found (status code 404)
-     *         or There was a problem with the server (status code 500)
+     * or Bad request if the courier ID is invalid (status code 400)
+     * or Forbidden access (status code 403)
+     * or Courier not found (status code 404)
+     * or There was a problem with the server (status code 500)
+     * @path GET: GET /analytics/courier/{courier_id}/deliveries-per-day : Deliveries/day of a courier
      */
     @Override
-    public  ResponseEntity<Integer> analyticsCourierCourierIdDeliveriesPerDayGet(Integer courierId, Integer authorizationId) {
+    public ResponseEntity<Integer> analyticsCourierCourierIdDeliveriesPerDayGet(Integer courierId, Integer authorizationId) {
         try {
             if (!authorizationService.canViewCourierAnalytics(authorizationId, courierId)) {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -104,14 +105,14 @@ public class AnalyticsController implements AnalyticsApi {
     /**
      * Retrieve the number of successful deliveries a courier has made.
      *
-     * @path GET: GET /analytics/courier/{courier_id}/successful-deliveries : Number of successful deliveries of a courier
-     * @param courierId The id of the courier (required)
+     * @param courierId       The id of the courier (required)
      * @param authorizationId Identification of the user who is making the request (required)
      * @return successful (status code 200)
-     *         or Bad request if the courier ID is invalid (status code 400)
-     *         or Forbidden access (status code 403)
-     *         or Courier not found (status code 404)
-     *         or There was a problem with the server (status code 500)
+     * or Bad request if the courier ID is invalid (status code 400)
+     * or Forbidden access (status code 403)
+     * or Courier not found (status code 404)
+     * or There was a problem with the server (status code 500)
+     * @path GET: GET /analytics/courier/{courier_id}/successful-deliveries : Number of successful deliveries of a courier
      */
     @Override
     public ResponseEntity<Integer> analyticsCourierCourierIdSuccessfulDeliveriesGet(Integer courierId, Integer authorizationId) {
@@ -131,14 +132,14 @@ public class AnalyticsController implements AnalyticsApi {
     /**
      * Retrieve the issues a courier has encountered during deliveries.
      *
-     * @path GET: GET /analytics/courier/{courier_id}/courier-issues : Issues of a courier
-     * @param courierId The id of the courier (required)
+     * @param courierId       The id of the courier (required)
      * @param authorizationId Identification of the user who is making the request (required)
      * @return successful (status code 200)
-     *         or Bad request if the courier ID is invalid (status code 400)
-     *         or Forbidden access (status code 403)
-     *         or Courier not found (status code 404)
-     *         or There was a problem with the server (status code 500)
+     * or Bad request if the courier ID is invalid (status code 400)
+     * or Forbidden access (status code 403)
+     * or Courier not found (status code 404)
+     * or There was a problem with the server (status code 500)
+     * @path GET: GET /analytics/courier/{courier_id}/courier-issues : Issues of a courier
      */
     @Override
     public ResponseEntity<List<String>> analyticsCourierCourierIdCourierIssuesGet(Integer courierId, Integer authorizationId) {
@@ -158,7 +159,7 @@ public class AnalyticsController implements AnalyticsApi {
     /**
      * Retrieve the courier's efficiency.
      *
-     * @param courierId The id of the courier (required)
+     * @param courierId       The id of the courier (required)
      * @param authorizationId Identification of the user who is making the request (required)
      * @return the integer that corresponds to driver's efficiency
      */
@@ -180,7 +181,7 @@ public class AnalyticsController implements AnalyticsApi {
     /**
      * Calculates average delivery time for a vendor.
      *
-     * @param vendorId The id of the vendor (required)
+     * @param vendorId        The id of the vendor (required)
      * @param authorizationId Identification of the user who is making the request (required)
      * @return integer that corresponds to average delivery time
      */

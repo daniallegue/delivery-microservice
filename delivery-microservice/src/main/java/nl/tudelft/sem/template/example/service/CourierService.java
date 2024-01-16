@@ -1,9 +1,5 @@
 package nl.tudelft.sem.template.example.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import nl.tudelft.sem.template.example.exception.CourierNotFoundException;
 import nl.tudelft.sem.template.example.exception.DeliveryNotFoundException;
 import nl.tudelft.sem.template.example.exception.NoAvailableOrdersException;
@@ -17,11 +13,12 @@ import nl.tudelft.sem.template.example.service.strategy.SpecificOrderStrategy;
 import nl.tudelft.sem.template.model.Delivery;
 import nl.tudelft.sem.template.model.Order;
 import nl.tudelft.sem.template.model.Vendor;
-import org.h2.engine.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -37,8 +34,8 @@ public class CourierService {
      * Constructor for handling dependency injection.
      *
      * @param deliveryRepository JPA repository holding the deliveries
-     * @param vendorRepository JPA repository holding the vendors
-     * @param usersMicroservice External communication to Users microservice
+     * @param vendorRepository   JPA repository holding the vendors
+     * @param usersMicroservice  External communication to Users microservice
      */
     @Autowired
     public CourierService(DeliveryRepository deliveryRepository, VendorRepository vendorRepository,
@@ -74,7 +71,7 @@ public class CourierService {
                     .filter(order -> !vendorsWithCouriers.contains(order.getVendor().getId()))
                     .collect(Collectors.toList());
         }
-        return  filteredOrders
+        return filteredOrders
                 .stream()
                 .map(Order::getOrderId)
                 .collect(Collectors.toList());
@@ -111,7 +108,8 @@ public class CourierService {
                 .collect(Collectors.toList());
     }
 
-    /** Adds a courier with a specific ID to our database.
+    /**
+     * Adds a courier with a specific ID to our database.
      *
      * @param courierId Unique identifier of the courier (required)
      */
@@ -136,8 +134,8 @@ public class CourierService {
      * Assigns a specific order to a courier.
      *
      * @param courierId Unique identifier of the courier (required)
-     * @param orderId Unique identifier of the order to be assigned (required)
-     * @throws OrderNotFoundException if the order is not found
+     * @param orderId   Unique identifier of the order to be assigned (required)
+     * @throws OrderNotFoundException   if the order is not found
      * @throws CourierNotFoundException if the courier is not found
      */
     public void assignCourierToSpecificOrder(Long courierId, Long orderId)
@@ -155,7 +153,7 @@ public class CourierService {
      */
     public void populateAllCouriers() {
         List<Long> couriers = usersMicroservice.getCourierIds().get();
-        if (couriers.size() > 0) {
+        if (!couriers.isEmpty()) {
             for (Long courier : couriers) {
                 if (!doesCourierExist(courier)) {
                     addCourier(courier);

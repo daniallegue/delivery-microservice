@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 public class OrdersMicroservice {
@@ -23,15 +22,15 @@ public class OrdersMicroservice {
     /**
      * Puts the order status in the OrdersMicroservice.
      *
-     * @param orderID - The id of the order.
+     * @param orderID         - The id of the order.
      * @param authorizationId - The id of the user who is making the request.
-     * @param status - The status we will update the order with.
+     * @param status          - The status we will update the order with.
      * @return True if the order status was updated successfully, false otherwise.
      */
     public Boolean putOrderStatus(Long orderID, Long authorizationId, String status) {
         String path = usersBaseUrl + "/order/" + orderID + "/status/" + authorizationId + "?status=" + status;
         try {
-            status = "\"" + status + "\"" ;
+            status = "\"" + status + "\"";
             System.out.println(status);
             restTemplate.put(path, null);
             return true;
