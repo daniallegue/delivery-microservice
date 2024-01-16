@@ -70,6 +70,16 @@ public class DeliveryServiceTest {
         mockDelivery.setId(1L); // Set a non-null ID for the mock delivery
         mockDelivery.setTime(mockTime);
         mockDelivery.setOrder(new Order());
+
+        Order mockOrder = new Order();
+        Vendor mockVendor = new Vendor();
+        Location vendorLocation = new Location(0.0, 0.0);
+        Location destination = new Location(10.0, 10.0);
+        mockVendor.setAddress(vendorLocation);
+        mockOrder.setVendor(mockVendor);
+        mockOrder.setDestination(destination);
+
+        mockDelivery.setOrder(mockOrder);
     }
 
     @Test
@@ -410,6 +420,47 @@ public class DeliveryServiceTest {
         assertThrows(OrderNotFoundException.class, () -> deliveryService.calculateLiveLocation(orderId));
     }
 
+    @Test
+    void calculateLiveLocationBeforePickupTest() throws OrderNotFoundException {
+        OffsetDateTime pickupTime = OffsetDateTime.now().plusHours(1);
+        mockDelivery.getTime().setPickUpTime(pickupTime);
+
+        when(deliveryRepository.findDeliveryByOrder_OrderId(orderId)).
+                thenReturn(mockDelivery);
+        Location result = deliveryService.calculateLiveLocation(orderId);
+
+        assertEquals(mockDelivery.getOrder().getVendor().getAddress(), result);
+    }
+
+    @Test
+    void calculateLiveLocationEnRouteTest() throws OrderNotFoundException {
+        OffsetDateTime pickupTime = OffsetDateTime.now().minusHours(1);
+        OffsetDateTime currentTime = OffsetDateTime.now();
+        mockDelivery.getTime().setPickUpTime(pickupTime);
+
+        when(deliveryRepository.findDeliveryByOrder_OrderId(orderId)).thenReturn(mockDelivery);
+
+        Location result = deliveryService.calculateLiveLocation(orderId);
+
+        assertNotEquals(mockDelivery.getOrder().getVendor().getAddress(), result);
+        assertNotEquals(mockDelivery.getOrder().getDestination(), result);
+    }
+
+    @Test
+    void calculateLiveLocationAtDestinationTest() throws OrderNotFoundException {
+        OffsetDateTime pickupTime = OffsetDateTime.now().minusHours(2);
+        OffsetDateTime currentTime = OffsetDateTime.now();
+        mockDelivery.getTime().setPickUpTime(pickupTime);
+
+        when(deliveryRepository.findDeliveryByOrder_OrderId(orderId)).thenReturn(mockDelivery);
+
+        Location result = deliveryService.calculateLiveLocation(orderId);
+
+        double tolerance = 0.2;
+
+        assertEquals(mockDelivery.getOrder().getDestination().getLatitude(), result.getLatitude(), tolerance);
+        assertEquals(mockDelivery.getOrder().getDestination().getLongitude(), result.getLongitude(), tolerance);
+    }
     @Test
     void testGetDeliveryIdByOrderIdSuccess() throws OrderNotFoundException {
         when(deliveryRepository.findDeliveryByOrder_OrderId(anyLong())).thenReturn(mockDelivery);
