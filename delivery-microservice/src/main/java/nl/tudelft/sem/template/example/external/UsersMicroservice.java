@@ -13,11 +13,6 @@ public class UsersMicroservice {
 
     private final String usersBaseUrl = "http://localhost:8081";
 
-    //TODO: to change after with the actual microservice server number,
-    //this is for testing purposes with postman
-    //private final String usersBaseUrl = "https://5d9855d1-4c2c-4318-b1d6-9a2e8ba40b95.mock.pstmn.io";
-
-
     @Autowired
     public UsersMicroservice(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
