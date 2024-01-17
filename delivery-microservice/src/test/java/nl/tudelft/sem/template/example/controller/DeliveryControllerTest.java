@@ -332,7 +332,7 @@ public class DeliveryControllerTest {
     @Test
     public void updateDefaultDeliveryZoneSuccessfulTest() throws MicroserviceCommunicationException {
         when(authorizationService.getUserRole(2L)).thenReturn("admin");
-        ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(25, 2);
+        ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(2, 25);
         verify(deliveryService).updateDefaultDeliveryZone(25);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
@@ -599,7 +599,6 @@ public class DeliveryControllerTest {
 
     @Test
     public void testDeliveryOrderOrderIdEtaGet_Exception() throws Exception {
-
         when(deliveryService.getEta(123L)).thenThrow(new RuntimeException("Unexpected error"));
 
         ResponseEntity<OffsetDateTime> response = deliveryController.deliveryOrderOrderIdEtaGet(123, 1);
@@ -651,7 +650,7 @@ public class DeliveryControllerTest {
     public void updateDefaultDeliveryZoneUnauthorizedTest() throws MicroserviceCommunicationException {
         when(authorizationService.getUserRole(2L)).thenReturn("customer");
 
-        ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(25, 2);
+        ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(2, 25);
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
@@ -659,7 +658,7 @@ public class DeliveryControllerTest {
     public void updateDefaultDeliveryZoneMiscommunicationTest() throws MicroserviceCommunicationException {
         when(authorizationService.getUserRole(5L)).thenThrow(MicroserviceCommunicationException.class);
 
-        ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(25, 5);
+        ResponseEntity<Void> response = deliveryController.deliveryDefaultDeliveryZonePut(5, 25);
         
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
