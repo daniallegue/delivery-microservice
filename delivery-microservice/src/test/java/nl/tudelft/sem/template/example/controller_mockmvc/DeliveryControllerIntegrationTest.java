@@ -1,8 +1,12 @@
 package nl.tudelft.sem.template.example.controller_mockmvc;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.tudelft.sem.template.example.Application;
 import nl.tudelft.sem.template.example.TestDatabaseLoader;
+import nl.tudelft.sem.template.example.configuration.ConfigurationProperties;
+import nl.tudelft.sem.template.example.exception.MicroserviceCommunicationException;
+import nl.tudelft.sem.template.example.external.OrdersMicroservice;
 import nl.tudelft.sem.template.example.external.UsersMicroservice;
 import nl.tudelft.sem.template.model.DeliveryPostRequest;
 import nl.tudelft.sem.template.model.Issue;
@@ -21,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,6 +51,12 @@ public class DeliveryControllerIntegrationTest {
 
     @MockBean
     private UsersMicroservice usersMicroservice;
+
+    @MockBean
+    private OrdersMicroservice ordersMicroservice;
+
+    @Autowired
+    private ConfigurationProperties configurationProperties;
 
     @BeforeEach
     public void setUp() {
@@ -178,5 +189,4 @@ public class DeliveryControllerIntegrationTest {
                 .andExpect(status().isNotFound());
         verify(usersMicroservice, times(1)).getUserType(any());
     }
-
 }

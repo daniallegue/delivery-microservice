@@ -313,10 +313,10 @@ public class DeliveryController implements DeliveryApi {
      *
      * @param newDeliveryZone Identification of the user who is making the request (required)
      * @param authorizationId Default delivery zone radius (required)
-     * @path GET: /delivery/default-delivery-zone
+     * @path PUT: /delivery/default-delivery-zone
      */
     @Override
-    public ResponseEntity<Void> deliveryDefaultDeliveryZonePut(Integer newDeliveryZone, Integer authorizationId) {
+    public ResponseEntity<Void> deliveryDefaultDeliveryZonePut(Integer authorizationId, Integer newDeliveryZone) {
         try {
             if (!authorizationService.getUserRole((long) authorizationId).equals("admin")) {
                 ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
