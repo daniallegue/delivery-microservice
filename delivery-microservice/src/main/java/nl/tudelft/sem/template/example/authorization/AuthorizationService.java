@@ -9,18 +9,12 @@ import nl.tudelft.sem.template.model.Delivery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static java.util.Collections.replaceAll;
 
 @Service
 public class AuthorizationService {
     private final UsersMicroservice usersMicroservice;
 
     private final DeliveryRepository deliveryRepository;
-
-    public static final String ADMIN = "admin";
-    public static final String CUSTOMER = "customer";
-    public static final String VENDOR = "vendor";
-    public static final String COURIER = "courier";
 
 
     /**
@@ -45,17 +39,17 @@ public class AuthorizationService {
      */
     public Boolean isInvolvedInOrder(Long authorizationId, String role, Long orderId) {
         Delivery delivery = deliveryRepository.findDeliveryByOrder_OrderId(orderId);
-        if (role.equals(ADMIN)) {
+        if (role.equals("admin")) {
             return true;
         }
         switch (role) {
-            case CUSTOMER -> {
+            case "customer" -> {
                 return delivery.getOrder().getCustomerId().equals(authorizationId);
             }
-            case VENDOR -> {
+            case "vendor" -> {
                 return delivery.getOrder().getVendor().getId().equals(authorizationId);
             }
-            case COURIER -> {
+            case "courier" -> {
                 Long deliveryCourierId = delivery.getCourierId();
                 return deliveryCourierId != null && deliveryCourierId.equals(authorizationId);
             }
@@ -107,7 +101,7 @@ public class AuthorizationService {
      */
     public Boolean canUpdateDeliveryDetails(Long authorizationId, Long orderId) throws MicroserviceCommunicationException {
         String role = getUserRole(authorizationId);
-        return !role.equals(CUSTOMER) && isInvolvedInOrder(authorizationId, role, orderId);
+        return !role.equals("customer") && isInvolvedInOrder(authorizationId, role, orderId);
     }
 
     /**
@@ -121,10 +115,10 @@ public class AuthorizationService {
      */
     public Boolean canViewCourierAnalytics(Long authorizationId, Long courierId) throws MicroserviceCommunicationException {
         String role = getUserRole(authorizationId);
-        if (role.equals(ADMIN)) {
+        if (role.equals("admin")) {
             return true;
         }
-        return role.equals(COURIER) && Objects.equals(authorizationId, courierId);
+        return role.equals("courier") && Objects.equals(authorizationId, courierId);
     }
 
     /**
@@ -138,7 +132,7 @@ public class AuthorizationService {
      */
     public Boolean canChangeOrderRating(Long authorizationId, Long orderId) throws MicroserviceCommunicationException {
         String role = getUserRole(authorizationId);
-        return role.equals(CUSTOMER) && isInvolvedInOrder(authorizationId, role, orderId);
+        return role.equals("customer") && isInvolvedInOrder(authorizationId, role, orderId);
     }
 
     /**
@@ -151,7 +145,7 @@ public class AuthorizationService {
      */
     public Boolean cannotUpdateVendorDeliveryZone(Long authorizationId) throws MicroserviceCommunicationException {
         String role = getUserRole(authorizationId);
-        return !role.equals(ADMIN) && !role.equals(VENDOR);
+        return !role.equals("admin") && !role.equals("vendor");
     }
 
 }

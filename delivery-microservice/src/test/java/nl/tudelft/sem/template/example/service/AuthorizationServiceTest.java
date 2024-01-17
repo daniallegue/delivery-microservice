@@ -285,6 +285,14 @@ public class AuthorizationServiceTest {
         assertThat(result).isTrue();
     }
 
+    @Test
+    void testIsInvolvedInOrderFalse() {
+        Long authorizationId = 7L;
+        String role = "random";
+        Long orderId = 1L;
 
+        boolean result = authorizationService.isInvolvedInOrder(authorizationId, role, orderId);
 
+        assertThat(result).isFalse();
+    }
 }

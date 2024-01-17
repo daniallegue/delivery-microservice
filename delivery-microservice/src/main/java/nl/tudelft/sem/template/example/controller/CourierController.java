@@ -66,8 +66,8 @@ public class CourierController implements CourierApi {
     public ResponseEntity<Void> courierDeliveryCourierIdAssignAnyOrderPut(Long courierId, Integer authorizationId)  {
         try {
             courierService.assignCourierToRandomOrder(courierId);
-        } catch (DeliveryNotFoundException | NoAvailableOrdersException | OrderNotFoundException |
-                 CourierNotFoundException e) {
+        } catch (DeliveryNotFoundException | NoAvailableOrdersException | OrderNotFoundException
+                 | CourierNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.ok().build();
@@ -88,8 +88,8 @@ public class CourierController implements CourierApi {
         try {
             courierService.assignCourierToSpecificOrder(courierId, orderId);
             return ResponseEntity.ok().build();
-        } catch (DeliveryNotFoundException | NoAvailableOrdersException | OrderNotFoundException |
-                 CourierNotFoundException e) {
+        } catch (DeliveryNotFoundException | NoAvailableOrdersException | OrderNotFoundException
+                 | CourierNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }

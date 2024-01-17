@@ -92,7 +92,7 @@ public class VendorController implements VendorApi {
     public ResponseEntity<Vendor> vendorDeliveryVendorIdAssignCourierIdPut(Integer vendorId,
                                                                            Integer courierId, Integer authorizationId) {
         try {
-            if (!authorizationService.getUserRole((long) authorizationId).equals(authorizationService.ADMIN)) {
+            if (!authorizationService.getUserRole((long) authorizationId).equals("admin")) {
                 return new ResponseEntity<Vendor>(HttpStatus.UNAUTHORIZED);
             }
             Vendor vendor = vendorService.assignCourierToVendor((long) vendorId, (long) courierId);
@@ -100,8 +100,6 @@ public class VendorController implements VendorApi {
         } catch (VendorNotFoundException | MicroserviceCommunicationException | CourierNotFoundException e) {
             if (e instanceof VendorNotFoundException) {
                 return new ResponseEntity<Vendor>(HttpStatus.NOT_FOUND);
-            } else if (e instanceof MicroserviceCommunicationException) {
-                return new ResponseEntity<Vendor>(HttpStatus.BAD_REQUEST);
             } else {
                 return new ResponseEntity<Vendor>(HttpStatus.BAD_REQUEST);
             }
@@ -119,8 +117,8 @@ public class VendorController implements VendorApi {
     @Override
     public ResponseEntity<List<Long>> vendorDeliveryVendorIdCouriersGet(Integer vendorId, Integer authorizationId) {
         try {
-            if (!authorizationService.getUserRole((long) authorizationId).equals(authorizationService.VENDOR)
-                    && !authorizationService.getUserRole((long) authorizationId).equals(authorizationService.ADMIN)) {
+            if (!authorizationService.getUserRole((long) authorizationId).equals("vendor")
+                    && !authorizationService.getUserRole((long) authorizationId).equals("admin")) {
                 return new ResponseEntity<List<Long>>(HttpStatus.UNAUTHORIZED);
             }
             List<Long> courierIds = vendorService.getAssignedCouriers((long) vendorId);

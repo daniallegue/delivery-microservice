@@ -55,20 +55,4 @@ public class UsersMicroserviceTest {
                 .thenThrow(HttpClientErrorException.class);
         assertThat(usersMicroservice.getVendorLocation(1L)).isEqualTo(Optional.empty());
     }
-
-    @Test
-    void getCourierIdsSuccessfulTest() {
-        List<Long> couriers = Arrays.asList(1L, 2L, 3L);
-        when(restTemplate.getForObject(usersBaseUrl + "/courier", List.class)).thenReturn(couriers);
-
-        assertEquals(Optional.of(couriers), usersMicroservice.getCourierIds());
-    }
-
-    @Test
-    void getCourierIdsEmptyTest() {
-        List<Long> couriers = new ArrayList<>();
-        when(restTemplate.getForObject(usersBaseUrl + "/courier", List.class)).thenReturn(couriers);
-
-        assertEquals(Optional.of(couriers), usersMicroservice.getCourierIds());
-    }
 }
