@@ -63,7 +63,7 @@ public class VendorController implements VendorApi {
      */
     @Override
     public ResponseEntity<Vendor> vendorDeliveryVendorIdDeliveryZonePut(Integer vendorId,
-                                                                        Integer deliveryZone, Integer authorizationId) {
+                                                                        Integer authorizationId, Integer deliveryZone) {
         try {
             if (authorizationService.cannotUpdateVendorDeliveryZone((long) authorizationId)) {
                 return new ResponseEntity<Vendor>(HttpStatus.UNAUTHORIZED);
