@@ -77,7 +77,7 @@ public class VendorControllerTest {
         when(vendorService.updateDeliveryZone(2L, 10L)).thenReturn(updated);
         when(authorizationService.getUserRole(1L)).thenReturn("vendor");
 
-        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
+        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 1, 10);
         Vendor updatedVendor = response.getBody();
         assertEquals(vendor1.getId(), updatedVendor.getId());
         assertEquals(10L, updatedVendor.getDeliveryZone());
@@ -93,7 +93,7 @@ public class VendorControllerTest {
         when(authorizationService.getUserRole(1L)).thenReturn("customer");
         when(authorizationService.cannotUpdateVendorDeliveryZone(1L)).thenReturn(true);
 
-        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
+        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 1, 10);
         assertEquals( HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
@@ -103,7 +103,7 @@ public class VendorControllerTest {
         when(vendorService.updateDeliveryZone(2L, 10L)).thenThrow(VendorNotFoundException.class);
         when(authorizationService.getUserRole(1L)).thenReturn("admin");
 
-        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
+        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 1, 10);
         assertEquals( HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
@@ -114,7 +114,7 @@ public class VendorControllerTest {
         when(vendorService.updateDeliveryZone(2L, 10L)).thenThrow(VendorHasNoCouriersException.class);
         when(authorizationService.getUserRole(1L)).thenReturn("admin");
 
-        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
+        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 1, 10);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
@@ -124,7 +124,7 @@ public class VendorControllerTest {
         when(vendorRepository.existsById(2L)).thenReturn(true);
         when(authorizationService.cannotUpdateVendorDeliveryZone(1L)).thenThrow(MicroserviceCommunicationException.class);
 
-        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 10, 1);
+        ResponseEntity<Vendor> response = vendorController.vendorDeliveryVendorIdDeliveryZonePut(2, 1, 10);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 

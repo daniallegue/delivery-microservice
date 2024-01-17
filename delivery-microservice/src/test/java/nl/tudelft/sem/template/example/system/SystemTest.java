@@ -105,11 +105,6 @@ public class SystemTest {
 
         String url = "http://localhost:8081/courier";
         return restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
-
-//        headers.set("adminId", adminId.toString());
-//        HttpEntity<String> requestEntity2 = new HttpEntity<>("I am TU Delft student that wants to earn money.", headers);
-//        String url2 = "http://localhost:8081/admin/verify-courier/" + extractIdFromResponse(creatingCourierEntity);
-//        return restTemplate.exchange(url2, HttpMethod.POST, requestEntity2, String.class);
     }
 
     /**
