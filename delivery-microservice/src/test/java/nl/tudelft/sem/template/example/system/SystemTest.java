@@ -40,12 +40,12 @@ public class SystemTest {
     @BeforeEach
     public void setup() throws JsonProcessingException {
         restTemplate = new RestTemplate();
-        mockOrdersMicroservice();
+//        mockOrdersMicroservice();
     }
 
     @AfterEach
     public void tearDown() {
-        WireMockConfig.stopOrdersServer();
+//        WireMockConfig.stopOrdersServer();
     }
 
     /**
@@ -92,7 +92,6 @@ public class SystemTest {
 
         String url = "http://localhost:8081/vendor/application/";
         restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
-        System.out.println(adminId);
         headers.set("adminId", adminId.toString());
         HttpEntity<String> requestEntity2 = new HttpEntity<>(requestBody, headers);
 
@@ -115,25 +114,29 @@ public class SystemTest {
     /**
      * Series of requests to create a courier in the Users Microservice database.
      */
-    public ResponseEntity<String> createCourier(String requestBody){
+    public ResponseEntity<String> createCourier(String requestBody, Integer adminId) throws JsonProcessingException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
 
         String url = "http://localhost:8081/courier";
         return restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+
+//        headers.set("adminId", adminId.toString());
+//        HttpEntity<String> requestEntity2 = new HttpEntity<>("I am TU Delft student that wants to earn money.", headers);
+//        String url2 = "http://localhost:8081/admin/verify-courier/" + extractIdFromResponse(creatingCourierEntity);
+//        return restTemplate.exchange(url2, HttpMethod.POST, requestEntity2, String.class);
     }
 
     /**
      * Series of requests to create an order in the Orders Microservice database.
      */
-    public ResponseEntity<String> createOrder(String customerId, String vendorId){
+    public ResponseEntity<String> createOrder(String customerId, String vendorId, String requestBody){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
 
         String url = "http://localhost:8082/order/new/" + customerId + "/" + vendorId;
-        System.out.println(url);
         return restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
     }
 
@@ -156,7 +159,7 @@ public class SystemTest {
      * <li>create a delivery in our database</li>
      * </ol>
      */
-//    @Test
+    @Test
     public void createDelivery() throws JsonProcessingException {
         //(1) create an admin in the Users Microservice database
         ResponseEntity<String> creatingAdminEntity = createAdmin(ADMIN_JSON);
@@ -178,30 +181,30 @@ public class SystemTest {
      * <ol>
      * <li>create an admin in the Users Microservice database</li>
      * <li>create a vendor in the Users Microservice database</li>
+     * <li>create a customer in the Users Microservice database</li>
      * <li>create a delivery in our database</li>
      * <li>rate the order from the delivery</li>
      * </ol>
      */
-//    @Test
+    @Test
     public void ratingIsForbidden() throws JsonProcessingException {
         //(1) create an admin in the Users Microservice database
         ResponseEntity<String> creatingAdminEntity = createAdmin(ADMIN_JSON_2);
 
-        //(1) create a vendor in the Users Microservice database
+        //(2) create a vendor in the Users Microservice database
         ResponseEntity<String> creatingVendorEntity = createVendor(VENDOR_JSON_2,extractIdFromResponse(creatingAdminEntity));
 
-        //(2) create a customer in the Users Microservice database
+        //(3) create a customer in the Users Microservice database
         ResponseEntity<String> creatingCustomerEntity = createCustomer(CUSTOMER_JSON_1);
 
-
-        //(3) create a delivery in our database
+        //(4) create a delivery in our database
         DeliveryPostRequest dummyDeliveryPostRequest = new DeliveryPostRequest(444, extractIdFromResponse(creatingCustomerEntity),
                 new Location(4.0, 5.0), extractIdFromResponse(creatingVendorEntity));
         String requestBody =  objectMapper.writeValueAsString(dummyDeliveryPostRequest);
         HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, createHeaders(extractIdFromResponse(creatingAdminEntity).toString()));
         ResponseEntity<String> responseEntity = restTemplate.exchange(BASE_URL + "/delivery", HttpMethod.POST, requestEntity, String.class);
 
-        //(4) try to add a rating to the order, it will fail, because the admin is not authorized to do so
+        //(5) try to add a rating to the order, it will fail, because the admin is not authorized to do so
         Rating rating = new Rating(5, "yummy");
         String requestBody2 =  objectMapper.writeValueAsString(rating);
         HttpEntity<String> requestEntity2 = new HttpEntity<>(requestBody2, createHeaders(extractIdFromResponse(creatingAdminEntity).toString()));
@@ -214,10 +217,18 @@ public class SystemTest {
     }
 
     /**
-     * Series of requests to change the order status, involving both microservices.
+     * <b>User story 3 - Change the status of an order</b>
+     * <ol>
+     * <li>create an admin in the Users Microservice database</li>
+     * <li>create a vendor in the Users Microservice database</li>
+     * <li>create a customer in the Users Microservice database</li>
+     * <li>create a delivery in our database</li>
+     * <li>change the status of the order</li>
+     * </ol>
      */
-//    @Test
+    @Test
     public void changeOrderStatus() throws JsonProcessingException {
+        Integer orderId = 202020;
         //(1) create an admin in the Users Microservice database
         ResponseEntity<String> creatingAdminEntity = createAdmin(ADMIN_JSON_3);
 
@@ -229,14 +240,12 @@ public class SystemTest {
         //(2) create a customer in the Users Microservice database
         ResponseEntity<String> creatingCustomerEntity = createCustomer(CUSTOMER_JSON_2);
 
-
         //(3) create an order in the Orders Microservice, which, in theory, should post a delivery in our database
-//        ResponseEntity<String> creatingOrderEntity = createOrder(extractIdFromResponse(creatingCustomerEntity), extractIdFromResponse(creatingVendorEntity));
-        mockPutStatus(202020, extractIdFromResponse(creatingAdminEntity), "Accepted");
+        ResponseEntity<String> creatingOrderEntity = createOrder(extractIdFromResponse(creatingCustomerEntity).toString(), extractIdFromResponse(creatingVendorEntity).toString(), ORDER_JSON_1);
+        orderId = extractOrderIdFromResponse(creatingOrderEntity);
 
-
-        //(3.2) create a delivery in our database, if the Orders microservice did not do it
-        DeliveryPostRequest dummyDeliveryPostRequest = new DeliveryPostRequest(202020, extractIdFromResponse(creatingCustomerEntity),
+        //(3) create a delivery in our database, if the Orders microservice did not do it
+        DeliveryPostRequest dummyDeliveryPostRequest = new DeliveryPostRequest(orderId, extractIdFromResponse(creatingCustomerEntity),
                 new Location(4.0, 5.0), extractIdFromResponse(creatingVendorEntity));
         String requestBody =  objectMapper.writeValueAsString(dummyDeliveryPostRequest);
         HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, createHeaders(extractIdFromResponse(creatingAdminEntity).toString()));
@@ -244,12 +253,22 @@ public class SystemTest {
 
 
         //(4) change the order status (both in our microservice and in the Orders microservice
-        String url2 = BASE_URL + "delivery/order/202020/status";
+        String url2 = BASE_URL + "delivery/order/" + orderId + "/status";
         HttpEntity<String> requestEntity2 = new HttpEntity<>("Accepted",createHeaders(extractIdFromResponse(creatingAdminEntity).toString()));
         ResponseEntity<String> responseEntity2 = restTemplate.exchange(url2, HttpMethod.PUT, requestEntity2, String.class);
     }
 
-//    @Test
+    /**
+     * <b>User story 4 - Assign a courier to an order</b>
+     * <ol>
+     * <li>create an admin in the Users Microservice database</li>
+     * <li>create an vendor in the Users Microservice database</li>
+     * <li>create a courier in the Users Microservice database</li>
+     * <li>create a delivery in our database/li>
+     * <li>assign a courier to the order</li>
+     * </ol>
+     */
+    @Test
     public void courierActions() throws JsonProcessingException {
         //(1) create an admin in the Users Microservice database
         ResponseEntity<String> creatingAdminEntity = createAdmin(ADMIN_JSON_4);
@@ -258,12 +277,12 @@ public class SystemTest {
         ResponseEntity<String> creatingVendorEntity = createVendor(VENDOR_JSON_4, extractIdFromResponse(creatingAdminEntity));
 
         //(3) create couriers in the Users Microservice database
-        ResponseEntity<String> creatingCourierEntity1 = createCourier(COURIER_JSON_1);
+        ResponseEntity<String> creatingCourierEntity1 = createCourier(COURIER_JSON_1, extractIdFromResponse(creatingAdminEntity));
 
         //(4) create an order in the Orders Microservice, which, in theory, should post a delivery in our database
 //        ResponseEntity<String> creatingOrderEntity = createOrder(ORDER_JSON_1, 555, extractIdFromResponse(creatingVendorEntity).toString());
 //        Assertions.assertTrue(creatingOrderEntity.getStatusCode().is2xxSuccessful());
-        mockPutStatus(777, extractIdFromResponse(creatingVendorEntity), "Accepted");
+//        mockPutStatus(777, extractIdFromResponse(creatingVendorEntity), "Accepted");
 
         //(4.2) create a delivery in our database, if the other microservice did not do it
         DeliveryPostRequest dummyDeliveryPostRequest = new DeliveryPostRequest(777, 555,
@@ -273,7 +292,7 @@ public class SystemTest {
         ResponseEntity<String> responseEntity = restTemplate.exchange(BASE_URL + "/delivery", HttpMethod.POST, requestEntity, String.class);
 
         //(5) assign a courier to the order
-        String url3 = BASE_URL + "delivery/courier/" + 10 + "assign/777";
+        String url3 = BASE_URL + "courier/delivery/" + extractIdFromResponse(creatingCourierEntity1) + "/assign/777";
         HttpEntity<String> requestEntity3 = new HttpEntity<>(createHeaders(extractIdFromResponse(creatingVendorEntity).toString()));
         ResponseEntity<String> responseEntity3 = restTemplate.exchange(url3, HttpMethod.PUT, requestEntity3, String.class);
         Assertions.assertTrue(responseEntity3.getStatusCode().is2xxSuccessful());
@@ -291,6 +310,14 @@ public class SystemTest {
 
         JsonNode jsonNode = objectMapper.readTree(responseJson);
         return jsonNode.get("id").asInt();
+    }
+
+    public Integer extractOrderIdFromResponse(ResponseEntity<String> responseEntity)throws JsonProcessingException {
+        String responseJson = responseEntity.getBody();
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        JsonNode jsonNode = objectMapper.readTree(responseJson);
+        return jsonNode.get("order_id").asInt();
     }
 
     //JSON examples taken from their respective microservices' api specifications
@@ -439,9 +466,9 @@ public class SystemTest {
             "  \"email\": \"man@man.com\"\n" +
             "}";
     String ORDER_JSON_1 =  "{\n" +
-            "  \"order_id\": 6000,\n" +
-            "  \"customer_id\": 123,\n" +
-            "  \"vendor_id\": 5,\n" +
+            "  \"order_id\": 202,\n" +
+            "  \"customer_id\": 201,\n" +
+            "  \"vendor_id\": 200,\n" +
             "  \"price\": 20.3,\n" +
             "  \"dishes\": [\n" +
             "    {\n" +
@@ -459,9 +486,9 @@ public class SystemTest {
             "    \"latitude\": 0,\n" +
             "    \"longitude\": 0\n" +
             "  },\n" +
-            "  \"specialRequirenments\": \"No french fries with my burger\",\n" +
+            "  \"specialRequirements\": \"No french fries with my burger\",\n" +
             "  \"rating_id\": 2023,\n" +
-            "  \"status\": \"Pending\"\n" +
+            "  \"status\": \"pending\"\n" +
             "}";
 
 }
